@@ -31,7 +31,7 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'KrylovNewton'            # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['cyclic']             # '3_DCF', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 
 numIncr         = 100 # number of increments per target displacement
@@ -102,7 +102,7 @@ for types in typeAnalysis:
     # Run Analysis
     fa.gravity(Py)
     fr.getPushoverRecorders(outputDir)
-    if types == '3_DCF':
+    if types == 'monotonic':
         fa.pushoverDCF(dispTarget, numIncr, typeAlgorithm)
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)

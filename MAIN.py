@@ -26,12 +26,12 @@ PHLR = 0.99
 #    Define Variables
 #=============================================================================
 typeElement     = 'else'                # 'elasticBeamColumn', 'else'
-typeSection     = 'Box'            # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
+typeSection     = 'Box_Composite'            # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'KrylovNewton'            # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['3_DCF']             # '3_DCF', 'cyclic'
+typeAnalysis    = ['cyclic']             # '3_DCF', 'cyclic'
 
 
 numIncr         = 100 # number of increments per target displacement
@@ -40,7 +40,7 @@ numIncr         = 100 # number of increments per target displacement
 dispTarget      = 17 *inch
 
 # Cyclic Loading Analysis
-dispTarList     = [1, 1.05, 5, 10, 17] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [1, 1.05, 5, 10] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:

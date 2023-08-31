@@ -39,7 +39,7 @@ def buildCantileverN(L, tagSec, typeEle='forceBeamColumn', PlasticHingeLengthRat
         ops.element('forceBeamColumn', 1,      *[1, 2],   tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
     elif typeEle == 'dispBeamColumn':
         #   element('dispBeamColumn',  eleTag, *eleNodes, transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-        ops.element('dispBeamColumn',  1,      *[1, 2],   tagGTPDelta, tagInt,         '-cMass', '-mass', mass=0.0)
+        ops.element('dispBeamColumn',  1,      *[1, 2],   tagGTPDelta, tagInt)
     else:
         print('UNKNOWN element type!!!');sys.exit()
     

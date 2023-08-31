@@ -1,11 +1,12 @@
 # exec(open("functions/units.py").read())
 exec(open("functions/unitsUS.py").read())
 
+import sys
 import openseespy.opensees as ops
 
 
 
-def buildCantileverN(L, tagSec, PlasticHingeLengthRatio=0.5):
+def buildCantileverN(L, tagSec, typeEle='forceBeamColumn', PlasticHingeLengthRatio=0.5):
     
     maxIter     = 10
     tol         = 1e-12
@@ -33,8 +34,14 @@ def buildCantileverN(L, tagSec, PlasticHingeLengthRatio=0.5):
     # Define Elements
     
     ## Nonlinear Element:
-    #   element('forceBeamColumn', eleTag, *eleNodes, transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-    ops.element('forceBeamColumn', 1,      *[1, 2],   tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
+    if typeEle == 'forceBeamColumn':
+        #   element('forceBeamColumn', eleTag, *eleNodes, transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
+        ops.element('forceBeamColumn', 1,      *[1, 2],   tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
+    elif typeEle == 'dispBeamColumn':
+        #   element('dispBeamColumn',  eleTag, *eleNodes, transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
+        ops.element('dispBeamColumn',  1,      *[1, 2],   tagGTPDelta, tagInt,         '-cMass', '-mass', mass=0.0)
+    else:
+        print('UNKNOWN element type!!!');sys.exit()
     
     ## Linear Element
     #   element('elasticBeamColumn', eleTag, *eleNodes, secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)

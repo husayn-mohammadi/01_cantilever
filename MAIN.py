@@ -78,7 +78,7 @@ for types in typeAnalysis:
     elif typeSection == 'Box_Composite':
         fib_sec = fs.makeSectionBoxComposite(tagSec, H_W, B_W, tw_W, tf_W, typeMatSt, typeMatCt)
     else:
-        print("UNKNOWN fiber section type!!!")   ;sys.exit()
+        print("UNKNOWN fiber section type!!!");sys.exit()
         
     # Plot the fiber section
     if plot_section == True:
@@ -103,14 +103,18 @@ for types in typeAnalysis:
     fa.gravity(Py)
     fr.getPushoverRecorders(outputDir)
     if types == 'monotonic':
+        print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
         fa.pushoverDCF(dispTarget, numIncr, typeAlgorithm)
+        print(f"\n\nMonotonic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
             sfac = opv.plot_defo()
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
+        print(f"Cyclic Pushover Analysis Initiated at {time.time() - start_time}.")
         fa.cyclicAnalysis(dispTarList, numIncr, typeAlgorithm, typeSystem)
+        print(f"\n\nCyclic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
     else:
@@ -127,10 +131,7 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"\nElapsed time: {elapsed_time:.2f} seconds")
 
-
-
-
-print("The analysis was run successfully. See what is changed in the excel file.")
+print("\nThe analysis was run successfully.")
 
 
 

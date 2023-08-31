@@ -35,7 +35,7 @@ typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSP
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 
-numIncr         = 100 # number of increments per target displacement
+numIncr         = 300 # number of increments per target displacement
 
 # Monotonic Pushover Analysis
 dispTarget      = 25.6 *inch

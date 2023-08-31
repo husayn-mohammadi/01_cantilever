@@ -1,0 +1,18 @@
+# Ignored Files:
+## by file extensions:
+
+
+## by file names:
+
+
+
+# Ignored Folders:
+02_Findings/
+Archive/
+Output/
+
+.spyproject/
+
+.vscode/
+
+functions/__pycache__/

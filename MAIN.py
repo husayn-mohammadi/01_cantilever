@@ -25,8 +25,9 @@ PHLR = 0.99
 #=============================================================================
 #    Define Variables
 #=============================================================================
-typeElement     = 'else'                # 'elasticBeamColumn', 'else'
+typeModel       = 'Nonlinear'                    # 'Linear', 'Nonlinear'
 typeSection     = 'Box_Composite'            # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
+typeEle         = 'forceBeamColumn'         # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'KrylovNewton'            # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
@@ -84,12 +85,13 @@ for types in typeAnalysis:
     if plot_section == True:
         fp.plot_fiber_section(fib_sec)
         
-    if typeElement == 'elasticBeamColumn':
-        I = 2
-        A = 1
+    if typeModel == 'Linear':
+        I   = 2
+        A   = 1
+        Es  = 29000*ksi
         fm.buildCantileverL(L, Es, I, A)
     else:
-        fm.buildCantileverN(L, tagSec, PHLR)
+        fm.buildCantileverN(L, tagSec, typeEle, PHLR)
         
     # Plot Model
     if plot_undefo == True:

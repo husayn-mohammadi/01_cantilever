@@ -37,10 +37,10 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 numIncr         = 100 # number of increments per target displacement
 
 # Monotonic Pushover Analysis
-dispTarget      = 17 *inch
+dispTarget      = 25.6 *inch
 
 # Cyclic Loading Analysis
-dispTarList     = [1, 1.05, 5, 10] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [1, 1.05, 2, 5, 10] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:

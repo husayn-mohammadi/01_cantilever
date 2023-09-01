@@ -2,7 +2,7 @@ import openseespy.opensees as ops
 
 # exec(open("Input/inputData.py").read())
 
-def gravity(Py):
+def gravity(Py, ControlNode):
     
     tagTSGravity    = 10
     # ops.timeSeries('Linear', tagTSGravity)
@@ -10,7 +10,7 @@ def gravity(Py):
     
     tagPtnGravity   = 10
     ops.pattern('Plain', tagPtnGravity, tagTSGravity)
-    ops.load(3, 0.0, -abs(Py), 0.0)
+    ops.load(ControlNode, 0.0, -abs(Py), 0.0)
     
     
     # Gravity Analysis:
@@ -30,9 +30,8 @@ def gravity(Py):
     ops.analyze(1)
     # ops.loadConst('-time', 0.0)
 
-def pushoverDCF(dispTarget, numIncr, algorithm='KrylovNewton'): # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+def pushoverDCF(dispTarget, ControlNode, numIncr, algorithm='KrylovNewton'): # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
     
-    ControlNode     = 3
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
     
@@ -73,9 +72,8 @@ def pushoverDCF(dispTarget, numIncr, algorithm='KrylovNewton'): # Linear, Newton
     return OK
 
 
-def cyclicAnalysis(dispTarList, numIncr, algorithm='Newton', system='UmfPack'):
+def cyclicAnalysis(dispTarList, ControlNode, numIncr, algorithm='Newton', system='UmfPack'):
     
-    ControlNode     = 3
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
     

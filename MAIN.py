@@ -34,7 +34,7 @@ typeAlgorithm   = 'KrylovNewton'            # Linear, Newton, NewtonLineSearch, 
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-
+ControlNode     = 3 # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
 numIncr         = 300 # number of increments per target displacement
 
 # Monotonic Pushover Analysis

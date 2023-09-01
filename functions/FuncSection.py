@@ -2,11 +2,11 @@
 exec(open("functions/unitsUS.py").read())
 
 
-import sys
+# import sys
 import openseespy.opensees        as ops
 import functions.FuncMaterial     as fmat
 
-def makeSectionRect(tagSec, H, B, typeMatSt='ReinforcingSteel', NfibeZ=1, NfibeY=120):
+def makeSectionRect(tagSec, H, B, typeMatSt='ReinforcingSteel', NfibeY=120, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry
@@ -33,7 +33,7 @@ def makeSectionRect(tagSec, H, B, typeMatSt='ReinforcingSteel', NfibeZ=1, NfibeY
              
     return fib_sec
 
-def makeSectionI(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', NfibeZ=1, NfibeY=40):
+def makeSectionI(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry
@@ -72,7 +72,7 @@ def makeSectionI(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', NfibeZ=1, N
     
     return fib_sec
 
-def makeSectionBox(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', NfibeZ=1, NfibeY=40):
+def makeSectionBox(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry
@@ -115,7 +115,7 @@ def makeSectionBox(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', NfibeZ=1,
     
     return fib_sec
 
-def makeSectionBoxComposite(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeZ=1, NfibeY=40):
+def makeSectionBoxComposite(tagSec, H, B, tw, tf, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry

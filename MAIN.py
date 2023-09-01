@@ -19,10 +19,6 @@ import functions.FuncPlot      as fp
 exec(open("Input/inputDataAS.py").read())
 # exec(open("Input/inputDataCPSWCF.py").read())
 
-Fy = 50 *ksi
-fpc = 4 *ksi
-Pno = 0.85*A_Composite_Ct*fpc + A_Composite_St*Fy
-
 # Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
 PHLR = 0.4
 
@@ -36,7 +32,7 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 PyRatio         = 0.1
 ControlNode     = 3     # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
@@ -107,6 +103,7 @@ for types in typeAnalysis:
         vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
+    Pno = 0.85*A_Composite_Ct*abs(fpc) + A_Composite_St*abs(Fy)
     fa.gravity(PyRatio*Pno, ControlNode)
     fr.getPushoverRecorders(ControlNode, outputDir)
     if types == 'monotonic':

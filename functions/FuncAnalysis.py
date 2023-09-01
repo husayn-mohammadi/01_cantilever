@@ -72,7 +72,7 @@ def pushoverDCF(dispTarget, ControlNode, numIncr, algorithm='KrylovNewton'): # L
     return OK
 
 
-def cyclicAnalysis(dispTarList, ControlNode, numIncr, algorithm='Newton', system='UmfPack'):
+def cyclicAnalysis(dispTarList, ControlNode, numIncr, numCyclesPerDispTarget=2, algorithm='Newton', system='UmfPack'):
     
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
@@ -108,7 +108,6 @@ def cyclicAnalysis(dispTarList, ControlNode, numIncr, algorithm='Newton', system
     for dispTarget in dispTarList:
         
         incr        = dispTarget/numIncr
-        numCyclesPerDispTarget      = 2
         incrList                    = [incr, -incr, -incr, incr] * numCyclesPerDispTarget
         for incr in incrList:
             

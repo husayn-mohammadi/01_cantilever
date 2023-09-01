@@ -20,28 +20,29 @@ exec(open("Input/inputDataAS.py").read())
 # exec(open("Input/inputDataCPSWCF.py").read())
 
 # Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
-PHLR = 0.99
+PHLR = 0.4
 
 #=============================================================================
 #    Define Variables
 #=============================================================================
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
-typeEle         = 'forceBeamColumn'         # 'forceBeamColumn', 'dispBeamColumn'
+typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAlgorithm   = 'KrylovNewton'            # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
-ControlNode     = 3 # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
-numIncr         = 300 # number of increments per target displacement
+PyRatio         = 0.1
+ControlNode     = 3     # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
+numIncr         = 500   # number of increments per target displacement
 
 # Monotonic Pushover Analysis
-dispTarget      = 25.6 *inch
+dispTarget      = 49 *inch
 
-# Cyclic Loading Analysis
-dispTarList     = [1, 1.05, 2, 5, 10] # if no unit is multiplied, then the units will be meters by default!!!
+# Cyclic Pushover Analysis
+dispTarList     = [1, 1.05, 2, 5, 10, 15, 20] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -102,11 +103,12 @@ for types in typeAnalysis:
         vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
-    fa.gravity(Py)
-    fr.getPushoverRecorders(outputDir)
+    Pno = 0.85*A_Composite_Ct*abs(fpc) + A_Composite_St*abs(Fy)
+    fa.gravity(PyRatio*Pno, ControlNode)
+    fr.getPushoverRecorders(ControlNode, outputDir)
     if types == 'monotonic':
         print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.pushoverDCF(dispTarget, numIncr, typeAlgorithm)
+        fa.pushoverDCF(dispTarget, ControlNode, numIncr, typeAlgorithm)
         print(f"\n\nMonotonic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
@@ -115,7 +117,7 @@ for types in typeAnalysis:
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
         print(f"Cyclic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.cyclicAnalysis(dispTarList, numIncr, typeAlgorithm, typeSystem)
+        fa.cyclicAnalysis(dispTarList, ControlNode, numIncr, typeAlgorithm, typeSystem)
         print(f"\n\nCyclic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)

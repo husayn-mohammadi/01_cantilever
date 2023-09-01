@@ -32,17 +32,19 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
 
 PyRatio         = 0.1
 ControlNode     = 3     # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
 numIncr         = 500   # number of increments per target displacement
 
 # Monotonic Pushover Analysis
-dispTarget      = 49 *inch
+dispTarget      = 50 *inch
 
 # Cyclic Pushover Analysis
-dispTarList     = [1, 1.05, 2, 5, 10, 15, 20] # if no unit is multiplied, then the units will be meters by default!!!
+dY              = 1.2 *inch
+cyclesPerDisp   = 1         
+dispTarList     = [dY/3, 2/3*dY, dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -117,7 +119,7 @@ for types in typeAnalysis:
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
         print(f"Cyclic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.cyclicAnalysis(dispTarList, ControlNode, numIncr, typeAlgorithm, typeSystem)
+        fa.cyclicAnalysis(dispTarList, ControlNode, numIncr, cyclesPerDisp, typeAlgorithm, typeSystem)
         print(f"\n\nCyclic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)

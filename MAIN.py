@@ -16,11 +16,8 @@ import functions.FuncPlot      as fp
 #    Input File
 #=============================================================================
 
-exec(open("Input/inputDataAS.py").read())
-# exec(open("Input/inputDataCPSWCF.py").read())
-
-# Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
-PHLR = 0.4
+exec(open("Input/unitsUS.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
+exec(open("Input/inputData.py").read())
 
 #=============================================================================
 #    Define Variables
@@ -34,9 +31,10 @@ typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, 
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 40
+NfibeY          = 40    # Number of Fibers along Y-axis
 
-PyRatio         = 0.1
+PHLR            = 0.4   # Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
+AxialLoadRatio  = 0.0   # This determines how much of the axial load capacity of the section is exerted as axial load
 ControlNode     = 3     # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
 numIncr         = 500   # number of increments per target displacement
 
@@ -108,7 +106,7 @@ for types in typeAnalysis:
     
     # Run Analysis
     Pno = 0.85*A_Composite_Ct*abs(fpc) + A_Composite_St*abs(Fy)
-    fa.gravity(PyRatio*Pno, ControlNode)
+    fa.gravity(AxialLoadRatio*Pno, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, H,    tf, NfibeY)                            # tagMatSt=1
     coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 2, H-tf, (H-2*tf)/2, NfibeY*int(H/tf/10))     # tagMatCt=2

@@ -1,31 +1,30 @@
 "C-PSW/CF Section: Shafaei PP=136"
 
-# exec(open("functions/units.py").read())
-exec(open("functions/unitsUS.py").read())
+exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
 
 #=============================================================================
 #    Elements
 #=============================================================================
 
 #       Sections:
-##      Steel Sections:
-
-###     C-PSW/CF Wall Section:
-####    Concrete Core
-tc      = 9.    *inch           # Width
-Hc      = 36.   *inch           # Height
-
-####    Flanges
+    
+##      C-PSW/CF Wall Section:
+###     Flanges
 Bf      = 11.   *inch           # Width
 tf      = 0.19  *inch           # Height
 
-####    Faceplates
+###     Faceplates
 tw      = 0.19  *inch           # Width
-#Hw     = Hc                    # Height
+Hw      = 36.   *inch           # Height
+
+###     Concrete Core
+tc      = 9.    *inch           # Width
+#Hc     = Hw                    # Height
+
 
 ####    Areas
-A_Composite_Ct  = tc*Hc
-A_Composite_St  = 2*[(Bf*tf) + (tw*Hc)]
+A_Composite_Ct  = tc*Hw
+A_Composite_St  = 2*((Bf*tf) + (tw*Hw))
 
 
 #       Element Length

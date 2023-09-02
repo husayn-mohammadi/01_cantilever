@@ -1,5 +1,4 @@
-# exec(open("functions/units.py").read())
-exec(open("functions/unitsUS.py").read())
+exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
 
 
 # import sys

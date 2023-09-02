@@ -1,8 +1,4 @@
-# exec(open("functions/units.py").read())
-exec(open("functions/unitsUS.py").read())
-
-exec(open("Input/inputDataAS.py").read())
-# exec(open("Input/inputDataCPSWCF.py").read())
+exec(open("MAIN.py").readlines()[19]) # It SHOULD read and execute exec(open("Input/inputData.py").read())
 
 import sys
 import openseespy.opensees as ops

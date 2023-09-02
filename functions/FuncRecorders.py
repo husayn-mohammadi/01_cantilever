@@ -14,9 +14,9 @@ def recordStressStrain(outputDir, fiberMat, tagMat, H, tf, NfibeY):
     # coords_Fiber:
     coordsFiber         = {}
     ## top
-    coordsFiber['top']  = [ H/2 - tf/(2*NfibeY), 0]
+    coordsFiber['top']  = [ (H/2 - tf/(2*NfibeY)), 0]
     ## bot
-    coordsFiber['bot']  = [-H/2 + tf/(2*NfibeY), 0]
+    coordsFiber['bot']  = [-(H/2 - tf/(2*NfibeY)), 0]
 
     #   recorder('Element', '-file', filename,                          '-ele', *eleTags=[], *args)
     #                                                                                        *args for dispBeamColumn elements are  when creating an ElementRecorder object are 'force,' and 'section $secNum secArg1 secArg2...'

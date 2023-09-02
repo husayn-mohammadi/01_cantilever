@@ -18,6 +18,7 @@ import functions.FuncPlot      as fp
 
 exec(open("Input/unitsUS.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
+exec(open("Input/materialParameters.py").read())
 
 #=============================================================================
 #    Define Variables

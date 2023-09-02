@@ -32,7 +32,9 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+
+NfibeY          = 40
 
 PyRatio         = 0.1
 ControlNode     = 3     # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
@@ -74,13 +76,13 @@ for types in typeAnalysis:
     
     # Create the Fiber Section
     if typeSection == 'Rectangular':
-        fib_sec = fs.makeSectionRect(tagSec, H, B, typeMatSt)
+        fib_sec = fs.makeSectionRect(tagSec, H, B, typeMatSt, NfibeY*3)
     elif typeSection == 'I_Shaped':
-        fib_sec = fs.makeSectionI(tagSec, H, B, tw, tf, typeMatSt)
+        fib_sec = fs.makeSectionI(tagSec, H, B, tw, tf, typeMatSt, NfibeY)
     elif typeSection == 'Box':
-        fib_sec = fs.makeSectionBox(tagSec, H, B, tw, tf, typeMatSt)
+        fib_sec = fs.makeSectionBox(tagSec, H, B, tw, tf, typeMatSt, NfibeY)
     elif typeSection == 'Box_Composite':
-        fib_sec = fs.makeSectionBoxComposite(tagSec, H_W, B_W, tw_W, tf_W, typeMatSt, typeMatCt)
+        fib_sec= fs.makeSectionBoxComposite(tagSec, H, B, tw, tf, typeMatSt, typeMatCt, NfibeY)
     else:
         print("UNKNOWN fiber section type!!!");sys.exit()
         
@@ -107,7 +109,9 @@ for types in typeAnalysis:
     # Run Analysis
     Pno = 0.85*A_Composite_Ct*abs(fpc) + A_Composite_St*abs(Fy)
     fa.gravity(PyRatio*Pno, ControlNode)
-    fr.getPushoverRecorders(ControlNode, outputDir)
+    fr.recordPushover(ControlNode, outputDir)
+    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, H,    tf, NfibeY)                            # tagMatSt=1
+    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 2, H-tf, (H-2*tf)/2, NfibeY*int(H/tf/10))     # tagMatCt=2
     if types == 'monotonic':
         print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
         fa.pushoverDCF(dispTarget, ControlNode, numIncr, typeAlgorithm)
@@ -132,6 +136,10 @@ for types in typeAnalysis:
 #=============================================================================
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
+        fp.plotStressStrain(outputDir, 'fiberSt', 'top')
+        fp.plotStressStrain(outputDir, 'fiberSt', 'bot')
+        fp.plotStressStrain(outputDir, 'fiberCt', 'top')
+        fp.plotStressStrain(outputDir, 'fiberCt', 'bot')
 
 end_time = time.time()
 elapsed_time = end_time - start_time

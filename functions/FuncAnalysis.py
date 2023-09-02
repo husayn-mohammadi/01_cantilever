@@ -1,6 +1,5 @@
 import openseespy.opensees as ops
 
-# exec(open("Input/inputData.py").read())
 
 def gravity(Py, ControlNode):
     

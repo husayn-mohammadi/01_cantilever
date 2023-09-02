@@ -45,9 +45,13 @@ def plotStressStrain(outputDir, fiberMat, TopOrBot):
     
     StressStrain    = np.loadtxt(f"{outputDir}/{fiberMat}_{TopOrBot}.txt", delimiter= ' ')
     
-    Stress          = StressStrain[:,0]
-    Strain          = StressStrain[:,1]
-       
+    Stress1         = StressStrain[:,0]
+    Strain1         = StressStrain[:,1]
+    zero            = np.array([0.])
+    
+    Stress          = np.append(zero, Stress1)
+    Strain          = np.append(zero, Strain1)
+    
     SS      = np.column_stack((Strain, Stress))
     np.savetxt(f"{outputDir}/Stress_Strain_{TopOrBot}.txt", SS)
     

@@ -16,11 +16,8 @@ import functions.FuncPlot      as fp
 #    Input File
 #=============================================================================
 
-exec(open("Input/inputDataAS.py").read())
-# exec(open("Input/inputDataCPSWCF.py").read())
-
-# Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
-PHLR = 0.4
+exec(open("Input/unitsUS.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
+exec(open("Input/inputData.py").read())
 
 #=============================================================================
 #    Define Variables
@@ -34,9 +31,10 @@ typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, 
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 40
+NfibeY          = 40    # Number of Fibers along Y-axis
 
-PyRatio         = 0.1
+PHLR            = 0.4   # Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
+AxialLoadRatio  = 0.0   # This determines how much of the axial load capacity of the section is exerted as axial load
 ControlNode     = 3     # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
 numIncr         = 500   # number of increments per target displacement
 
@@ -76,13 +74,13 @@ for types in typeAnalysis:
     
     # Create the Fiber Section
     if typeSection == 'Rectangular':
-        fib_sec = fs.makeSectionRect(tagSec, H, B, typeMatSt, NfibeY*3)
+        fib_sec = fs.makeSectionRect(tagSec, Hw, tc, typeMatSt, NfibeY*3) # Use the parameters of Concrete Core tc and Hw
     elif typeSection == 'I_Shaped':
-        fib_sec = fs.makeSectionI(tagSec, H, B, tw, tf, typeMatSt, NfibeY)
+        fib_sec = fs.makeSectionI(tagSec, Hw, Bf, tw, tf, typeMatSt, NfibeY)
     elif typeSection == 'Box':
-        fib_sec = fs.makeSectionBox(tagSec, H, B, tw, tf, typeMatSt, NfibeY)
+        fib_sec = fs.makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, NfibeY)
     elif typeSection == 'Box_Composite':
-        fib_sec= fs.makeSectionBoxComposite(tagSec, H, B, tw, tf, typeMatSt, typeMatCt, NfibeY)
+        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, typeMatCt, NfibeY)
     else:
         print("UNKNOWN fiber section type!!!");sys.exit()
         
@@ -108,10 +106,10 @@ for types in typeAnalysis:
     
     # Run Analysis
     Pno = 0.85*A_Composite_Ct*abs(fpc) + A_Composite_St*abs(Fy)
-    fa.gravity(PyRatio*Pno, ControlNode)
+    fa.gravity(AxialLoadRatio*Pno, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
-    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, H,    tf, NfibeY)                            # tagMatSt=1
-    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 2, H-tf, (H-2*tf)/2, NfibeY*int(H/tf/10))     # tagMatCt=2
+    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
+    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 2, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=2
     if types == 'monotonic':
         print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
         fa.pushoverDCF(dispTarget, ControlNode, numIncr, typeAlgorithm)

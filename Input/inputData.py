@@ -24,7 +24,7 @@ tc      = 9.    *inch           # Width
 
 ####    Areas
 A_Composite_Ct  = tc*Hw
-A_Composite_St  = 2*((Bf*tf) + (tw*Hw))
+A_Composite_St  = 2*(Bf*tf + tw*Hw)
 
 
 #       Element Length

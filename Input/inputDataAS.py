@@ -8,14 +8,15 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 
 #       Sections:
 ##      Steel Sections:
-H               = 20    *inch
+Hw              = 19.5  *inch
 tw              = 0.5   *inch
-B               = 20    *inch
+Bf              = 20    *inch
 tf              = 0.5   *inch
+tc              = Bf - 2*tw
 
-A_Composite_Ct  = (H-2*tf)*(B-2*tw)
-A_Composite_St  = H*B - A_Composite_Ct
-A_IShaped       = 2*B*tf + (H-2*tf)*tw
+A_Composite_Ct  = tc*Hw
+A_Composite_St  = 2*(Bf*tf + tw*Hw)
+A_IShaped       = 2* Bf*tf + tw*Hw
 
 
 #       Element Length

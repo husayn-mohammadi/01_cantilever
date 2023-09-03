@@ -35,6 +35,7 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 NfibeY          = 40    # Number of Fibers along Y-axis
 
 PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 3
 AxialLoadRatio  = 0.0           # This determines how much of the axial load capacity of the section is exerted as axial load
 ControlNode     = 3             # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
 numIncr         = 500           # number of increments per target displacement
@@ -95,7 +96,7 @@ for types in typeAnalysis:
         Es  = 29000*ksi
         fm.buildCantileverL(L, Es, I, A)
     else:
-        fm.buildCantileverN(L, tagSec, PHL, typeEle)
+        ControlNode = fm.buildCantileverN(L, tagSec, PHL, numSeg, typeEle)
         
     # Plot Model
     if plot_undefo == True:

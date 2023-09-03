@@ -30,13 +30,13 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 
 PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
 numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-AxialLoadRatio  = 0.0           # This determines how much of the axial load capacity of the section is exerted as axial load
+AxialLoadRatio  = 0.1           # This determines how much of the axial load capacity of the section is exerted as axial load
 numIncr         = 100           # number of increments per target displacement
 
 # Monotonic Pushover Analysis

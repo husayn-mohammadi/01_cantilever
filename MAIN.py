@@ -30,23 +30,22 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 
 PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
 numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 AxialLoadRatio  = 0.0           # This determines how much of the axial load capacity of the section is exerted as axial load
-ControlNode     = 3             # This cantilever is made of two elements in three nodes (baseNode=1, topNode=3)
-numIncr         = 500           # number of increments per target displacement
+numIncr         = 100           # number of increments per target displacement
 
 # Monotonic Pushover Analysis
-dispTarget      = 50 *inch
+dispTarget      = 10 *inch
 
 # Cyclic Pushover Analysis
-dY              = 1.2 *inch
-cyclesPerDisp   = 1         
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dY              = 0.4 *inch
+cyclesPerDisp   = 3        
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY] #, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:

@@ -62,7 +62,8 @@ def plotStressStrain(outputDir, fiberMat, TopOrBot):
 
 def plot_fiber_section(fib_sec):
     
-    matcolor = ['r', 'lightgrey', 'gold', 'w', 'w', 'w']
+    matcolor = ['y', 'b', 'r', 'g', 'm', 'k']
+    # matcolor = ['r', 'lightgrey', 'pink', 'gold', 'purple', 'orange', 'w']
     opv.plot_fiber_section(fib_sec, matcolor=matcolor)
     plt.axis('equal')
     # plt.savefig('fibsec_rc.png')

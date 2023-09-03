@@ -137,34 +137,42 @@ def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, typeMatSt='ReinforcingSt
     times  = int(Hw/tf/10)
     
     #  Material
-    ## Steel Material
-    tagMatSt        = 1
+    ## Steel Material 1
+    tagMatSt1        = 1
     typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    fmat.matSteel(typeMat, tagMatSt)
+    fmat.matSteel(typeMat, tagMatSt1)
+    ## Steel Material 2
+    tagMatSt2        = 2
+    typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
+    fmat.matSteel(typeMat, tagMatSt2)
     
-    ## Concrete Material
-    tagMatCt        = 2
+    ## Unconfined Concrete Material
+    tagMatCt1        = 3
     typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    fmat.matConcrete(typeMat, tagMatCt)
+    fmat.matConcrete(typeMat, tagMatCt1)
+    ## Confined Concrete Material
+    tagMatCt2        = 4
+    typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
+    fmat.matConcrete(typeMat, tagMatCt2)
     
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)
     ops.section('Fiber', tagSec, '-GJ', GJ)
-    ops.patch('rect', tagMatSt, NfibeY,       NfibeZ, *crdsI1, *crdsJ1) #Bot Flange
-    ops.patch('rect', tagMatSt, NfibeY,       NfibeZ, *crdsI4, *crdsJ4) #Top Flange
-    ops.patch('rect', tagMatSt, NfibeY*times, NfibeZ, *crdsI2, *crdsJ2) #Left Web
-    ops.patch('rect', tagMatSt, NfibeY*times, NfibeZ, *crdsI3, *crdsJ3) #Right Web
-    ops.patch('rect', tagMatCt, NfibeY*times, NfibeZ, *crdsI5, *crdsJ5) #Concrete Core
+    ops.patch('rect', tagMatSt1, NfibeY,       NfibeZ, *crdsI1, *crdsJ1) #Bot Flange
+    ops.patch('rect', tagMatSt1, NfibeY,       NfibeZ, *crdsI4, *crdsJ4) #Top Flange
+    ops.patch('rect', tagMatSt1, NfibeY*times, NfibeZ, *crdsI2, *crdsJ2) #Left Web
+    ops.patch('rect', tagMatSt1, NfibeY*times, NfibeZ, *crdsI3, *crdsJ3) #Right Web
+    ops.patch('rect', tagMatCt1, NfibeY*times, NfibeZ, *crdsI5, *crdsJ5) #Concrete Core
     
     
     # this part of the code is just to sent out a varibale for plotting the fiber section
     fib_sec = [['section', 'Fiber', tagSec, '-GJ', GJ],
 
-             ['patch', 'rect', tagMatSt, NfibeY,       NfibeZ, *crdsI1, *crdsJ1], #Bot Flange
-             ['patch', 'rect', tagMatSt, NfibeY,       NfibeZ, *crdsI4, *crdsJ4], #Top Flange
-             ['patch', 'rect', tagMatSt, NfibeY*times, NfibeZ, *crdsI2, *crdsJ2], #Left Web
-             ['patch', 'rect', tagMatSt, NfibeY*times, NfibeZ, *crdsI3, *crdsJ3], #Right Web
-             ['patch', 'rect', tagMatCt, NfibeY*times, NfibeZ, *crdsI5, *crdsJ5]  #Concrete Core
+             ['patch', 'rect', tagMatSt1, NfibeY,       NfibeZ, *crdsI1, *crdsJ1], #Bot Flange
+             ['patch', 'rect', tagMatSt1, NfibeY,       NfibeZ, *crdsI4, *crdsJ4], #Top Flange
+             ['patch', 'rect', tagMatSt1, NfibeY*times, NfibeZ, *crdsI2, *crdsJ2], #Left Web
+             ['patch', 'rect', tagMatSt1, NfibeY*times, NfibeZ, *crdsI3, *crdsJ3], #Right Web
+             ['patch', 'rect', tagMatCt1, NfibeY*times, NfibeZ, *crdsI5, *crdsJ5]  #Concrete Core
              ]
     
     return fib_sec

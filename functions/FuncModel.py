@@ -5,7 +5,7 @@ import openseespy.opensees as ops
 
 
 
-def buildCantileverN(L, tagSec, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn'):
+def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn'):
     
     maxIter     = 10
     tol         = 1e-12

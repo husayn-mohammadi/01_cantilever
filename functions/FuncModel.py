@@ -5,14 +5,14 @@ import openseespy.opensees as ops
 
 
 
-def buildCantileverN(L, tagSec, typeEle='forceBeamColumn', PlasticHingeLengthRatio=0.5):
+def buildCantileverN(L, tagSec, typeEle='forceBeamColumn', PlasticHingeLength=1):
     
     maxIter     = 10
     tol         = 1e-12
              
     # Define Nodes 
     ops.node(1, 0., 0.)
-    ops.node(2, 0., PlasticHingeLengthRatio*L)
+    ops.node(2, 0., PlasticHingeLength)
     ops.node(3, 0., L)
         
     # Assign boundary constraints

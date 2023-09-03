@@ -18,12 +18,15 @@ Hw      = 36.   *inch           # Height
 
 ###     Concrete Core
 tc      = 9.    *inch           # Width
-#Hc     = Hw                    # Height
+Hc1     = 20.   *inch           # Height of unconfined concrete i.e. Region 1 in documentation
+Hc2     = (Hw - Hc1)/2          # Height of   confined concrete i.e. Region 2 in documentation
 
 
 ####    Areas
-A_Composite_Ct  = tc*Hw
-A_Composite_St  = 2*(Bf*tf + tw*Hw)
+A_Composite_St1 = 2*(tw*Hw)     # St1 is used for Faceplates
+A_Composite_St2 = 2*(Bf*tf)     # St2 is used for Flange Plates
+A_Composite_Ct1 = tc*Hc1        # Ct1 (unconfined) is used for middle concrete
+A_Composite_Ct2 = tc*Hc2*2      # Ct2   (confined) is used for boundary elements
 
 
 #       Element Length

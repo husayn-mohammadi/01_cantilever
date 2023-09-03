@@ -45,7 +45,7 @@ dispTarget      = 50 *inch
 # Cyclic Pushover Analysis
 dY              = 1.2 *inch
 cyclesPerDisp   = 1         
-dispTarList     = [dY/3, 2/3*dY, dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -81,7 +81,7 @@ for types in typeAnalysis:
     elif typeSection == 'Box':
         fib_sec = fs.makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, NfibeY)
     elif typeSection == 'Box_Composite':
-        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, typeMatCt, NfibeY)
+        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, typeMatSt, typeMatCt, NfibeY)
     else:
         print("UNKNOWN fiber section type!!!");sys.exit()
         
@@ -106,11 +106,11 @@ for types in typeAnalysis:
         vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
-    Pno = 0.85*A_Composite_Ct*abs(fpc) + A_Composite_St*abs(Fy)
+    Pno = 0.85*(A_Composite_Ct1*abs(fpc1) + A_Composite_Ct2*abs(fpc2)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
     fa.gravity(AxialLoadRatio*Pno, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
-    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 2, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=2
+    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 3, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=3
     if types == 'monotonic':
         print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
         fa.pushoverDCF(dispTarget, ControlNode, numIncr, typeAlgorithm)

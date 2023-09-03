@@ -81,7 +81,7 @@ for types in typeAnalysis:
     elif typeSection == 'Box':
         fib_sec = fs.makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, NfibeY)
     elif typeSection == 'Box_Composite':
-        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, typeMatCt, NfibeY)
+        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, typeMatSt, typeMatCt, NfibeY)
     else:
         print("UNKNOWN fiber section type!!!");sys.exit()
         

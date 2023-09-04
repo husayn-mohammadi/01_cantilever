@@ -7,7 +7,7 @@ def recordPushover(ControlNode, outputDir):
     
     #   recorder('Node', '-file', filename,                    '-time', '-node', *nodeTags=[], '-dof', *dofs=[], respType)
     ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt", '-time', '-node', ControlNode,  '-dof', 1,        'disp')
-    ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', 1,            '-dof', 1,        'reaction')
+    ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', 2,            '-dof', 1,        'reaction')
 
 def recordStressStrain(outputDir, fiberMat, tagMat, H, tf, NfibeY):
     

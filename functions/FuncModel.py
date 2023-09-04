@@ -22,7 +22,7 @@ def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBea
     Nintegr     = 4
     ops.beamIntegration('Lobatto', tagInt, tagSec, Nintegr)
              
-    #       Define Nodes 
+    #       Define Nodes & Elements
     ##      Define Base Node
     ops.node(1, 0., 0.)
     ops.fix(1, 1, 1, 1)

@@ -36,15 +36,15 @@ NfibeY          = 40            # Number of Fibers along Y-axis
 
 PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
 numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-AxialLoadRatio  = 0.1           # This determines how much of the axial load capacity of the section is exerted as axial load
-numIncr         = 100           # number of increments per target displacement
+AxialLoadRatio  = 0.2           # This determines how much of the axial load capacity of the section is exerted as axial load
+numIncr         = 500           # number of increments per target displacement
 
 # Monotonic Pushover Analysis
 dispTarget      = 10 *inch
 
 # Cyclic Pushover Analysis
 dY              = 0.4 *inch
-cyclesPerDisp   = 3        
+cyclesPerDisp   = 1        
 dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY] #, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 

@@ -5,7 +5,7 @@ import openseespy.opensees as ops
 
 
 
-def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', addFoundation=True):
+def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn'):#, addFoundation=True):
     
     maxIter     = 10
     tol         = 1e-12
@@ -29,18 +29,18 @@ def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBea
     
     ##      Define Foundation Node
     ops.node(2, 0., 0.)
-    ops.fix( 2, 1,  1, 0)
+    ops.fix( 2, 1,  1, 1)
     
-    if addFoundation == True:
-        Eelastic        = 84000 *ksi
-    else:
-        Eelastic        = sys.maxsize
+    # if addFoundation == True:
+    #     Eelastic        = 84000 *ksi
+    # else:
+    #     Eelastic        = sys.maxsize
         
-    # ops.uniaxialMaterial('Elastic',   100000, Eelastic)
-    ops.uniaxialMaterial('ElasticPP', 100000, Eelastic, 0.002)
+    # # ops.uniaxialMaterial('Elastic',   100000, Eelastic)
+    # ops.uniaxialMaterial('ElasticPP', 100000, Eelastic, 0.002)
     
-    #   element('zeroLength', eleTag, *eleNodes, '-mat', *matTags, '-dir', *dirs)
-    ops.element('zeroLength', 100000, *[1, 2],   '-mat', 100000,   '-dir', 6)
+    # #   element('zeroLength', eleTag, *eleNodes, '-mat', *matTags, '-dir', *dirs)
+    # ops.element('zeroLength', 100000, *[1, 2],   '-mat', 100000,   '-dir', 6)
     
     #       Define Elements
     ##      Define Nonlinear Elements

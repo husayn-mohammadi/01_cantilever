@@ -1,11 +1,13 @@
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
 
+import sys
 #=============================================================================
 #    Steel Parameters:
 #=============================================================================
 ## Steel Material No. 1
 b1          = 0.15
 Es1         = 29000 *ksi
+# Es1         = 10**10 #sys.maxsize
 Fy1         = 50 *ksi
 Esh1        = Es1/30
 Fu1         = 65 *ksi
@@ -27,14 +29,14 @@ R2_1        = 18.0
 R3_1        = 4.0
 
 ## Steel Material No. 2
-b2          = 0.15
-Es2         = 29000 *ksi
-Fy2         = 50 *ksi
-Esh2        = Es2/30
-Fu2         = 65 *ksi
-epsy2       = Fy2/Es2
-eps_sh2     = 10 * epsy2
-eps_ult2    = 0.15
+b2          = b1      
+Es2         = Es1     
+Fy2         = Fy1     
+Esh2        = Esh1    
+Fu2         = Fu1     
+epsy2       = epsy1   
+eps_sh2     = eps_sh1 
+eps_ult2    = eps_ult1
 # lsr2      = (20 *cm)/(1*cm) # lsr = Lu/db
 lsr2        = 16.
 beta2       = 1.0

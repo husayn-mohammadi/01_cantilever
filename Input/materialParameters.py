@@ -1,7 +1,6 @@
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
 
-# Es1         = 10**10 *ksi
-import sys
+# infinity = 10**10
 #=============================================================================
 #    Steel Parameters:
 #=============================================================================

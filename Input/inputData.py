@@ -18,8 +18,8 @@ Hw      = 36.   *inch           # Height
 
 ###     Concrete Core
 tc      = 9.    *inch           # Width
-Hc1     = 20.   *inch           # Height of unconfined concrete i.e. Region 1 in documentation
-Hc2     = (Hw - Hc1)/2          # Height of   confined concrete i.e. Region 2 in documentation
+Hc2     = (tc + 2*tw)/2         # Height of   confined concrete i.e. Region 2 in documentation # Masoumeh Asgharpoor
+Hc1     = Hw - 2*Hc2            # Height of unconfined concrete i.e. Region 1 in documentation
 
 
 ####    Areas

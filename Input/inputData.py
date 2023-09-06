@@ -1,7 +1,16 @@
 "C-PSW/CF Section: Shafaei PP=136"
 
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
-exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
+# exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
+
+#=============================================================================
+#    Loading
+#=============================================================================
+
+ALR             = 0.0  # Axial Load Ratio
+# or:
+Py              = -210 *kip
+
 #=============================================================================
 #    Elements
 #=============================================================================
@@ -18,8 +27,8 @@ Hw      = 36.   *inch           # Height
 
 ###     Concrete Core
 tc      = 9.    *inch           # Width
-Hc1     = 20.   *inch           # Height of unconfined concrete i.e. Region 1 in documentation
-Hc2     = (Hw - Hc1)/2          # Height of   confined concrete i.e. Region 2 in documentation
+Hc2     = (tc + 2*tw)/2         # Height of   confined concrete i.e. Region 2 in documentation # Masoumeh Asgharpoor
+Hc1     = Hw - 2*Hc2            # Height of unconfined concrete i.e. Region 1 in documentation
 
 
 ####    Areas
@@ -32,11 +41,7 @@ A_Composite_Ct2 = tc*Hc2*2      # Ct2   (confined) is used for boundary elements
 #       Element Length
 L               = 108 *inch
 
-#=============================================================================
-#    Loading
-#=============================================================================
 
-Py              = -210 *kip
 
 
 

@@ -38,7 +38,7 @@ NfibeY          = 40            # Number of Fibers along Y-axis
 
 PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
 numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-AxialLoadRatio  = 0.0           # This determines how much of the axial load capacity of the section is exerted as axial load
+# ALR             = 0.0           # This determines how much of the axial load capacity of the section is exerted as axial load
 numIncr         = 200           # number of increments per target displacement
 
 # Monotonic Pushover Analysis
@@ -109,7 +109,7 @@ for types in typeAnalysis:
     
     # Run Analysis
     Pno = 0.85*(A_Composite_Ct1*abs(fpc1) + A_Composite_Ct2*abs(fpc2)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
-    fa.gravity(AxialLoadRatio*Pno, ControlNode)
+    fa.gravity(ALR*Pno, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
     coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 3, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=3

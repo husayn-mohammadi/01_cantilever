@@ -14,7 +14,7 @@ def matSteel(typeMat, tagMatSt):
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatSt, Es1, 0.002)
         elif typeMat == 'Steel02':
-            ops.uniaxialMaterial('Steel02', tagMatSt, Fy1, Es1, b1)
+            ops.uniaxialMaterial('Steel02', tagMatSt, Fy1, Es1, 0.002)
         elif typeMat == 'ReinforcingSteel':
             #   uniaxialMaterial('ReinforcingSteel', tagMatSt, Fy, Fu, Es, Esh, eps_sh, eps_ult, '-GABuck', lsr, beta, r, gamma, '-DMBuck', lsr, alpha, '-CMFatigue', Cf, alpha, Cd, '-IsoHard', a1=4.3, limit=1.0, '-MPCurveParams', R1=0.333, R2=18.0, R3=4.0)
             ops.uniaxialMaterial(*['ReinforcingSteel', tagMatSt, Fy1, Fu1, Es1, Esh1, eps_sh1, eps_ult1, 
@@ -31,7 +31,7 @@ def matSteel(typeMat, tagMatSt):
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatSt, Es2, 0.002)
         elif typeMat == 'Steel02':
-            ops.uniaxialMaterial('Steel02', tagMatSt, Fy2, Es2, b2)
+            ops.uniaxialMaterial('Steel02', tagMatSt, Fy2, Es2, 0.002)
         elif typeMat == 'ReinforcingSteel':
             #   uniaxialMaterial('ReinforcingSteel', tagMatSt, Fy, Fu, Es, Esh, eps_sh, eps_ult, '-GABuck', lsr, beta, r, gamma, '-DMBuck', lsr, alpha, '-CMFatigue', Cf, alpha, Cd, '-IsoHard', a1=4.3, limit=1.0, '-MPCurveParams', R1=0.333, R2=18.0, R3=4.0)
             ops.uniaxialMaterial(*['ReinforcingSteel', tagMatSt, Fy2, Fu2, Es2, Esh2, eps_sh2, eps_ult2, 

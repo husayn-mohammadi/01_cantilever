@@ -12,40 +12,33 @@ ALR         = 0.0  # Axial Load Ratio
 #=============================================================================
 #    Concrete Parameters:
 #=============================================================================
-# Unconfined Concrete
-fpc         = -4 *ksi
-# Ec        = 4700*abs(fpc)**0.5s               # For fpc in MPa
-# Ec        = 57000*abs(fpc)**0.5               # For fpc in psi
-Ec          = (57000*abs(fpc*1000)**0.5)/1000   # For fpc in ksi
+
+fpc         = -32.5 *MPa                                            # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
+# Ec        = 4700*abs(fpc)**0.5s                                   # With fpc in MPa  ==> ACI 318 - 2019 SI
+# Ec        = 57000*abs(fpc)**0.5                                   # With fpc in psi  ==> ACI 318 - 2019 US
+# Ec        = (57000*abs(fpc*1000)**0.5)/1000                       # With fpc in ksi  ==> ACI 318 - 2019 US
+Ec          = (21.5e3 * 1.0 * (fpc/10)**(1/3))                      # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
 # Ec        = 4840 *ksi
 epsc0       = 2*fpc/Ec
-lam1        = 0.1
-ft1         = 0.4 *ksi
-Ets1        = 200 *ksi
+lam         = 0.1                                                   # Proposed by Masoumeh Asgharpoor
+ft          = 1.3*(0.3 * (fpc - 8*MPa)**(2/3))                      # CEB-FIB-2010 Eq. (5.1-5)
+Ets         = 0.5 * Ec                                              # IT SHOULD BE DETERMINED based on CEB-FIB-2010 but I don't know how yet!!!
 
-# Confined Concrete
-fpc2        = -4 *ksi
-# Ec2       = 4700*abs(fpc)**0.5s               # For fpc in MPa
-# Ec2       = 57000*abs(fpc)**0.5               # For fpc in psi
-Ec2         = (57000*abs(fpc2*1000)**0.5)/1000   # For fpc in ksi
-# Ec2       = 4840 *ksi
-epsc02      = 2*fpc2/Ec2
-lam2        = 0.1
-ft2         = 0.4 *ksi
-Ets2        = 200 *ksi
 
 #=============================================================================
 #    Steel Parameters:
 #=============================================================================
+nu          = 0.28
+
 ## Steel Material No. 1
 Es1         = 29000 *ksi
-nu          = 0.28
 Fy1         = 50 *ksi
 Esh1        = Es1/30
 Fu1         = 65 *ksi
 epsy1       = Fy1/Es1
 eps_sh1     = 10 * epsy1
 eps_ult1    = 0.15
+alpha1      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
 ## Steel Material No. 2
 Es2         = Es1     
@@ -55,12 +48,12 @@ Fu2         = Fu1
 epsy2       = epsy1   
 eps_sh2     = eps_sh1 
 eps_ult2    = eps_ult1
+alpha2      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
 b           = 8 *inch  # minimum unsupported width of confined region in composite wall cross-section
 lsr         = 16. # lsr = lu/db = 12**0.5 * lu/tw
 beta        = 1.0
 gamma       = 1.0
-alpha       = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 Cf          = 0.5
 a1          = 4.3
 limit       = 0.01
@@ -94,14 +87,14 @@ fpcu        = 0.15 *fpc** 1.5  * Fy**0.01  * rhos**0.16    * (1-ALR)**(-0.5) * l
 if (fpcu/fpc < 0.45 or fpcu/fpc > 0.80):
     print("Warning!!! \n0.45 < fpcu/fpc < 0.80 is violated!!!")
     
-fpccu       = 2.63 *fpcc**0.65 * Fy**0.001 * rhos**(-0.04) * (1-ALR)**( 0.4) * lsr**( 0.070) # by Masoumeh Asgarpoor 
-if (fpccu/fpcc < 0.45 or fpccu/fpcc > 0.90):
-    print("Warning!!! \n0.45 < fpccu/fpcc < 0.90 is violated!!!")
-
 epscU       = 0.157   *epsc0 **(-0.67) * fpcu **0.23 *Fy**(-1.4) * rhos**0.06 * (1-ALR)**(-0.17) * lsr**0.12 # by Masoumeh Asgarpoor
 if (epscU/epsc0 < 1.6 or epscU/epsc0 > 5.5):
     print("Warning!!! \n1.6 < epsccu/epscc < 5.5 is violated!!!")
     
+fpccu       = 2.63 *fpcc**0.65 * Fy**0.001 * rhos**(-0.04) * (1-ALR)**( 0.4) * lsr**( 0.070) # by Masoumeh Asgarpoor 
+if (fpccu/fpcc < 0.45 or fpccu/fpcc > 0.90):
+    print("Warning!!! \n0.45 < fpccu/fpcc < 0.90 is violated!!!")
+
 epsccU      = 1.12e-6 *epscc0**(-0.33) * fpccu**0.83 *Fy**(0.77) * rhos**0.07 * (1-ALR)**( 0.15) * lsr**0.16 # by Masoumeh Asgarpoor 
 if (epsccU/epscc0 < 4.0 or epsccU/epscc0 > 8.7):
     print("Warning!!! \n4.0 < epsccu/epscc < 8.7 is violated!!!")
@@ -113,7 +106,7 @@ r           = (15*lsr**0.37 * (Fy/fpc)**0.26 * eps_sh**0.3 * eps_ult**0.85)**-1 
 if (r < 0.08 or r > 0.7):
     print("Warning!!! \n0.08 < r < 0.7 is violated!!!")
     
-Cd          = 16 * (Fy/Fu)0.78 * eps_ult * (fpcu**0.5/fpc)**0.58 * r**0.37
+Cd          = 16 * (Fy/Fu)**0.78 * eps_ult * (fpcu**0.5/fpc)**0.58 * r**0.37
 if (Cd < 0.2 or Cd > 0.75):
     print("Warning!!! \n4.0 < epsccu/epscc < 8.7 is violated!!!")
 

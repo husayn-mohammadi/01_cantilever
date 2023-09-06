@@ -1,7 +1,16 @@
 "C-PSW/CF Section: Shafaei PP=136"
 
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
-exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
+# exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
+
+#=============================================================================
+#    Loading
+#=============================================================================
+
+ALR             = 0.0  # Axial Load Ratio
+# or:
+Py              = -210 *kip
+
 #=============================================================================
 #    Elements
 #=============================================================================
@@ -32,11 +41,7 @@ A_Composite_Ct2 = tc*Hc2*2      # Ct2   (confined) is used for boundary elements
 #       Element Length
 L               = 108 *inch
 
-#=============================================================================
-#    Loading
-#=============================================================================
 
-Py              = -210 *kip
 
 
 

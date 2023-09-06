@@ -1,4 +1,4 @@
-exec(open("MAIN.py").readlines()[19]) # It SHOULD read and execute exec(open("Input/inputData.py").read())
+exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
 
 import sys
 import openseespy.opensees as ops
@@ -52,7 +52,7 @@ def matConcrete(typeMat, tagMatCt):
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatCt, Ec, 0.002)
         elif typeMat == 'Concrete02':
-            ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, fpcu, epsU, lam, ft, Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, fpcu, epscU, lam, fts, Ets)
         else:
             print('UNKNOWN concrete material!!!');sys.exit()
     elif tagMatCt == 4: # For confined concrete
@@ -61,7 +61,7 @@ def matConcrete(typeMat, tagMatCt):
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatCt, Ecc, 0.002)
         elif typeMat == 'Concrete02':
-            ops.uniaxialMaterial('Concrete02', tagMatCt, fpcc, epscc0, fpccu, epscU, lam, ft, Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCt, fpcc, epscc0, fpccu, epsccU, lam, fts, Ets)
         else:
             print('UNKNOWN concrete material!!!');sys.exit()
     else: 

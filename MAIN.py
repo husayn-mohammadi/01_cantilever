@@ -37,9 +37,8 @@ typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 NfibeY          = 40            # Number of Fibers along Y-axis
 
 PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 1             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-# ALR             = 0.0           # This determines how much of the axial load capacity of the section is exerted as axial load
-numIncr         = 10           # number of increments per target displacement
+numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+numIncr         = 200           # number of increments per target displacement
 
 # Monotonic Pushover Analysis
 dispTarget      = 10 *inch
@@ -108,7 +107,7 @@ for types in typeAnalysis:
         vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
-    Pno = 0.85*(A_Composite_Ct1*abs(fpc1) + A_Composite_Ct2*abs(fpc2)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
+    Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
     fa.gravity(ALR*Pno, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1

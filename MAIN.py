@@ -16,32 +16,37 @@ import functions.FuncPlot      as fp
 #    Input File
 #=============================================================================
 
-exec(open("Input/inputDataAS.py").read())
-# exec(open("Input/inputDataCPSWCF.py").read())
-
-# Plastic Hinge Length Ratio (0.0 < PHLR < 1.0)
-PHLR = 0.99
+exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
+exec(open("Input/inputData.py").read())
+exec(open("Input/materialParameters.py").read())
 
 #=============================================================================
 #    Define Variables
 #=============================================================================
+# Modeling Options
+modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
-typeEle         = 'forceBeamColumn'         # 'forceBeamColumn', 'dispBeamColumn'
+typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAlgorithm   = 'KrylovNewton'            # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
 
+NfibeY          = 40            # Number of Fibers along Y-axis
 
-numIncr         = 300 # number of increments per target displacement
+PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+numIncr         = 200           # number of increments per target displacement
 
 # Monotonic Pushover Analysis
-dispTarget      = 25.6 *inch
+dispTarget      = 10 *inch
 
-# Cyclic Loading Analysis
-dispTarList     = [1, 1.05, 2, 5, 10] # if no unit is multiplied, then the units will be meters by default!!!
+# Cyclic Pushover Analysis
+dY              = 0.4 *inch
+cyclesPerDisp   = 1        
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY] #, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -71,13 +76,13 @@ for types in typeAnalysis:
     
     # Create the Fiber Section
     if typeSection == 'Rectangular':
-        fib_sec = fs.makeSectionRect(tagSec, H, B, typeMatSt)
+        fib_sec = fs.makeSectionRect(tagSec, Hw, tc, typeMatSt, NfibeY*3) # Use the parameters of Concrete Core tc and Hw
     elif typeSection == 'I_Shaped':
-        fib_sec = fs.makeSectionI(tagSec, H, B, tw, tf, typeMatSt)
+        fib_sec = fs.makeSectionI(tagSec, Hw, Bf, tw, tf, typeMatSt, NfibeY)
     elif typeSection == 'Box':
-        fib_sec = fs.makeSectionBox(tagSec, H, B, tw, tf, typeMatSt)
+        fib_sec = fs.makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, NfibeY)
     elif typeSection == 'Box_Composite':
-        fib_sec = fs.makeSectionBoxComposite(tagSec, H_W, B_W, tw_W, tf_W, typeMatSt, typeMatCt)
+        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, typeMatSt, typeMatCt, NfibeY)
     else:
         print("UNKNOWN fiber section type!!!");sys.exit()
         
@@ -91,7 +96,7 @@ for types in typeAnalysis:
         Es  = 29000*ksi
         fm.buildCantileverL(L, Es, I, A)
     else:
-        fm.buildCantileverN(L, tagSec, typeEle, PHLR)
+        ControlNode = fm.buildCantileverN(tagSec, L, PHL, numSeg, typeEle, modelFoundation)
         
     # Plot Model
     if plot_undefo == True:
@@ -102,11 +107,14 @@ for types in typeAnalysis:
         vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
-    fa.gravity(Py)
-    fr.getPushoverRecorders(outputDir)
+    Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
+    fa.gravity(ALR*Pno, ControlNode)
+    fr.recordPushover(ControlNode, outputDir)
+    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
+    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 3, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=3
     if types == 'monotonic':
         print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.pushoverDCF(dispTarget, numIncr, typeAlgorithm)
+        fa.pushoverDCF(dispTarget, ControlNode, numIncr, typeAlgorithm)
         print(f"\n\nMonotonic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
@@ -115,7 +123,7 @@ for types in typeAnalysis:
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
         print(f"Cyclic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.cyclicAnalysis(dispTarList, numIncr, typeAlgorithm, typeSystem)
+        fa.cyclicAnalysis(dispTarList, ControlNode, numIncr, cyclesPerDisp, typeAlgorithm, typeSystem)
         print(f"\n\nCyclic Pushover Analysis Finished at {time.time() - start_time}.")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
@@ -128,6 +136,10 @@ for types in typeAnalysis:
 #=============================================================================
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
+        fp.plotStressStrain(outputDir, 'fiberSt', 'top')
+        fp.plotStressStrain(outputDir, 'fiberSt', 'bot')
+        fp.plotStressStrain(outputDir, 'fiberCt', 'top')
+        fp.plotStressStrain(outputDir, 'fiberCt', 'bot')
 
 end_time = time.time()
 elapsed_time = end_time - start_time

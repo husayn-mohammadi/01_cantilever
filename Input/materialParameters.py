@@ -83,7 +83,7 @@ print(f"eps_sh\t= {eps_sh:.5f}")
 eps_ult     = (eps_ult1 + eps_ult2)/2
 print(f"eps_ult\t= {eps_ult:.5f}")
 
-rhos        = (2*tw*Hw)/((2*tw + tc)*Hw) # Percentage of Steel
+rhos        = (2*tw)/(tc) # Percentage of Steel
 
 R           = b/tw * (12*(1-nu**2)/(4*np.pi))**0.5 * (Fy/Es)**0.5                   # Masoumeh Asgarpoor
 

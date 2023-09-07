@@ -15,7 +15,7 @@ exec(open("Input/inputData.py").readlines()[9])     # It SHOULD read and execute
 #    Concrete Parameters:
 #=============================================================================
 
-fpc         = abs(32.5) *MPa                                        # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
+fpc         = 44.90 *MPa                                        # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
 print(f"fpc\t\t= {fpc/MPa:.2f} MPa")
 # Ec        = 4700*abs(fpc/MPa)**0.5s                                   # With fpc in MPa  ==> ACI 318 - 2019 SI
 # Ec        = 57000*abs(fpc)**0.5                                   # With fpc in psi  ==> ACI 318 - 2019 US
@@ -37,13 +37,13 @@ print(f"Ets\t\t= {Ets/MPa:.2f} MPa")
 nu          = 0.28
 
 ## Steel Material No. 1
-Es1         = 29000 *ksi
-Fy1         = 50 *ksi
+Es1         = 200   *GPa
+Fy1         = 422   *MPa
 Esh1        = Es1/30
-Fu1         = 65 *ksi
+Fu1         = 473   *MPa
 epsy1       = Fy1/Es1
-eps_sh1     = 10 * epsy1
-eps_ult1    = 0.15
+eps_sh1     = 0.007
+eps_ult1    = 0.12
 alpha1      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
 ## Steel Material No. 2
@@ -56,8 +56,8 @@ eps_sh2     = eps_sh1
 eps_ult2    = eps_ult1
 alpha2      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
-b           = 8 *inch  # minimum unsupported width of confined region in composite wall cross-section
-lsr         = 16. # lsr = lu/db = 12**0.5 * lu/tw
+b           = 114 *mm  # minimum unsupported width of confined region in composite wall cross-section
+lsr         = 24. # lsr = lu/db = 12**0.5 * lu/tw
 beta        = 1.0
 gamma       = 1.0
 Cf          = 0.5

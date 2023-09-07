@@ -7,9 +7,9 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #    Loading
 #=============================================================================
 
-ALR             = 0.0  # Axial Load Ratio
+Py              = -934 *kN
 # or:
-Py              = -210 *kip
+ALR             = 0.087152  # Axial Load Ratio
 
 #=============================================================================
 #    Elements
@@ -19,10 +19,10 @@ Py              = -210 *kip
 ##      C-PSW/CF Wall Section
 ###     Flanges
 Bf      = 11.   *inch           # Width
-tf      = 0.19  *inch           # Height
+tf      = 3/16  *inch           # Height
 
 ###     Faceplates
-tw      = 0.19  *inch           # Width
+tw      = 3/16  *inch           # Width
 Hw      = 36.   *inch           # Height
 
 ###     Concrete Core

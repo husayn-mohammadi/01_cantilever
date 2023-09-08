@@ -41,7 +41,7 @@ nu          = 0.28
 
 ## Steel Material No. 1
 Es1         = 200   *GPa
-Fy1         = 442   *MPa
+Fy1         = 422   *MPa
 Esh1        = Es1/30
 Fu1         = 473   *MPa
 epsy1       = Fy1/Es1
@@ -60,7 +60,7 @@ eps_ult2    = eps_ult1
 alpha2      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
 b           = 114 *mm  # minimum unsupported width of confined region in composite wall cross-section
-lsr         = 16. # lsr = lu/db = 12**0.5 * lu/tw
+lsr         = 24. # lsr = lu/db = 12**0.5 * lu/tw
 beta        = 1.0
 gamma       = 1.0
 Cf          = 0.5

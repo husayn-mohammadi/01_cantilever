@@ -36,8 +36,8 @@ typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 
-PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+PHL             = 50 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 1            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 numIncr         = 200           # number of increments per target displacement
 
 # Monotonic Pushover Analysis

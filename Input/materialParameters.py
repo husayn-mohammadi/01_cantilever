@@ -15,20 +15,23 @@ exec(open("Input/inputData.py").readlines()[9])     # It SHOULD read and execute
 #    Concrete Parameters:
 #=============================================================================
 
-fpc         = 44.90 *MPa                                        # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
+fpc         = 44.9 *MPa                                             # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
 print(f"fpc\t\t= {fpc/MPa:.2f} MPa")
-# Ec        = 4700*abs(fpc/MPa)**0.5s                                   # With fpc in MPa  ==> ACI 318 - 2019 SI
+# Ec        = 4700*abs(fpc/MPa)**0.5s                               # With fpc in MPa  ==> ACI 318 - 2019 SI
 # Ec        = 57000*abs(fpc)**0.5                                   # With fpc in psi  ==> ACI 318 - 2019 US
 # Ec        = (57000*abs(fpc*1000)**0.5)/1000                       # With fpc in ksi  ==> ACI 318 - 2019 US
-Ec          = (21.5e3*MPa * 1.0 * (abs(fpc/MPa)/10)**(1/3))             # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
+Ec          = (21.5e3*MPa * 1.0 * (abs(fpc/MPa)/10)**(1/3))         # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
 # Ec        = 4840 *ksi
 print(f"Ec\t\t= {Ec/MPa:.2f} MPa")
 epsc0       = 2*fpc/Ec
 print(f"epsc0\t= {epsc0:.5f}")
 lam         = 0.1                                                   # Proposed by Masoumeh Asgharpoor
-fts         = 1.3*(0.3 * (fpc/MPa - 8)**(2/3))*MPa                      # CEB-FIB-2010 Eq. (5.1-5)
+fts         = 1.3*(0.3 * (fpc/MPa - 8)**(2/3))*MPa                  # CEB-FIB-2010 Eq. (5.1-5)
 print(f"fts\t\t= {fts/MPa:.2f} MPa")
-Ets         = 0.5 * Ec                                              # IT SHOULD BE DETERMINED based on CEB-FIB-2010 but I don't know how yet!!!
+wc          = 0.2 *mm                                               # Crack width (Average of 0.15 to  0.25 mm)
+Gf          = 73 * (fpc/MPa)**0.18                                  # Fracture Energy CEB-FIB-2010 section 5.1.5.2
+Ets         = fts/wc/Gf
+# Ets         = 0.5 * Ec                                              # IT SHOULD BE DETERMINED based on CEB-FIB-2010 but I don't know how yet!!!
 print(f"Ets\t\t= {Ets/MPa:.2f} MPa")
 
 #=============================================================================

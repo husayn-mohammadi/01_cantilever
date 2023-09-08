@@ -15,7 +15,7 @@ exec(open("Input/inputData.py").readlines()[9])     # It SHOULD read and execute
 #    Concrete Parameters:
 #=============================================================================
 
-fpc         = 25 *MPa                                               # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
+fpc         = 44.9 *MPa                                             # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
 print(f"fpc\t\t= {fpc/MPa:.2f} MPa")
 # Ec        = 4700*abs(fpc/MPa)**0.5s                               # With fpc in MPa  ==> ACI 318 - 2019 SI
 # Ec        = 57000*abs(fpc)**0.5                                   # With fpc in psi  ==> ACI 318 - 2019 US
@@ -41,7 +41,7 @@ nu          = 0.28
 
 ## Steel Material No. 1
 Es1         = 200   *GPa
-Fy1         = 350   *MPa
+Fy1         = 442   *MPa
 Esh1        = Es1/30
 Fu1         = 473   *MPa
 epsy1       = Fy1/Es1

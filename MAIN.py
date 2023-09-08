@@ -16,7 +16,7 @@ import functions.FuncPlot      as fp
 #    Input File
 #=============================================================================
 
-exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
+exec(open("Input/unitsSI_kN.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
 exec(open("Input/materialParameters.py").read())
 
@@ -32,7 +32,7 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 

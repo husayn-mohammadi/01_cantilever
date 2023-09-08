@@ -105,7 +105,7 @@ def cyclicAnalysis(dispTarList, ControlNode, numIncr, numCyclesPerDispTarget=2, 
     print(f"Algorithm: {algorithm}")
     # Run Analysis
     for dispTarget in dispTarList:
-        
+        print(f"dispTarget is {dispTarget:.4f}")
         incr        = dispTarget/numIncr
         incrList                    = [incr, -incr, -incr, incr] * numCyclesPerDispTarget
         for incr in incrList:

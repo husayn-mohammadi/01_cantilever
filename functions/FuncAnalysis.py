@@ -57,7 +57,7 @@ def pushoverDCF(dispTarget, ControlNode, numIncr, algorithm='KrylovNewton'): # L
     ops.constraints('Transformation')
     ops.numberer('RCM')
     ops.system('BandGen')
-    ops.test('NormDispIncr', tol, numIter)
+    ops.test('EnergyIncr', tol, numIter) # NormUnbalance, NormDispIncr, EnergyIncr, RelativeNormUnbalance, RelativeNormDispIncr, RelativeTotalNormDispIncr, RelativeEnergyIncr, FixedNumIter, NormDispAndUnbalance, NormDispOrUnbalance
     # ops.test('NormUnbalance', tol, numIter)
     ops.algorithm(algorithm)
     #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)

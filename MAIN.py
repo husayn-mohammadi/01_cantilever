@@ -30,23 +30,23 @@ typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+typeAlgorithm   = 'Linear'                  # Linear, KrylovNewton, NewtonLineSearch, Newton, ModifiedNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 40            # Number of Fibers along Y-axis
+NfibeY          = 10            # Number of Fibers along Y-axis
 
-PHL             = 50 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-numIncr         = 200           # number of increments per target displacement
+PHL             = 24 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 3            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+numIncr         = 200          # number of increments per target displacement
 
 # Monotonic Pushover Analysis
-dispTarget      = 10 *inch
+dispTarget      = 25 *cm
 
 # Cyclic Pushover Analysis
-dY              = 0.4 *inch
-cyclesPerDisp   = 1        
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY] #, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dY              = 15 *mm
+cyclesPerDisp   = 2        
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -57,7 +57,7 @@ sfac            = 10
 plot_anim_defo  = False
     
 plot_Analysis   = True
-plot_section    = False
+plot_section    = True
 
 vfo_display     = False
 #=============================================================================
@@ -108,7 +108,8 @@ for types in typeAnalysis:
     
     # Run Analysis
     Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
-    fa.gravity(ALR*Pno, ControlNode)
+    AL  = ALR*Pno
+    fa.gravity(AL, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
     coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 3, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=3

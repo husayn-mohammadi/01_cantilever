@@ -88,31 +88,31 @@ print(f"eps_ult\t= {eps_ult:.5f}")
 
 rhos        = (2*tw)/(tc) # Percentage of Steel
 
-R           = b/tw * (12*(1-nu**2)/(4*np.pi))**0.5 * (Fy/Es)**0.5                   # Masoumeh Asgarpoor
-
-frp         = -6.5*R*((fpc/MPa)**1.46/(Fy/MPa)) + 0.12*(fpc/MPa)**1.03                    # Masoumeh Asgarpoor
-
-fpcc        = ((fpc/MPa) + 4*frp*(1+0.8*ALR)**3.5)*MPa                              # Masoumeh Asgarpoor
-print(f"fpcc\t= {fpcc/MPa:.2f} MPa")
-Ecc         = (21.5e3*MPa * 1.0 * (abs(fpcc/MPa)/10)**(1/3))                        # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
-print(f"Ecc\t\t= {Ecc/MPa:.2f} MPa")
-epscc0      = 2*fpcc/Ecc
-print(f"epscc0\t= {epscc0:.5f}")
-
-fpcu        = (0.15 *(fpc/MPa)** 1.5  * (Fy/MPa)**0.01  * rhos**0.16    * (1-ALR)**(-0.5) * lsr**(-0.025))*MPa                    # Masoumeh Asgarpoor 
+fpcu        = (0.15 *(fpc/MPa)** 1.5  * (Fy/MPa)**0.01  * rhos**0.16    * (1-ALR)**(-0.5) * lsr**(-0.025))*MPa              # Masoumeh Asgarpoor: Eq(6)
 print(f"fpcu\t= {fpcu/MPa:.2f} MPa")
 if (fpcu/fpc < 0.45):
     print(f"Warning!!! fpcu/fpc={fpcu/fpc:.2f} < 0.45")
 if (fpcu/fpc > 0.80):
     print(f"Warning!!! fpcu/fpc={fpcu/fpc:.2f} > 0.80")
-    
-epscU       = 0.157   *epsc0 **(-0.67) * (fpcu/MPa) **0.23 *(Fy/MPa)**(-1.4) * rhos**0.06 * (1-ALR)**(-0.17) * lsr**0.12    #Masoumeh Asgarpoor
+ 
+epscU       = 0.157   *epsc0 **(-0.67) * (fpcu/MPa) **0.23 *(Fy/MPa)**(-1.4) * rhos**0.06 * (1-ALR)**(-0.17) * lsr**0.12    #Masoumeh Asgarpoor: Eq(7)
 print(f"epscU\t= {epscU:.5f}")
 if (epscU/epsc0 < 1.6):
     print(f"Warning!!! epscU/epsc0={epscU/epsc0:.2f} < 1.6")
 if (epscU/epsc0 > 5.5):
     print(f"Warning!!! epscU/epsc0={epscU/epsc0:.2f} > 5.5")
-    
+     
+R           = b/tw * (12*(1-nu**2)/(4*np.pi**2))**0.5 * (Fy/Es)**0.5                # Masoumeh Asgarpoor
+
+frp         = (-6.5*R*((fpc/MPa)**1.46/(Fy/MPa)) + 0.12*(fpc/MPa)**1.03)*MPa        # Masoumeh Asgarpoor
+
+fpcc        = ((fpc/MPa) + 4*(frp/MPa)*(1+0.8*ALR)**3.5)*MPa                        # Masoumeh Asgarpoor
+print(f"fpcc\t= {fpcc/MPa:.2f} MPa")
+Ecc         = (21.5e3*MPa * 1.0 * (abs(fpcc/MPa)/10)**(1/3))                        # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
+print(f"Ecc\t\t= {Ecc/MPa:.2f} MPa")
+epscc0      = 2*fpcc/Ecc
+print(f"epscc0\t= {epscc0:.5f}")
+  
 fpccu       = (2.63 *(fpcc/MPa)**0.65 * (Fy/MPa)**0.001 * rhos**(-0.04) * (1-ALR)**( 0.4) * lsr**( 0.070))*MPa                    # Masoumeh Asgarpoor 
 print(f"fpccu\t= {fpccu/MPa:.2f} MPa")
 if (fpccu/fpcc < 0.45):

@@ -90,7 +90,7 @@ rhos        = (2*tw)/(tc) # Percentage of Steel
 
 R           = b/tw * (12*(1-nu**2)/(4*np.pi))**0.5 * (Fy/Es)**0.5                   # Masoumeh Asgarpoor
 
-frp         = -6.5*R*((fpc/MPa)**1.46/Fy) + 0.12*(fpc/MPa)**1.03                    # Masoumeh Asgarpoor
+frp         = -6.5*R*((fpc/MPa)**1.46/(Fy/MPa) + 0.12*(fpc/MPa)**1.03                    # Masoumeh Asgarpoor
 
 fpcc        = ((fpc/MPa) + 4*frp*(1+0.8*ALR)**3.5)*MPa                              # Masoumeh Asgarpoor
 print(f"fpcc\t= {fpcc/MPa:.2f} MPa")

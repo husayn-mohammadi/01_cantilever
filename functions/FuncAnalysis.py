@@ -57,7 +57,7 @@ def pushoverDCF(dispTarget, ControlNode, numIncr, algorithm='KrylovNewton'): # L
     ops.constraints('Transformation')
     ops.numberer('RCM')
     ops.system('BandGen')
-    ops.test('NormDispIncr', tol, numIter)
+    ops.test('NormUnbalance', tol, numIter)
     # ops.test('NormUnbalance', tol, numIter)
     ops.algorithm(algorithm)
     #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
@@ -98,7 +98,7 @@ def cyclicAnalysis(dispTarList, ControlNode, numIncr, numCyclesPerDispTarget=2, 
     ops.constraints('Transformation')
     ops.numberer('RCM') # Plain, RCM, AMD, ParallelPlain, ParallelRCM
     ops.system(system) # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-    ops.test('NormDispIncr', tol, numIter) # NormUnbalance, NormDispIncr, EnergyIncr, RelativeNormUnbalance, RelativeNormDispIncr, RelativeTotalNormDispIncr, RelativeEnergyIncr, FixedNumIter, NormDispAndUnbalance, NormDispOrUnbalance
+    ops.test('NormUnbalance', tol, numIter) # NormUnbalance, NormDispIncr, EnergyIncr, RelativeNormUnbalance, RelativeNormDispIncr, RelativeTotalNormDispIncr, RelativeEnergyIncr, FixedNumIter, NormDispAndUnbalance, NormDispOrUnbalance
     # ops.test('NormUnbalance', tol, numIter)
     # algorithm = 'KrylovNewton' # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
     ops.algorithm(algorithm)  

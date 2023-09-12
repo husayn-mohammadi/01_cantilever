@@ -46,7 +46,7 @@ dispTarget      = 60 *cm
 # Cyclic Pushover Analysis
 dY              = 15 *mm
 cyclesPerDisp   = 1        
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY] #, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:

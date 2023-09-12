@@ -19,7 +19,7 @@ def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBea
     
     #       Define beamIntegrator
     tagInt      = 1
-    NIP         = 10
+    NIP         = 5
     ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
     #       Define Nodes & Elements

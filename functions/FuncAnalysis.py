@@ -1,8 +1,9 @@
 import openseespy.opensees as ops
 import time
 import sys
+from colorama import Fore, Style
 
-waitTime        = 0.01
+waitTime        = 0.0
 testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr']
 algorithmList   = ['KrylovNewton', 'Newton', 'NewtonLineSearch', 'Linear']
 
@@ -63,7 +64,7 @@ def pushoverDCF(dispTarget, ControlNode, numIncr): # Linear, Newton, NewtonLineS
     ops.numberer('RCM')
     ops.system('BandGen')
     
-    numIncrList = [50, *(6*[5]), 50]
+    numIncrList = [*(3*[10]), *(3*[5])]
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     for iii in range(0, numFrac):
@@ -75,9 +76,9 @@ def pushoverDCF(dispTarget, ControlNode, numIncr): # Linear, Newton, NewtonLineS
             ops.algorithm(algorithm)  
             print(f"Algorithm:\t{algorithm}")
             curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-            print(f"======>>> Current   Displacement is {curD:.4f}")
+            print(f"======>>> Current   Displacement\t= {Fore.GREEN}{curD:.4f}{Style.RESET_ALL}")
             remD    = dispTar - curD
-            print(f"======>>> Remaining Displacement is {remD:.4f}")
+            print(f"======>>> Remaining Displacement\t= {Fore.YELLOW}{remD:.4f}{Style.RESET_ALL}")
             numIncr = numIncrList[iii]
             print(f"\nnumIncr\t\t\t= {numIncr}")
             incr    = remD/numIncr
@@ -87,9 +88,9 @@ def pushoverDCF(dispTarget, ControlNode, numIncr): # Linear, Newton, NewtonLineS
                 ops.test(tester, tol, numIter)
                 print(f"\ntester:\t\t{tester}")
                 curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                print(f"======>>> Current   Displacement is {curD:.4f}")
+                print(f"======>>> Current   Displacement\t= {Fore.GREEN}{curD:.4f}{Style.RESET_ALL}")
                 remD    = dispTar - curD
-                print(f"======>>> Remaining Displacement is {remD:.4f}")
+                print(f"======>>> Remaining Displacement\t= {Fore.YELLOW}{remD:.4f}{Style.RESET_ALL}")
                 numIncr = numIncrList[iii]
                 print(f"\nnumIncr\t\t\t= {numIncr}")
                 incr    = remD/numIncr
@@ -103,26 +104,28 @@ def pushoverDCF(dispTarget, ControlNode, numIncr): # Linear, Newton, NewtonLineS
                     # Run Analysis
                     #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
                     OK      = ops.analyze(numIncr)
-                    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                    print(f"\nAnalyzeOutput\t= {OK}")
+                    print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                    print(f"AnalyzeOutput\t= {OK}")
                     if OK == 0:
                         break
                     
-                    print(f"\n\ndispTarget\t= {dispTarget:.4f}")
-                    print(f"dispTar({iii+1})\t= {dispTar:.4f}")
                     print(f"Algorithm:\t{algorithm}")
                     print(f"tester:\t\t{tester}")
+                    
+                    print(f"\n\n======>>> dispTarget\t\t\t\t= {dispTarget:.4f}")
+                    print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar:.4f}")
                     curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                    print(f"======>>> Current   Displacement is {curD:.4f}")
+                    print(f"======>>> Current   Displacement\t= {Fore.GREEN}{curD:.4f}{Style.RESET_ALL}")
                     remD    = dispTar - curD
-                    print(f"======>>> Remaining Displacement is {remD:.4f}")
-                    numIncr = int(numIncr*2)
+                    print(f"======>>> Remaining Displacement\t= {Fore.YELLOW}{remD:.4f}{Style.RESET_ALL}")
+                    numIncr = int(numIncr*3)
                     print(f"numIncr\t\t\t= {numIncr}")
                     incr    = remD/numIncr
-                    print(f"======>>> Increment size is {incr}")
+                    print(f"Incr\t\t\t= {incr}")
                     time.sleep(waitTime)
-                    if numIncr >= 1000:
+                    if numIncr >= 800:
                         print("\nIncrement size is too small!!!")
+                        time.sleep(0.01)
                         break
                 
                 if OK == 0:

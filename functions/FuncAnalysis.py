@@ -2,9 +2,9 @@ import openseespy.opensees as ops
 import time
 import sys
 
-waitTime        = 1
-testerList      = ['NormDispIncr', 'EnergyIncr', 'NormUnbalance']
-algorithmList   = ['Linear', 'Newton', 'KrylovNewton', 'NewtonLineSearch', 'ModifiedNewton', 'RaphsonNewton', 'SecantNewton']
+waitTime        = 0.01
+testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr']
+algorithmList   = ['KrylovNewton', 'Newton', 'NewtonLineSearch', 'Linear']
 
 def gravity(Py, ControlNode):
     
@@ -39,9 +39,9 @@ def pushoverDCF(dispTarget, ControlNode, numIncr): # Linear, Newton, NewtonLineS
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
     
-    incr        = dispTarget/numIncr
+    # incr        = dispTarget/numIncr
     tol         = 1e-8
-    numIter     = 300
+    numIter     = 50
     
     #  Define Time Series: Constant/Linear/Trigonometric/Triangular/Rectangular/Pulse/Path TimeSeries
     tagTSLinear     = 1
@@ -63,38 +63,83 @@ def pushoverDCF(dispTarget, ControlNode, numIncr): # Linear, Newton, NewtonLineS
     ops.numberer('RCM')
     ops.system('BandGen')
     
-    for tester in testerList:
-        ops.test(tester, tol, numIter)
+    numIncrList = [50, *(6*[5]), 50]
+    numFrac     = len(numIncrList)
+    dispFrac    = dispTarget/numFrac
+    for iii in range(0, numFrac):
+        numIncr = numIncrList[iii]
+        print(f"\nnumIncr\t\t\t= {numIncr}")
+        incr            = dispFrac/numIncr
+        dispTar         = dispFrac*(iii+1)
         for algorithm in algorithmList:
             ops.algorithm(algorithm)  
-            #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
-            ops.integrator('DisplacementControl', ControlNode, ControlNodeDoF, incr)
-            ops.analysis('Static')
-            
-            # Run Analysis
-            #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
-            OK = ops.analyze(numIncr)
-            print(f"AnalyzeOutput = {OK}")
-            curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-            print(f"\n\ndispTarget =\t{dispTarget:.4f}")
-            print(f"======>>> Current Displacement is {curD:.4f}")
-            print(f"tester:\t\t{tester}")
             print(f"Algorithm:\t{algorithm}")
+            curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+            print(f"======>>> Current   Displacement is {curD:.4f}")
+            remD    = dispTar - curD
+            print(f"======>>> Remaining Displacement is {remD:.4f}")
+            numIncr = numIncrList[iii]
+            print(f"\nnumIncr\t\t\t= {numIncr}")
+            incr    = remD/numIncr
+            print(f"======>>> Increment size is {incr}")
+            
+            for tester in testerList:
+                ops.test(tester, tol, numIter)
+                print(f"\ntester:\t\t{tester}")
+                curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                print(f"======>>> Current   Displacement is {curD:.4f}")
+                remD    = dispTar - curD
+                print(f"======>>> Remaining Displacement is {remD:.4f}")
+                numIncr = numIncrList[iii]
+                print(f"\nnumIncr\t\t\t= {numIncr}")
+                incr    = remD/numIncr
+                print(f"======>>> Increment size is {incr}")
+                
+                while True:
+                    #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
+                    ops.integrator('DisplacementControl', ControlNode, ControlNodeDoF, incr)
+                    ops.analysis('Static')
+                    
+                    # Run Analysis
+                    #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
+                    OK      = ops.analyze(numIncr)
+                    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                    print(f"\nAnalyzeOutput\t= {OK}")
+                    if OK == 0:
+                        break
+                    
+                    print(f"\n\ndispTarget\t= {dispTarget:.4f}")
+                    print(f"dispTar({iii+1})\t= {dispTar:.4f}")
+                    print(f"Algorithm:\t{algorithm}")
+                    print(f"tester:\t\t{tester}")
+                    curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                    print(f"======>>> Current   Displacement is {curD:.4f}")
+                    remD    = dispTar - curD
+                    print(f"======>>> Remaining Displacement is {remD:.4f}")
+                    numIncr = int(numIncr*2)
+                    print(f"numIncr\t\t\t= {numIncr}")
+                    incr    = remD/numIncr
+                    print(f"======>>> Increment size is {incr}")
+                    time.sleep(waitTime)
+                    if numIncr >= 1000:
+                        print("\nIncrement size is too small!!!")
+                        break
+                
+                if OK == 0:
+                    break
+                elif OK != 0:
+                    print(f"\n=============== The tester {tester} failed to converge!!! ===============")
+                    time.sleep(waitTime)
+                    if tester == testerList[-1] and algorithm == algorithmList[-1]:
+                        print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                        print("*!*!*!*!*!* The monotonic pushover analysis failed to converge!!! *!*!*!*!*!*")
+                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
+                
             if OK == 0:
                 break
             elif OK != 0:
                 print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                 time.sleep(waitTime)
-                if tester == testerList[-1] and algorithm == algorithmList[-1]:
-                    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    print("*!*!*!*!*!* The monotonic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
-            
-        if OK == 0:
-            break
-        elif OK != 0:
-            print(f"\n=============== The tester {tester} failed to converge!!! ===============")
-            time.sleep(waitTime)
             
     
     return OK
@@ -147,9 +192,9 @@ def cyclicAnalysis(dispTarList, ControlNode, numIncr, numCyclesPerDispTarget=2):
                     # Run Analysis
                     #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
                     OK = ops.analyze(numIncr)
-                    print(f"AnalyzeOutput = {OK}")
+                    print(f"\nAnalyzeOutput\t= {OK}")
                     curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                    print(f"\n\ndispTarget =\t{dispTarget:.4f}")
+                    print(f"\n\ndispTarget\t= {dispTarget:.4f}")
                     print(f"======>>> Current Displacement is {curD:.4f}")
                     print(f"tester:\t\t{tester}")
                     print(f"Algorithm:\t{algorithm}")

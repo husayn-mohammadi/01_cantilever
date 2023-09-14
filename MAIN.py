@@ -34,16 +34,16 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 
-PHL             = 24 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 3            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+PHL             = 50 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 1            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 
 # Monotonic Pushover Analysis
 dispTarget      = 25 *cm
 
 # Cyclic Pushover Analysis
-dY              = 15 *mm
+dY              = 12 *mm
 cyclesPerDisp   = 1        
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY] #, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY] #, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:

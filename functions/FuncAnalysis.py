@@ -5,8 +5,8 @@ import sys
 
 waitTime        = 0.0
 waitTime2       = 0.0
-testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr']
-algorithmList   = ['KrylovNewton', 'Linear', 'Newton', 'NewtonLineSearch']
+testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr', 'RelativeNormUnbalance']*2
+algorithmList   = ['Linear', 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton']*2 # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 def gravity(Py, ControlNode):
     
@@ -36,7 +36,7 @@ def gravity(Py, ControlNode):
     ops.analyze(1)
     # ops.loadConst('-time', 0.0)
 
-def pushoverDCF(dispTarget, ControlNode): # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+def pushoverDCF(dispTarget, ControlNode): 
     
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
@@ -154,8 +154,8 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
     
-    tol         = 1e-5
-    numIter     = 50
+    tol         = 1e-8
+    numIter     = 100
     
     #  Define Time Series: Constant/Linear/Trigonometric/Triangular/Rectangular/Pulse/Path TimeSeries
     tagTSLinear     = 1
@@ -183,7 +183,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
         dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
         for dispTarget in dispTargetList:
             curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
-            numIncrList = [*(1*[100]), *(2*[30]), *(3*[10]), *(2*[30]), *(1*[100])]
+            numIncrList = [*(1*[50]), *(10*[3]), *(1*[50])]
             numFrac     = len(numIncrList)
             delta       = dispTarget - curD
             dispFrac    = delta/numFrac
@@ -244,7 +244,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
                             incr    = remD/numIncr
                             print(f"Incr\t\t\t= {incr}")
                             time.sleep(waitTime)
-                            if numIncr >= 1200:
+                            if numIncr >= 3000:
                                 print("\nIncrement size is too small!!!")
                                 time.sleep(waitTime)
                                 break

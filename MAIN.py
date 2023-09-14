@@ -19,7 +19,7 @@ import functions.FuncPlot      as fp
 exec(open("Input/unitsSI_kN.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
 exec(open("Input/materialParameters.py").read())
-
+logFile = 'log.txt'; sys.stdout = open(logFile, 'w')
 #=============================================================================
 #    Define Variables
 #=============================================================================
@@ -30,23 +30,20 @@ typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAlgorithm   = 'Linear'                  # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
-typeSystem      = 'UmfPack'                 # Only for cyclic: # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
-typeAnalysis    = ['monotonic', 'cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 
-PHL             = 50 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 1            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-numIncr         = 200           # number of increments per target displacement
+PHL             = 24 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 3            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 
 # Monotonic Pushover Analysis
-dispTarget      = 60 *cm
+dispTarget      = 25 *cm
 
 # Cyclic Pushover Analysis
 dY              = 15 *mm
 cyclesPerDisp   = 1        
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY] #, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -113,18 +110,26 @@ for types in typeAnalysis:
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
     coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 3, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=3
     if types == 'monotonic':
-        print(f"Monotonic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.pushoverDCF(dispTarget, ControlNode, numIncr, typeAlgorithm)
-        print(f"\n\nMonotonic Pushover Analysis Finished at {time.time() - start_time}.")
+        print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"Monotonic Pushover Analysis Initiated at {(time.time() - start_time):.0f}.")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+        fa.pushoverDCF(dispTarget, ControlNode)
+        print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"Monotonic Pushover Analysis Finished at {(time.time() - start_time):.0f}.")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
             sfac = opv.plot_defo()
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
-        print(f"Cyclic Pushover Analysis Initiated at {time.time() - start_time}.")
-        fa.cyclicAnalysis(dispTarList, ControlNode, numIncr, cyclesPerDisp, typeAlgorithm, typeSystem)
-        print(f"\n\nCyclic Pushover Analysis Finished at {time.time() - start_time}.")
+        print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"Cyclic Pushover Analysis Initiated at {(time.time() - start_time):.0f}.")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+        fa.cyclicAnalysis(dispTarList, ControlNode, cyclesPerDisp)
+        print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"Cyclic Pushover Analysis Finished at {(time.time() - start_time):.0f}.")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
     else:
@@ -143,10 +148,13 @@ for types in typeAnalysis:
 
 end_time = time.time()
 elapsed_time = end_time - start_time
-print(f"\nElapsed time: {elapsed_time:.2f} seconds")
+print(f"\nElapsed time: {elapsed_time:.0f} seconds")
+print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+print("The analysis was run successfully.")
+print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
-print("\nThe analysis was run successfully.")
-
+sys.stdout.close()
+sys.stdout = sys.__stdout__
 
 
 

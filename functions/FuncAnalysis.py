@@ -6,7 +6,7 @@ import sys
 waitTime        = 0.0
 waitTime2       = 0.0
 testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr', 'RelativeNormUnbalance']*2
-algorithmList   = ['Linear', 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton']*2 # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+algorithmList   = [ 'KrylovNewton', 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton']*2 # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 def gravity(Py, ControlNode):
     
@@ -183,7 +183,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
         dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
         for dispTarget in dispTargetList:
             curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
-            numIncrList = [*(1*[50]), *(10*[3]), *(1*[50])]
+            numIncrList = [*(1*[5]), *(10*[3]), *(1*[5])]
             numFrac     = len(numIncrList)
             delta       = dispTarget - curD
             dispFrac    = delta/numFrac
@@ -194,27 +194,31 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
                 dispTar         = dispFrac*(iii+1)
                 for algorithm in algorithmList:
                     ops.algorithm(algorithm)  
-                    print(f"Algorithm:\t{algorithm}")
+                    print(f"--------------------------------------\nAlgorithm:\t{algorithm}\n--------------------------------------\n")
+                    print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
+                    print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
                     curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                    print(f"======>>> Current   Displacement\t= {curD:.4f}")
+                    print(f"======>>> Current   Displacement\t= {curD}")
                     remD    = dispTar - curD
-                    print(f"======>>> Remaining Displacement\t= {remD:.4f}")
+                    print(f"======>>> Remaining Displacement\t= {remD}")
                     numIncr = numIncrList[iii]
-                    print(f"\nnumIncr\t\t\t= {numIncr}")
+                    print(f"numIncr\t\t\t= {numIncr}")
                     incr    = remD/numIncr
-                    print(f"======>>> Increment size is {incr}")
+                    print(f"Incr\t\t\t= {incr}")
                     
                     for tester in testerList:
                         ops.test(tester, tol, numIter)
-                        print(f"\ntester:\t\t{tester}")
+                        print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------\n")
+                        print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
+                        print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
                         curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                        print(f"======>>> Current   Displacement\t= {curD:.4f}")
+                        print(f"======>>> Current   Displacement\t= {curD}")
                         remD    = dispTar - curD
-                        print(f"======>>> Remaining Displacement\t= {remD:.4f}")
+                        print(f"======>>> Remaining Displacement\t= {remD}")
                         numIncr = numIncrList[iii]
-                        print(f"\nnumIncr\t\t\t= {numIncr}")
+                        print(f"numIncr\t\t\t= {numIncr}")
                         incr    = remD/numIncr
-                        print(f"======>>> Increment size is {incr}")
+                        print(f"Incr\t\t\t= {incr}")
                         
                         while True:
                             #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
@@ -233,12 +237,12 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
                             print(f"Algorithm:\t{algorithm}")
                             print(f"tester:\t\t{tester}")
                             
-                            print(f"\n\n======>>> dispTarget\t\t\t\t= {dispTarget:.4f}")
-                            print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar:.4f}")
+                            print(f"\n======>>> dispTarget\t\t\t\t= {dispTarget}")
+                            print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
                             curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                            print(f"======>>> Current   Displacement\t= {curD:.4f}")
+                            print(f"======>>> Current   Displacement\t= {curD}")
                             remD    = dispTar - curD
-                            print(f"======>>> Remaining Displacement\t= {remD:.4f}")
+                            print(f"======>>> Remaining Displacement\t= {remD}")
                             numIncr = int(numIncr*3)
                             print(f"numIncr\t\t\t= {numIncr}")
                             incr    = remD/numIncr

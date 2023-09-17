@@ -183,18 +183,19 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
         dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
         for dispTarget in dispTargetList:
             curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
+            delta       = dispTarget - curD
+            print (f"delta = {delta}")
             numIncrList = [*(1*[5]), *(10*[3]), *(1*[5])]
             numFrac     = len(numIncrList)
-            delta       = dispTarget - curD
             dispFrac    = delta/numFrac
+            print(f"dispFrac = {dispFrac}")
             for  iii in range(0, numFrac):
                 numIncr = numIncrList[iii]
                 print(f"\nnumIncr\t\t\t= {numIncr}")
                 incr            = dispFrac/numIncr
                 dispTar         = dispFrac*(iii+1)
                 for algorithm in algorithmList:
-                    ops.algorithm(algorithm)  
-                    print(f"--------------------------------------\nAlgorithm:\t{algorithm}\n--------------------------------------\n")
+                    ops.algorithm(algorithm) 
                     print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
                     print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
                     curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
@@ -208,7 +209,6 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
                     
                     for tester in testerList:
                         ops.test(tester, tol, numIter)
-                        print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------\n")
                         print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
                         print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
                         curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
@@ -223,13 +223,18 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
                         while True:
                             #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
                             ops.integrator('DisplacementControl', ControlNode, ControlNodeDoF, incr)
-                            ops.analysis('Static')
+                            ops.analysis('Static') 
+                            
+                            print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                            print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}")
+                            print(f"--------------------------------------\nAlgorithm:\t{algorithm}")
+                            print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------")
+                            
+                            
                             
                             # Run Analysis
                             #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
                             OK      = ops.analyze(numIncr)
-                            print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                            print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}")
                             print(f"AnalyzeOutput\t= {OK}"); time.sleep(waitTime2)
                             if OK == 0:
                                 break

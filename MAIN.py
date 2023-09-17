@@ -19,11 +19,12 @@ import functions.FuncPlot      as fp
 exec(open("Input/unitsSI_kN.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
 exec(open("Input/materialParameters.py").read())
-logFile = 'log.txt'; sys.stdout = open(logFile, 'w')
+
 #=============================================================================
 #    Define Variables
 #=============================================================================
 # Modeling Options
+recordToLog     = False                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
@@ -34,16 +35,16 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 40            # Number of Fibers along Y-axis
 
-PHL             = 50 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 1            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+PHL             = 24 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 3            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 
 # Monotonic Pushover Analysis
 dispTarget      = 25 *cm
 
 # Cyclic Pushover Analysis
-dY              = 12 *mm
+dY              = 13 *mm
 cyclesPerDisp   = 1        
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY] #, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY] #, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 
 # Plotting Options:
@@ -60,6 +61,8 @@ vfo_display     = False
 #=============================================================================
 #    MAIN
 #=============================================================================
+if recordToLog == True:
+    logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
 
 for types in typeAnalysis:
     
@@ -153,8 +156,10 @@ print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 print("The analysis was run successfully.")
 print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
-sys.stdout.close()
-sys.stdout = sys.__stdout__
+
+if recordToLog == True:
+    sys.stdout.close()
+    sys.stdout = sys.__stdout__
 
 
 

@@ -51,6 +51,8 @@ def matConcrete(typeMat, tagMatCt):
             ops.uniaxialMaterial('Elastic', tagMatCt, Ec)
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatCt, Ec, 0.002)
+        elif typeMat == 'Concrete01':
+            ops.uniaxialMaterial('Concrete01', tagMatCt, fpc, epsc0, fpcu, epscU)
         elif typeMat == 'Concrete02':
             ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, fpcu, epscU, lam, fts, Ets)
         else:
@@ -60,6 +62,8 @@ def matConcrete(typeMat, tagMatCt):
             ops.uniaxialMaterial('Elastic', tagMatCt, Ecc)
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatCt, Ecc, 0.002)
+        elif typeMat == 'Concrete01':
+            ops.uniaxialMaterial('Concrete01', tagMatCt, fpcc, epscc0, fpccu, epsccU)
         elif typeMat == 'Concrete02':
             ops.uniaxialMaterial('Concrete02', tagMatCt, fpcc, epscc0, fpccu, epsccU, lam, fts, Ets)
         else:

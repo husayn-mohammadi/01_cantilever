@@ -1,12 +1,12 @@
 import openseespy.opensees as ops
 import time
 import sys
-# from colorama import Fore, Style
+from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 waitTime        = 0.0
 waitTime2       = 0.0
 testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr', 'RelativeNormUnbalance']*2
-algorithmList   = ['Linear', 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton']*2 # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+algorithmList   = [ 'KrylovNewton', 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton']*2 # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 def gravity(Py, ControlNode):
     
@@ -183,71 +183,73 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
         dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
         for dispTarget in dispTargetList:
             curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
-            numIncrList = [*(1*[50]), *(10*[3]), *(1*[50])]
-            numFrac     = len(numIncrList)
             delta       = dispTarget - curD
+            # print (f"delta = {delta}")
+            numIncrList = [*(1*[5]), *(10*[3]), *(1*[5])]
+            numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
+            # print(f"dispFrac = {dispFrac}")
             for  iii in range(0, numFrac):
                 numIncr = numIncrList[iii]
-                print(f"\nnumIncr\t\t\t= {numIncr}")
+                # print(f"\nnumIncr\t\t\t= {numIncr}")
                 incr            = dispFrac/numIncr
-                dispTar         = dispFrac*(iii+1)
+                # print(f"curD = {curD}")
+                dispTar         = curD + dispFrac
+                # print(f"dispTar = {dispTar}")
                 for algorithm in algorithmList:
-                    ops.algorithm(algorithm)  
-                    print(f"Algorithm:\t{algorithm}")
-                    curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                    print(f"======>>> Current   Displacement\t= {curD:.4f}")
-                    remD    = dispTar - curD
-                    print(f"======>>> Remaining Displacement\t= {remD:.4f}")
-                    numIncr = numIncrList[iii]
-                    print(f"\nnumIncr\t\t\t= {numIncr}")
-                    incr    = remD/numIncr
-                    print(f"======>>> Increment size is {incr}")
+                    ops.algorithm(algorithm) 
                     
                     for tester in testerList:
                         ops.test(tester, tol, numIter)
-                        print(f"\ntester:\t\t{tester}")
+                        
                         curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                        print(f"======>>> Current   Displacement\t= {curD:.4f}")
+                        # print(f"curD = {curD}")
                         remD    = dispTar - curD
-                        print(f"======>>> Remaining Displacement\t= {remD:.4f}")
+                        # print(f"remD = {remD}")
                         numIncr = numIncrList[iii]
-                        print(f"\nnumIncr\t\t\t= {numIncr}")
                         incr    = remD/numIncr
-                        print(f"======>>> Increment size is {incr}")
                         
                         while True:
                             #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
                             ops.integrator('DisplacementControl', ControlNode, ControlNodeDoF, incr)
-                            ops.analysis('Static')
+                            ops.analysis('Static') 
+                            
+                            print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                            print(f"disp({dispIndex+1}/{len(dispList)})\t= {disp}")
+                            print(f"--------------------------------------\nAlgorithm:\t{algorithm}")
+                            print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------")
+                            print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
+                            print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
+                            print(f"======>>> Current   Displacement\t= {curD}")
+                            print(f"======>>> Remaining Displacement\t= {remD}")
+                            print(f"numIncr\t\t\t= {numIncr}")
+                            print(f"Incr\t\t\t= {incr}")
+                            
+                            
                             
                             # Run Analysis
                             #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
                             OK      = ops.analyze(numIncr)
-                            print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                            print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}")
                             print(f"AnalyzeOutput\t= {OK}"); time.sleep(waitTime2)
+                            curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                            print(f"======>>> Current   Displacement\t= {curD}")
                             if OK == 0:
                                 break
-                            
-                            print(f"Algorithm:\t{algorithm}")
-                            print(f"tester:\t\t{tester}")
-                            
-                            print(f"\n\n======>>> dispTarget\t\t\t\t= {dispTarget:.4f}")
-                            print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar:.4f}")
-                            curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
-                            print(f"======>>> Current   Displacement\t= {curD:.4f}")
-                            remD    = dispTar - curD
-                            print(f"======>>> Remaining Displacement\t= {remD:.4f}")
-                            numIncr = int(numIncr*3)
-                            print(f"numIncr\t\t\t= {numIncr}")
-                            incr    = remD/numIncr
-                            print(f"Incr\t\t\t= {incr}")
-                            time.sleep(waitTime)
-                            if numIncr >= 3000:
-                                print("\nIncrement size is too small!!!")
+                            else:
+                                print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
+                                curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                                print(f"======>>> Current   Displacement\t= {curD}")
+                                remD    = dispTar - curD
+                                print(f"======>>> Remaining Displacement\t= {remD}")
+                                numIncr = int(numIncr*3)
+                                print(f"numIncr\t\t\t= {numIncr}")
+                                incr    = remD/numIncr
+                                print(f"Incr\t\t\t= {incr}")
                                 time.sleep(waitTime)
-                                break
+                                if numIncr >= 3000:
+                                    print("\nIncrement size is too small!!!")
+                                    time.sleep(waitTime)
+                                    break
                         
                         if OK == 0:
                             break
@@ -261,9 +263,9 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
                         print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                         time.sleep(waitTime)
                         if tester == testerList[-1] and algorithm == algorithmList[-1]:
-                            print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                            print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             print("*!*!*!*!*!* The cyclic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
+                            print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
                             return OK
                     
             

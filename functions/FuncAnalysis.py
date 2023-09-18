@@ -5,8 +5,8 @@ from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_
 
 waitTime        = 0.0
 waitTime2       = 0.0
-testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr', 'RelativeNormUnbalance']*2
-algorithmList   = [ 'KrylovNewton', 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton']*2 # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr', 'RelativeNormUnbalance']
+algorithmList   = [ 'KrylovNewton', 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 def gravity(Py, ControlNode):
     
@@ -65,7 +65,7 @@ def pushoverDCF(dispTarget, ControlNode):
     ops.numberer('RCM')
     ops.system('BandGen')
     
-    numIncrList = [*(1*[50]), *(2*[20]), *(3*[10]), *(2*[20]), *(1*[50])]
+    numIncrList = [*(1*[10]), *(10*[7]), *(1*[10])]
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
@@ -93,7 +93,6 @@ def pushoverDCF(dispTarget, ControlNode):
                     ops.analysis('Static')
                     
                     print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                    print(f"disp({dispIndex+1}/{len(dispList)})\t= {disp}")
                     print(f"--------------------------------------\nAlgorithm:\t{algorithm}")
                     print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------")
                     print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")

@@ -43,7 +43,7 @@ dispTarget      = 25 *cm
 
 # Cyclic Pushover Analysis
 dY              = 13 *mm
-cyclesPerDisp   = 3        
+cyclesPerDisp   = 2        
 dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
 
 

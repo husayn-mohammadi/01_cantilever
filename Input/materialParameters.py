@@ -15,7 +15,7 @@ exec(open("Input/inputData.py").readlines()[9])     # It SHOULD read and execute
 #    Concrete Parameters:
 #=============================================================================
 
-fpc         = 44.9 *MPa                                             # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
+fpc         = 53.7 *MPa                                             # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
 print(f"fpc\t\t= {fpc/MPa:.2f} MPa")
 # Ec        = 4700*abs(fpc/MPa)**0.5s                               # With fpc in MPa  ==> ACI 318 - 2019 SI
 # Ec        = 57000*abs(fpc)**0.5                                   # With fpc in psi  ==> ACI 318 - 2019 US

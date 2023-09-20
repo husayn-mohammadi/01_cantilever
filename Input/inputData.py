@@ -7,9 +7,9 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #    Loading
 #=============================================================================
 
-Py              = -2246 *kN
+Py              = -3158 *kN
 # or:
-ALR             = 0.144944  # Axial Load Ratio
+ALR             = 0.21069412216406802128323828675842  # Axial Load Ratio
 
 #=============================================================================
 #    Elements

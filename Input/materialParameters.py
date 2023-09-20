@@ -15,7 +15,7 @@ exec(open("Input/inputData.py").readlines()[9])     # It SHOULD read and execute
 #    Concrete Parameters:
 #=============================================================================
 
-fpc         = 53.7 *MPa                                             # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
+fpc         = 50.09 *MPa                                             # Masoumeh Asgharpoor: scope of study 32.5<fpc<102 (MPa)
 print(f"fpc\t\t= {fpc/MPa:.2f} MPa")
 # Ec        = 4700*abs(fpc/MPa)**0.5s                               # With fpc in MPa  ==> ACI 318 - 2019 SI
 # Ec        = 57000*abs(fpc)**0.5                                   # With fpc in psi  ==> ACI 318 - 2019 US
@@ -61,7 +61,7 @@ eps_ult2    = eps_ult1
 alpha2      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
 b           = 114 *mm  # minimum unsupported width of confined region in composite wall cross-section
-lsr         = 24. # lsr = lu/db = 12**0.5 * lu/tw
+lsr         = 48. # lsr = lu/db = 12**0.5 * lu/tw
 beta        = 1.0
 gamma       = 1.0
 Cf          = 0.5

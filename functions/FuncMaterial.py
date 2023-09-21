@@ -54,7 +54,7 @@ def matConcrete(typeMat, tagMatCt):
         elif typeMat == 'Concrete01':
             ops.uniaxialMaterial('Concrete01', tagMatCt, fpc, epsc0, fpcu, epscU)
         elif typeMat == 'Concrete02':
-            ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, fpcu, epscU, lam, fts, Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, fpcu, epscU, lam1, fts, Ets)
         else:
             print('UNKNOWN concrete material!!!');sys.exit()
     elif tagMatCt == 4: # For confined concrete
@@ -65,7 +65,7 @@ def matConcrete(typeMat, tagMatCt):
         elif typeMat == 'Concrete01':
             ops.uniaxialMaterial('Concrete01', tagMatCt, fpcc, epscc0, fpccu, epsccU)
         elif typeMat == 'Concrete02':
-            ops.uniaxialMaterial('Concrete02', tagMatCt, fpcc, epscc0, fpccu, epsccU, lam, fts, Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCt, fpcc, epscc0, fpccu, epsccU, lam2, fts, Ets)
         else:
             print('UNKNOWN concrete material!!!');sys.exit()
     else: 

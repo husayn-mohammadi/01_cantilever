@@ -43,8 +43,12 @@ dispTarget      = 25 *cm
 
 # Cyclic Pushover Analysis
 dY              = 11 *mm
-cyclesPerDisp   = 1        
-dispTarList     = [dY/3, 2/3*dY, dY, 1.5*dY, 2*dY, 3*dY, 4*dY, 5*dY, 6*dY, 7*dY] #, 8*dY, 9*dY, 10*dY] # if no unit is multiplied, then the units will be meters by default!!!
+CPD1            = 1             # CPD = cyclesPerDisp; which should be an integer
+CPD2            = 1
+dispTarList     = [*(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
+                   # *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD1*[6*dY]),   *(CPD1*[7*dY]),
+                   # *(CPD2*[8*dY]), *(CPD2*[9*dY]),   *(CPD2*[10*dY])
+                   ]
 
 
 # Plotting Options:

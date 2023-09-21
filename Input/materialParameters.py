@@ -26,12 +26,11 @@ print(f"Ec\t\t= {Ec/MPa:.2f} MPa")
 epsc0       = 2*fpc/Ec
 print(f"epsc0\t= {epsc0:.5f}")
 lam1        = 0.2                                                   # Unconfined Concrete
-lam2        = 0.1                                                   # Unconfined Concrete
+lam2        = 0.05                                                   # Unconfined Concrete
 fts         = 1.0*(0.3 * (fpc/MPa - 8)**(2/3))*MPa                   # CEB-FIB-2010 Eq. (5.1-5)
 print(f"fts\t\t= {fts/MPa:.2f} MPa")
 wc          = 0.2 *mm                                               # Crack width (Average of 0.15 to  0.25 mm)
 Gf          = (73 * (fpc/MPa)**0.18)/1000   #(unitsSI_kN.py)        # Fracture Energy CEB-FIB-2010 section 5.1.5.2 (Since the force unit is kN it is divided by 1000)
-# Ets         = 7 * MPa
 Ets         = abs(1/(1-(2*Ec*Gf)/(wc*fts**2)))*Ec                   # Article: THE INFLUENCE OF AGGREGATE SIZE ON THE WIDTH OF FRACTURE PROCESS ZONE IN CONCRETE MEMBERS
 
 print(f"Ets\t\t= {Ets/MPa:.2f} MPa")

@@ -27,6 +27,7 @@ exec(open("Input/materialParameters.py").read())
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
+typeBuild       = 'ShearCritBeam'        # 'CantileverColumn', 'ShearCritBeam'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
@@ -100,7 +101,10 @@ for types in typeAnalysis:
         Es  = 29000*ksi
         fm.buildCantileverL(L, Es, I, A)
     else:
-        ControlNode = fm.buildCantileverN(tagSec, L, PHL, numSeg, typeEle, modelFoundation)
+        if typeBuild == "CantileverColumn":
+            ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSeg, typeEle, modelFoundation)
+        else:
+            ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
         
     # Plot Model
     if plot_undefo == True:
@@ -113,17 +117,21 @@ for types in typeAnalysis:
     # Run Analysis
     Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
     fa.gravity(ALR*Pno, ControlNode)
-    fr.recordPushover(ControlNode, outputDir)
+    fr.recordPushover(ControlNode, BaseNode, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
     coordsFiberCt2= fr.recordStressStrain(outputDir, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
     coordsFiberCt1= fr.recordStressStrain(outputDir, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
     if types == 'monotonic':
+        start_time_monotonic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(f"Monotonic Pushover Analysis Initiated at {(time.time() - start_time):.0f}.")
+        print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         fa.pushoverDCF(dispTarget, ControlNode)
+        finish_time_monotonic = time.time()
+        mins = int((finish_time_monotonic - start_time_monotonic)/60)
+        secs = int((finish_time_monotonic - start_time_monotonic)%60)
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(f"Monotonic Pushover Analysis Finished at {(time.time() - start_time):.0f}.")
+        print(f"Monotonic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
@@ -131,12 +139,16 @@ for types in typeAnalysis:
             sfac = opv.plot_defo()
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
+        start_time_cyclic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(f"Cyclic Pushover Analysis Initiated at {(time.time() - start_time):.0f}.")
+        print(f"Cyclic Pushover Analysis Initiated at {(time.time() - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         fa.cyclicAnalysis(dispTarList, ControlNode)
+        finish_time_cyclic = time.time()
+        mins = int((finish_time_cyclic - start_time_cyclic)/60)
+        secs = int((finish_time_cyclic - start_time_cyclic)%60)
         print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(f"Cyclic Pushover Analysis Finished at {(time.time() - start_time):.0f}.")
+        print(f"Cyclic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
@@ -156,9 +168,11 @@ for types in typeAnalysis:
         fp.plotStressStrain(outputDir, 'fiberCt2', 'top')
         fp.plotStressStrain(outputDir, 'fiberCt2', 'bot')
 
-end_time = time.time()
-elapsed_time = end_time - start_time
-print(f"\nElapsed time: {elapsed_time:.0f} seconds")
+end_time        = time.time()
+elapsed_time    = end_time - start_time
+mins            = int(elapsed_time/60)
+secs            = int(elapsed_time%60)
+print(f"\nElapsed time: {mins}min+{secs}sec")
 print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 print("The analysis was run successfully.")
 print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")

@@ -114,8 +114,9 @@ for types in typeAnalysis:
     Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
     fa.gravity(ALR*Pno, ControlNode)
     fr.recordPushover(ControlNode, outputDir)
-    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt", 1, Hw+tf, tf,   NfibeY)                   # tagMatSt=1
-    coordsFiberCt = fr.recordStressStrain(outputDir, "fiberCt", 3, Hw   , Hw/2, NfibeY*int(Hw/tf/10))     # tagMatCt=3
+    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
+    coordsFiberCt2= fr.recordStressStrain(outputDir, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
+    coordsFiberCt1= fr.recordStressStrain(outputDir, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
     if types == 'monotonic':
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(time.time() - start_time):.0f}.")
@@ -133,7 +134,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Cyclic Pushover Analysis Initiated at {(time.time() - start_time):.0f}.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.cyclicAnalysis(dispTarList, ControlNode, cyclesPerDisp)
+        fa.cyclicAnalysis(dispTarList, ControlNode)
         print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Cyclic Pushover Analysis Finished at {(time.time() - start_time):.0f}.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
@@ -148,10 +149,12 @@ for types in typeAnalysis:
 #=============================================================================
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
-        fp.plotStressStrain(outputDir, 'fiberSt', 'top')
-        fp.plotStressStrain(outputDir, 'fiberSt', 'bot')
-        fp.plotStressStrain(outputDir, 'fiberCt', 'top')
-        fp.plotStressStrain(outputDir, 'fiberCt', 'bot')
+        fp.plotStressStrain(outputDir, 'fiberSt',  'top')
+        fp.plotStressStrain(outputDir, 'fiberSt',  'bot')
+        fp.plotStressStrain(outputDir, 'fiberCt1', 'top')
+        fp.plotStressStrain(outputDir, 'fiberCt1', 'bot')
+        fp.plotStressStrain(outputDir, 'fiberCt2', 'top')
+        fp.plotStressStrain(outputDir, 'fiberCt2', 'bot')
 
 end_time = time.time()
 elapsed_time = end_time - start_time

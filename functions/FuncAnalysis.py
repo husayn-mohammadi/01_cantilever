@@ -65,7 +65,7 @@ def pushoverDCF(dispTarget, ControlNode):
     ops.numberer('RCM')
     ops.system('BandGen')
     
-    numIncrList = [*(1*[10]), *(10*[7]), *(1*[10])]
+    numIncrList = [*(1*[30]), *(10*[15]), *(1*[30])]
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)

@@ -34,21 +34,21 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 40            # Number of Fibers along Y-axis
+NfibeY          = 10            # Number of Fibers along Y-axis
 
-PHL             = 24 *inch     # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 3            # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
+PHL             = 24 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
+numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 
 # Monotonic Pushover Analysis
-dispTarget      = 25 *cm
+dispTarget      = 15 *cm
 
 # Cyclic Pushover Analysis
-dY              = 11 *mm
+dY              = 0.6 *mm
 CPD1            = 1             # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
-                    *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD1*[6*dY]),   *(CPD1*[7*dY]),
-                    # *(CPD2*[8*dY]), *(CPD2*[9*dY]),   *(CPD2*[10*dY])
+                    *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
+                    *(CPD2*[8*dY]), *(CPD2*[9*dY]),   *(CPD2*[10*dY])
                    ]
 
 
@@ -60,7 +60,7 @@ sfac            = 10
 plot_anim_defo  = False
     
 plot_Analysis   = True
-plot_section    = False
+plot_section    = True
 
 vfo_display     = False
 #=============================================================================

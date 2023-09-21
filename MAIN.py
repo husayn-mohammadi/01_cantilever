@@ -27,12 +27,12 @@ exec(open("Input/materialParameters.py").read())
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'ShearCritBeam'        # 'CantileverColumn', 'ShearCritBeam'
+typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 10            # Number of Fibers along Y-axis
 

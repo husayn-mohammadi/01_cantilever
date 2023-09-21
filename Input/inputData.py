@@ -39,7 +39,7 @@ A_Composite_Ct2 = tc*Hc2*2      # Ct2   (confined) is used for boundary elements
 
 
 #       Element Length
-L               = 20 *inch
+L               = 25 *inch
 
 
 

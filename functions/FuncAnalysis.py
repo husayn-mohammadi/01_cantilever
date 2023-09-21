@@ -65,7 +65,7 @@ def pushoverDCF(dispTarget, ControlNode):
     ops.numberer('RCM')
     ops.system('BandGen')
     
-    numIncrList = [*(1*[10]), *(10*[7]), *(1*[10])]
+    numIncrList = [*(1*[30]), *(10*[15]), *(1*[30])]
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
@@ -146,7 +146,7 @@ def pushoverDCF(dispTarget, ControlNode):
     return OK
 
 
-def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=2):
+def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
     
     ControlNodeDoF  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce

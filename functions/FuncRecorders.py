@@ -3,11 +3,11 @@ import openseespy.opensees as ops
 
 
 
-def recordPushover(ControlNode, outputDir):
+def recordPushover(ControlNode, BaseNode, outputDir):
     
     #   recorder('Node', '-file', filename,                    '-time', '-node', *nodeTags=[], '-dof', *dofs=[], respType)
     ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt", '-time', '-node', ControlNode,  '-dof', 1,        'disp')
-    ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', 2,            '-dof', 1,        'reaction')
+    ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', BaseNode,     '-dof', 1,        'reaction')
 
 def recordStressStrain(outputDir, fiberMat, tagMat, H, tf, NfibeY):
     

@@ -24,48 +24,50 @@ def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBea
              
     #       Define Nodes & Elements
     ##      Define Base Node
-    ops.node(1, 0., 0.)
-    ops.fix(1, 1, 1, 1)
+    tagBaseNode = 1
+    ops.node(tagBaseNode, 0., 0.)
+    ops.fix( tagBaseNode, 1, 1, 1)
     
     ##      Define Foundation Node
-    ops.node(2, 0., 0.)
+    tagFndnNode = 2
+    ops.node(tagFndnNode, 0., 0.)
     
     if modelFoundation == True:
-        ops.fix( 2, 1,  1, 0)
+        ops.fix( tagFndnNode, 1,  1, 0)
     else:
-        ops.fix( 2, 1,  1, 1)
+        ops.fix( tagFndnNode, 1,  1, 1)
         
     k_rot       = 8400000 *kip*inch
     ops.uniaxialMaterial('Elastic',   100000, k_rot)
     # ops.uniaxialMaterial('ElasticPP', 100000, k_rot, 0.002)
     
-    #   element('zeroLength', eleTag, *eleNodes, '-mat', *matTags, '-dir', *dirs)
-    ops.element('zeroLength', 100000, *[1, 2],   '-mat', 100000,   '-dir', 3)
+    #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
+    ops.element('zeroLength', 100000, *[tagBaseNode, tagFndnNode],  '-mat', 100000,   '-dir', 3)
     
     #       Define Elements
     ##      Define Nonlinear Elements
     for i in range(0, numSeg):
         
-        ops.node(i+3, 0., ((i+1)/numSeg)*PlasticHingeLength)
+        ops.node(i+1+tagFndnNode, 0., ((i+1)/numSeg)*PlasticHingeLength)
         
         if typeEle == 'forceBeamColumn':
-            #   element('forceBeamColumn', eleTag,   *eleNodes,     transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+2, i+3],   tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
+            #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
+            ops.element('forceBeamColumn', i+1,      *[i+tagFndnNode, i+1+tagFndnNode], tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
         elif typeEle == 'dispBeamColumn':
-            #   element('dispBeamColumn',  eleTag,   *eleNodes,     transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-            ops.element('dispBeamColumn',  i+1,      *[i+2, i+3],   tagGTPDelta, tagInt)
+            #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
+            ops.element('dispBeamColumn',  i+1,      *[i+tagFndnNode, i+1+tagFndnNode], tagGTPDelta, tagInt)
         else:
             print('UNKNOWN element type!!!');sys.exit()
             
 
     ##      Define Linear Element
-    tagTopNode  = numSeg+3
+    tagTopNode  = numSeg + tagFndnNode + 1
     ops.node(tagTopNode, 0., L)
     
-    #   element('elasticBeamColumn', eleTag,   *eleNodes,               secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
-    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+2, numSeg+3],   tagSec, tagGTPDelta)
+    #   element('elasticBeamColumn', eleTag,   *eleNodes,                                       secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
+    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagFndnNode, numSeg + tagFndnNode + 1], tagSec, tagGTPDelta)
     
-    return(tagTopNode)
+    return(tagTopNode, tagFndnNode)
 
 def buildCantileverL(L, E, I, A):
     
@@ -86,7 +88,45 @@ def buildCantileverL(L, E, I, A):
     ops.element('elasticBeamColumn', 1, *[1, 2], A, E, I, tagGTPDelta)
 
 
-
+def buildShearCritBeam(tagSec, L, numSeg=3, typeEle='dispBeamColumn'):
+    
+    maxIter     = 10
+    tol         = 1e-12
+    
+    #       Define Geometric Transformation
+    tagGTLinear = 1
+    ops.geomTransf('Linear', tagGTLinear)
+    
+    
+    #       Define beamIntegrator
+    tagInt      = 1
+    NIP         = 5
+    ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    
+    #       Define Nodes & Elements
+    ##      Define Base Node
+    tagBaseNode = 1
+    ops.node(tagBaseNode, 0., 0.)
+    ops.fix( tagBaseNode, 1, 1, 1)
+    
+    #       Define Elements
+    ##      Define Nonlinear Elements
+    for i in range(0, numSeg):
+        
+        ops.node(i+1+tagBaseNode, 0., ((i+1)/numSeg)*L)
+        
+        if typeEle == 'forceBeamColumn':
+            #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
+            ops.element('forceBeamColumn', i+1,      *[i+tagBaseNode, i+1+tagBaseNode], tagGTLinear, tagInt,         '-iter', maxIter,    tol)
+        elif typeEle == 'dispBeamColumn':
+            #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
+            ops.element('dispBeamColumn',  i+1,      *[i+tagBaseNode, i+1+tagBaseNode], tagGTLinear, tagInt)
+        else:
+            print('UNKNOWN element type!!!');sys.exit()
+                 
+    tagTopNode = numSeg+1
+    ops.fix(tagTopNode, 0, 1, 1)
+    return(tagTopNode, tagBaseNode)
 
 
 # ops.wipe()

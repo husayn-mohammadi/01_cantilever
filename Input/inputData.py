@@ -23,7 +23,7 @@ tf      = 3/16  *inch           # Height
 
 ###     Faceplates
 tw      = 3/16  *inch           # Width
-Hw      = 15.   *inch           # Height
+Hw      = 16.   *inch           # Height
 
 ###     Concrete Core
 tc      = 9.    *inch           # Width

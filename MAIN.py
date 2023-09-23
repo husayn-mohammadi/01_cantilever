@@ -27,7 +27,7 @@ exec(open("Input/materialParameters.py").read())
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
@@ -40,10 +40,10 @@ PHL             = 24 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
 numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
 
 # Monotonic Pushover Analysis
-dispTarget      = 15 *cm
+dispTarget      = 10.5 *cm
 
 # Cyclic Pushover Analysis
-dY              = 0.6 *mm
+dY              = 0.33 *mm
 CPD1            = 1             # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
@@ -103,6 +103,12 @@ for types in typeAnalysis:
     else:
         if typeBuild == "CantileverColumn":
             ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSeg, typeEle, modelFoundation)
+        elif typeBuild == 'coupledWalls':
+            H_story_List    = [4, *(5*[3.])]
+            L_Bay_List      = [7., 6., 5.]
+            Lw              = 4.
+            numSegBeam      = 5
+            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam)
         else:
             ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
         

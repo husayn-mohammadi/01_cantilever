@@ -27,7 +27,7 @@ exec(open("Input/materialParameters.py").read())
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
@@ -36,8 +36,6 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 10                        # Number of Fibers along Y-axis
 
-H_story_List    = [3.*m, *(2*[2.*m])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
-L_Bay_List      = [7.*m, 6.*m, 5.*m]        # [*LBays]
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node

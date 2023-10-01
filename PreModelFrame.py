@@ -10,7 +10,7 @@ numSegBeam      = 6
 numSegWall      = 3
 
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
+def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL):
     
     
     for L_Bay in L_Bay_List:
@@ -115,14 +115,14 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
             coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
             if i > 0:
                 ops.node(tagNode, *coordsLocal[tagNode])
-                key = f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i}"
-                Walls[key]  = [tagNode-1, tagNode ]
-                print(f"Wall{key} = {Walls[key]}")
+                tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i}")
+                Walls[tagElement]  = [tagNode-1, tagNode ]
+                print(f"Wall{tagElement} = {Walls[tagElement]}")
                 print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
                 print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
-        key = f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}"
-        Walls[key] = [tagNode,   tagNodeJ]
-        print(f"Wall{key} = {Walls[key]}")
+        tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}")
+        Walls[tagElement] = [tagNode,   tagNodeJ]
+        print(f"Wall{tagElement} = {Walls[tagElement]}")
         print(f"NodeI({tagNode}) = {coordsLocal[tagNode]}")
         print(f"NodeJ({tagNodeJ}) = {coordsGlobal[tagNodeJ]}")
         print("End")
@@ -163,19 +163,21 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
                                 # Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                             else:
                                 print("int(tagCoordYJ) != 1")
-                                Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
+                                tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}")
+                                Walls[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                         else:
-                            LeaningColumns[f"2{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 2 is for LeaningColumns
+                            tagElement = int(f"2{tagCoordXI}{tagCoordYI}{tagCoordYJ}")
+                            LeaningColumns[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 2 is for LeaningColumns
     
     ##  Define Walls
     for tagElement, tagNodes in Walls.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('elasticBeamColumn', int(tagElement), *tagNodes, A, E, I, tagGTPDelta)
+        ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
         
     ##  Define LeaningColumns
     for tagElement, tagNodes in LeaningColumns.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('Truss', int(tagElement), *tagNodes, A, 1)
+        ops.element('Truss', tagElement, *tagNodes, A, 1)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -197,12 +199,13 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
                 if tagSuffixJ == '0' or tagSuffixI == '0':
                     if int(tagSuffixJ)-int(tagSuffixI) == -1 or int(tagSuffixJ)-int(tagSuffixI) == 2:
                         # print(f"{tagNodeI} VS {tagNodeJ} ==> tagRBeam = 5{tagCoordYI}{tagCoordXI}{tagSuffixI}{tagSuffixJ}")
-                        RBeams[f"6{tagCoordYI}{tagCoordXI}{tagSuffixI}{tagSuffixJ}"] = [tagNodeI, tagNodeJ]  #Prefix 6 is for RBeams
+                        tagElement = int(f"6{tagCoordYI}{tagCoordXI}{tagSuffixI}{tagSuffixJ}")
+                        RBeams[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 6 is for RBeams
                     
     ##  Define Rigid Beams
     for tagElement, tagNodes in RBeams.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('elasticBeamColumn', int(tagElement), *tagNodes, 1e10*A, 1e10*E, 1e10*I, tagGTLinear)
+        ops.element('elasticBeamColumn', tagElement, *tagNodes, 1e10*A, 1e10*E, 1e10*I, tagGTLinear)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -223,8 +226,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
             coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
             if i > 0:
                 ops.node(tagNode, *coordsLocal[tagNode])
-                Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}{i}"]  = [tagNode-1, tagNode ]
-        Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}{numSegBeam}"] = [tagNode,   tagNodeJ]
+                tagElement = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}{i}")
+                Beams[tagElement]  = [tagNode-1, tagNode ]
+        tagElement = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}{numSegBeam}")
+        Beams[tagElement] = [tagNode,   tagNodeJ]
         
         # return(0)
         
@@ -253,17 +258,18 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
                 elif tagCoordXJ == gridLeaningColumn and tagCoordXI == f"{(len(L_Bay_List)-2):02}":
                     if int(tagSuffixJ)-int(tagSuffixI) == -2:
                         # print(f"{tagNodeI} VS {tagNodeJ} ==> tagTruss = 2{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
-                        Trusses[f"3{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 3 is for Trusses
+                        tagElement = int(f"3{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
+                        Trusses[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 3 is for Trusses
     
     ##  Define Beams
     for tagElement, tagNodes in Beams.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('elasticBeamColumn', int(tagElement), *tagNodes, A, E, I, tagGTLinear)
-        # ops.element('dispBeamColumn',    int(tagElement), *tagNodes, tagGTLinear, tagInt)
+        ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTLinear)
+        # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
     ##  Define Trusses
     for tagElement, tagNodes in Trusses.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('Truss', int(tagElement), *tagNodes, A, 1)
+        ops.element('Truss', tagElement, *tagNodes, A, 1)
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #   Define Top-Left corner node as Control Node
@@ -277,8 +283,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
 
     return(tagNodeControl, tagNodeBaseList, x, y, coords)
 
-
-tagNodeControl, tagNodeBaseList, buildingWidth, buildingHeight, coords = coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL)
+tagSec = 1
+tagNodeControl, tagNodeBaseList, buildingWidth, buildingHeight, coords = coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL)
 
 opv.plot_model(node_labels=0, element_labels=1, 
                fig_wi_he=(buildingWidth+10., buildingHeight+7.),

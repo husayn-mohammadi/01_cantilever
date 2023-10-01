@@ -2,12 +2,12 @@ import sys
 import openseespy.opensees     as ops
 import opsvis                  as opv
 
-H_story_List    = [6, *(1*[6.])]
-L_Bay_List      = [15., 5.]
+H_story_List    = [6, *(3*[6.])]
+L_Bay_List      = [7., 7., 5.]
 Lw              = 4.
-PHL             = 1. 
-numSegBeam      = 4
-numSegWall      = 5
+PHL             = 2. 
+numSegBeam      = 6
+numSegWall      = 3
 
 
 def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
@@ -104,12 +104,13 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
         
-        Lx = xJ - xI; Ly = yJ - yI
-        
-        lx = Lx/numSegWall; ly = Ly/numSegWall
+        Lx  = xJ - xI; Ly = yJ - yI
+        L   = (Lx**2 + Ly**2)**0.5
+        PHR = PHL/L
+        lx  = PHR*Lx/numSegWall; ly = PHR*Ly/numSegWall
         
         coordsLocal = {}
-        for i in range(0, numSegWall):
+        for i in range(0, numSegWall+1):
             tagNode = tagNodeI + i
             coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
             if i > 0:
@@ -119,7 +120,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
                 print(f"Wall{key} = {Walls[key]}")
                 print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
                 print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
-        key = f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{numSegWall}"
+        key = f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}"
         Walls[key] = [tagNode,   tagNodeJ]
         print(f"Wall{key} = {Walls[key]}")
         print(f"NodeI({tagNode}) = {coordsLocal[tagNode]}")
@@ -162,7 +163,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
                                 # Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                             else:
                                 print("int(tagCoordYJ) != 1")
-                                Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
+                                Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                         else:
                             LeaningColumns[f"2{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 2 is for LeaningColumns
     

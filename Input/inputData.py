@@ -23,7 +23,7 @@ tf      = 3/16  *inch           # Height
 
 ###     Faceplates
 tw      = 3/16  *inch           # Width
-Hw      = 16.   *inch           # Height
+Hw      = 36.   *inch           # Height
 
 ###     Concrete Core
 tc      = 9.    *inch           # Width
@@ -39,7 +39,7 @@ A_Composite_Ct2 = tc*Hc2*2      # Ct2   (confined) is used for boundary elements
 
 
 #       Element Length
-L               = 25 *inch
+L               = 108 *inch
 
 
 

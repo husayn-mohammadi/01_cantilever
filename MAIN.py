@@ -27,24 +27,27 @@ exec(open("Input/materialParameters.py").read())
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 10            # Number of Fibers along Y-axis
+NfibeY          = 10                        # Number of Fibers along Y-axis
 
-PHL             = 24 *inch      # Plastic Hinge Length (0.0 < PHLR < L)
-numSeg          = 3             # If numSeg=0, the model will be built only with one linear elastic element connecting the base node to top node
-
+H_story_List    = [3.*m, *(2*[2.*m])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
+L_Bay_List      = [7.*m, 6.*m, 5.*m]        # [*LBays]
+Lw              = Hw
+PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
+numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegBeam      = 4
 # Monotonic Pushover Analysis
 dispTarget      = 10.5 *cm
 
 # Cyclic Pushover Analysis
-dY              = 0.33 *mm
-CPD1            = 1             # CPD = cyclesPerDisp; which should be an integer
+dY              = 12 *mm
+CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
                     *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
@@ -77,9 +80,9 @@ for types in typeAnalysis:
     # Build Model
     ops.wipe()
     ops.model('basic', '-ndm', 2, '-ndf', 3)
-    tagSec = 1
     
     # Create the Fiber Section
+    tagSec = 1
     if typeSection == 'Rectangular':
         fib_sec = fs.makeSectionRect(tagSec, Hw, tc, typeMatSt, NfibeY*3) # Use the parameters of Concrete Core tc and Hw
     elif typeSection == 'I_Shaped':
@@ -102,19 +105,15 @@ for types in typeAnalysis:
         fm.buildCantileverL(L, Es, I, A)
     else:
         if typeBuild == "CantileverColumn":
-            ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSeg, typeEle, modelFoundation)
+            ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            H_story_List    = [4, *(5*[3.])]
-            L_Bay_List      = [7., 6., 5.]
-            Lw              = 4.
-            numSegBeam      = 5
-            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam)
+            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL)
         else:
             ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model()
+        opv.plot_model(node_labels=0, element_labels=0)
     if vfo_display == True:
         vfo.createODB(model="BuildingModel")
         print('BuildingModel is created!')

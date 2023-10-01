@@ -2,14 +2,15 @@ import sys
 import openseespy.opensees     as ops
 import opsvis                  as opv
 
-H_story_List    = [4, *(5*[3.])]
-L_Bay_List      = [7., 6., 5.]
+H_story_List    = [6, *(1*[6.])]
+L_Bay_List      = [15., 5.]
 Lw              = 4.
-numSegBeam      = 5
+PHL             = 1. 
+numSegBeam      = 4
+numSegWall      = 5
 
 
-
-def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
+def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL):
     
     
     for L_Bay in L_Bay_List:
@@ -35,7 +36,6 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
             # gridKey         = f"{gridList[gridIndex]}"
             # print(gridKey)
             # print(f"Grid x = {x}")
-            
             tagNode         = int(f"1{storyNum:02}{gridIndex:02}0")
             coords[tagNode] = [x, y]
             
@@ -48,10 +48,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
                 tagNode     = int(f"1{storyNum:02}{gridIndex:02}2")
                 coords[tagNode] = [x+Lw/2, y]
                 
-            
-            
             x               += L_Bay
-            
         y               += storyH
             
     #   Build Model
@@ -60,10 +57,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     
     #   Define Nodes
     for tagNode, coord in coords.items():
-        # tagYCoord   = f"{tagNode}"[1:-3]
+        # tagCoordY   = f"{tagNode}"[1:-3]
         # tagSuffix   = f"{tagNode}"[-1]
         ops.node(tagNode, *coord)
-        # if tagYCoord == '00' and tagSuffix != '0': #this is to skip the nodes at base whose suffices are not 0
+        # if tagCoordY == '00' and tagSuffix != '0': #this is to skip the nodes at base whose suffices are not 0
         #     continue
         # else:
         #     # print(f"tagNode = {tagNode}\tcoord = {coord}")
@@ -72,8 +69,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     #   Put base node tags into a list
     tagNodeBaseList = []
     for tagNode, coord in coords.items():
-        tagYCoord   = f"{tagNode}"[1:-3]
-        if tagYCoord == '00':
+        tagCoordY   = f"{tagNode}"[1:-3]
+        if tagCoordY == '00':
             tagNodeBaseList.append(tagNode)
     
     #   Assign Constraints
@@ -102,30 +99,72 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
     
+    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL, numSegWall=1):
+        
+        xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
+        xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
+        
+        Lx = xJ - xI; Ly = yJ - yI
+        
+        lx = Lx/numSegWall; ly = Ly/numSegWall
+        
+        coordsLocal = {}
+        for i in range(0, numSegWall):
+            tagNode = tagNodeI + i
+            coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
+            if i > 0:
+                ops.node(tagNode, *coordsLocal[tagNode])
+                key = f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i}"
+                Walls[key]  = [tagNode-1, tagNode ]
+                print(f"Wall{key} = {Walls[key]}")
+                print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
+                print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
+        key = f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{numSegWall}"
+        Walls[key] = [tagNode,   tagNodeJ]
+        print(f"Wall{key} = {Walls[key]}")
+        print(f"NodeI({tagNode}) = {coordsLocal[tagNode]}")
+        print(f"NodeJ({tagNodeJ}) = {coordsGlobal[tagNodeJ]}")
+        print("End")
+        # return(0)
+        
     gridLeaningColumn = f"{(len(L_Bay_List)-1):02}"
     
     Walls           = {}
     LeaningColumns  = {}
     for tagNode, coord in coords.items():
+        print("LOOP1:")
+        print(f"tagNode = {tagNode}\tcoord = {coord}")
         if f"{tagNode}"[-1] == '0':
             tagNodeI    = tagNode
-            tagXCoordI  = f"{tagNodeI}"[3:-1]
-            tagYCoordI  = f"{tagNodeI}"[1:-3]
-            # print(tagCoordI)
+            tagCoordXI  = f"{tagNodeI}"[3:-1]
+            tagCoordYI  = f"{tagNodeI}"[1:-3]
+            print(f"tagCoordXI = {tagCoordXI}\ttagCoordYI = {tagCoordYI}")
         for tagNode, coord in coords.items():
+            print("LOOP2:")
+            print(f"tagNode = {tagNode}\tcoord = {coord}")
             if f"{tagNode}"[-1] == '0':
                 tagNodeJ    = tagNode
-                tagXCoordJ  = f"{tagNodeJ}"[3:-1]
-                tagYCoordJ  = f"{tagNodeJ}"[1:-3]
+                tagCoordXJ  = f"{tagNodeJ}"[3:-1]
+                tagCoordYJ  = f"{tagNodeJ}"[1:-3]
+                print(f"tagCoordXJ = {tagCoordXJ}\ttagCoordYJ = {tagCoordYJ}")
                 
-            if tagXCoordI == tagXCoordJ: # this makes it a column
-                if int(tagYCoordJ) - int(tagYCoordI) == 1: 
-                    # print(f"tagXCoordI={tagXCoordI}    gridLeaningColumn={gridLeaningColumn}")
-                    if tagXCoordI != gridLeaningColumn:
-                        # print(f"{tagNodeI} VS {tagNodeJ} ==> tagWall = 6{tagXCoordI}{tagYCoordI}{tagYCoordJ}")
-                        Walls[f"5{tagXCoordI}{tagYCoordI}{tagYCoordJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
-                    else:
-                        LeaningColumns[f"2{tagXCoordI}{tagYCoordI}{tagYCoordJ}"] = [tagNodeI, tagNodeJ]  #Prefix 2 is for LeaningColumns
+                if tagCoordXI == tagCoordXJ: # this makes it a column
+                    print("tagCoordXI == tagCoordXJ")
+                    if int(tagCoordYJ) - int(tagCoordYI) == 1: 
+                        print("int(tagCoordYJ) - int(tagCoordYI) == 1")
+                        print(f"tagCoordXI={tagCoordXI}    gridLeaningColumn={gridLeaningColumn}")
+                        if tagCoordXI != gridLeaningColumn:
+                            print("tagCoordXI != gridLeaningColumn")
+                            print(f"{tagNodeI} VS {tagNodeJ} ==> tagWall = 5{tagCoordXI}{tagCoordYI}{tagCoordYJ}")
+                            if int(tagCoordYJ) == 1:
+                                print("int(tagCoordYJ) == 1")
+                                discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coords, PHL, numSegWall)
+                                # Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
+                            else:
+                                print("int(tagCoordYJ) != 1")
+                                Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
+                        else:
+                            LeaningColumns[f"2{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 2 is for LeaningColumns
     
     ##  Define Walls
     for tagElement, tagNodes in Walls.items():
@@ -144,20 +183,20 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     RBeams = {}
     for tagNode, coord in coords.items():
         tagNodeI    = tagNode
-        tagXCoordI  = f"{tagNodeI}"[3:-1]
-        tagYCoordI  = f"{tagNodeI}"[1:-3]
+        tagCoordXI  = f"{tagNodeI}"[3:-1]
+        tagCoordYI  = f"{tagNodeI}"[1:-3]
         tagSuffixI  = f"{tagNodeI}"[-1]
         for tagNode, coord in coords.items():
             tagNodeJ    = tagNode
-            tagXCoordJ  = f"{tagNodeJ}"[3:-1]
-            tagYCoordJ  = f"{tagNodeJ}"[1:-3]
+            tagCoordXJ  = f"{tagNodeJ}"[3:-1]
+            tagCoordYJ  = f"{tagNodeJ}"[1:-3]
             tagSuffixJ  = f"{tagNodeJ}"[-1]
             
-            if tagXCoordI == tagXCoordJ and tagYCoordI == tagYCoordJ and (tagYCoordI != '00' or tagYCoordJ != '00'):
+            if tagCoordXI == tagCoordXJ and tagCoordYI == tagCoordYJ and (tagCoordYI != '00' or tagCoordYJ != '00'):
                 if tagSuffixJ == '0' or tagSuffixI == '0':
                     if int(tagSuffixJ)-int(tagSuffixI) == -1 or int(tagSuffixJ)-int(tagSuffixI) == 2:
-                        # print(f"{tagNodeI} VS {tagNodeJ} ==> tagRBeam = 5{tagYCoordI}{tagXCoordI}{tagSuffixI}{tagSuffixJ}")
-                        RBeams[f"6{tagYCoordI}{tagXCoordI}{tagSuffixI}{tagSuffixJ}"] = [tagNodeI, tagNodeJ]  #Prefix 6 is for RBeams
+                        # print(f"{tagNodeI} VS {tagNodeJ} ==> tagRBeam = 5{tagCoordYI}{tagCoordXI}{tagSuffixI}{tagSuffixJ}")
+                        RBeams[f"6{tagCoordYI}{tagCoordXI}{tagSuffixI}{tagSuffixJ}"] = [tagNodeI, tagNodeJ]  #Prefix 6 is for RBeams
                     
     ##  Define Rigid Beams
     for tagElement, tagNodes in RBeams.items():
@@ -168,7 +207,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     
     #   Beams and Trusses:
     ##  Define tags of  Beams and Trusses
-    def discretizeBeam(tagNodeI, tagNodeJ, tagYCoordI, tagXCoordI, tagXCoordJ, Beams, coordsGlobal, numSegBeam=1):
+    def discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coordsGlobal, numSegBeam=1):
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
@@ -183,8 +222,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
             coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
             if i > 0:
                 ops.node(tagNode, *coordsLocal[tagNode])
-                Beams[f"4{tagYCoordI}{tagXCoordI}{tagXCoordJ}{i}"]  = [tagNode-1, tagNode ]
-        Beams[f"4{tagYCoordI}{tagXCoordI}{tagXCoordJ}{numSegBeam}"] = [tagNode,   tagNodeJ]
+                Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}{i}"]  = [tagNode-1, tagNode ]
+        Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}{numSegBeam}"] = [tagNode,   tagNodeJ]
         
         # return(0)
         
@@ -192,28 +231,28 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     Trusses = {}
     for tagNode, coord in coords.items():
         tagNodeI    = tagNode
-        tagXCoordI  = f"{tagNodeI}"[3:-1]
-        tagYCoordI  = f"{tagNodeI}"[1:-3]
+        tagCoordXI  = f"{tagNodeI}"[3:-1]
+        tagCoordYI  = f"{tagNodeI}"[1:-3]
         tagSuffixI  = f"{tagNodeI}"[-1]
         for tagNode, coord in coords.items():
             tagNodeJ    = tagNode
-            tagXCoordJ  = f"{tagNodeJ}"[3:-1]
-            tagYCoordJ  = f"{tagNodeJ}"[1:-3]
+            tagCoordXJ  = f"{tagNodeJ}"[3:-1]
+            tagCoordYJ  = f"{tagNodeJ}"[1:-3]
             tagSuffixJ  = f"{tagNodeJ}"[-1]
             
-            if tagXCoordI != tagXCoordJ and tagYCoordI == tagYCoordJ and (tagYCoordI != '00' or tagYCoordJ != '00'):
+            if tagCoordXI != tagCoordXJ and tagCoordYI == tagCoordYJ and (tagCoordYI != '00' or tagCoordYJ != '00'):
                 # build beam
-                if tagXCoordJ != gridLeaningColumn:
-                    if int(tagSuffixJ)-int(tagSuffixI) == -1 and int(tagXCoordJ)-int(tagXCoordI) == 1:
+                if tagCoordXJ != gridLeaningColumn:
+                    if int(tagSuffixJ)-int(tagSuffixI) == -1 and int(tagCoordXJ)-int(tagCoordXI) == 1:
                         if tagSuffixI != '0' and tagSuffixJ != '0':
-                            # print(f"{tagNodeI} VS {tagNodeJ} ==> tagBeam = 4{tagYCoordI}{tagXCoordI}{tagXCoordJ}")
-                            discretizeBeam(tagNodeI, tagNodeJ, tagYCoordI, tagXCoordI, tagXCoordJ, Beams, coords, numSegBeam)
-                            # Beams[f"4{tagYCoordI}{tagXCoordI}{tagXCoordJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
+                            # print(f"{tagNodeI} VS {tagNodeJ} ==> tagBeam = 4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
+                            discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, numSegBeam)
+                            # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
                 # build truss
-                elif tagXCoordJ == gridLeaningColumn and tagXCoordI == f"{(len(L_Bay_List)-2):02}":
+                elif tagCoordXJ == gridLeaningColumn and tagCoordXI == f"{(len(L_Bay_List)-2):02}":
                     if int(tagSuffixJ)-int(tagSuffixI) == -2:
-                        # print(f"{tagNodeI} VS {tagNodeJ} ==> tagTruss = 2{tagYCoordI}{tagXCoordI}{tagXCoordJ}")
-                        Trusses[f"3{tagYCoordI}{tagXCoordI}{tagXCoordJ}"] = [tagNodeI, tagNodeJ]  #Prefix 3 is for Trusses
+                        # print(f"{tagNodeI} VS {tagNodeJ} ==> tagTruss = 2{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
+                        Trusses[f"3{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 3 is for Trusses
     
     ##  Define Beams
     for tagElement, tagNodes in Beams.items():
@@ -228,19 +267,19 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #   Define Top-Left corner node as Control Node
     for tagNode, coord in coords.items():
-        tagXCoordI  = f"{tagNode}"[3:-1]
-        tagYCoordI  = f"{tagNode}"[1:-3]
+        tagCoordXI  = f"{tagNode}"[3:-1]
+        tagCoordYI  = f"{tagNode}"[1:-3]
         tagSuffixI  = f"{tagNode}"[-1]
-        if tagSuffixI == '0' and tagXCoordI == '00' and tagYCoordI == f"{storyNum:02}":
+        if tagSuffixI == '0' and tagCoordXI == '00' and tagCoordYI == f"{storyNum:02}":
             tagNodeControl = tagNode
             print(f"tagNodeControl = {tagNodeControl}")
 
     return(tagNodeControl, tagNodeBaseList, x, y, coords)
 
 
-tagNodeControl, tagNodeBaseList, buildingWidth, buildingHeight, coords = coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam)
+tagNodeControl, tagNodeBaseList, buildingWidth, buildingHeight, coords = coupledWalls(H_story_List, L_Bay_List, Lw, numSegBeam, numSegWall, PHL)
 
-opv.plot_model(node_labels=0, element_labels=0, 
+opv.plot_model(node_labels=0, element_labels=1, 
                fig_wi_he=(buildingWidth+10., buildingHeight+7.),
                fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '.', 'markersize': 10})
 

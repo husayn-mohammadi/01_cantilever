@@ -1,131 +1,14 @@
-exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
-
 import sys
-import openseespy.opensees as ops
+import openseespy.opensees     as ops
+import opsvis                  as opv
 
+H_story_List    = [6, *(3*[6.])]
+L_Bay_List      = [7., 7., 5.]
+Lw              = 4.
+PHL             = 2. 
+numSegBeam      = 6
+numSegWall      = 3
 
-
-def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
-    
-    maxIter     = 10
-    tol         = 1e-12
-    
-    #       Define Geometric Transformation
-    tagGTLinear = 1
-    tagGTPDelta = 2
-    ops.geomTransf('Linear', tagGTLinear)
-    ops.geomTransf('PDelta', tagGTPDelta)
-    
-    
-    #       Define beamIntegrator
-    tagInt      = 1
-    NIP         = 5
-    ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
-             
-    #       Define Nodes & Elements
-    ##      Define Base Node
-    tagBaseNode = 1
-    ops.node(tagBaseNode, 0., 0.)
-    ops.fix( tagBaseNode, 1, 1, 1)
-    
-    ##      Define Foundation Node
-    tagFndnNode = 2
-    ops.node(tagFndnNode, 0., 0.)
-    
-    if modelFoundation == True:
-        ops.fix( tagFndnNode, 1,  1, 0)
-    else:
-        ops.fix( tagFndnNode, 1,  1, 1)
-        
-    k_rot       = 8400000 *kip*inch
-    ops.uniaxialMaterial('Elastic',   100000, k_rot)
-    # ops.uniaxialMaterial('ElasticPP', 100000, k_rot, 0.002)
-    
-    #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
-    ops.element('zeroLength', 100000, *[tagBaseNode, tagFndnNode],  '-mat', 100000,   '-dir', 3)
-    
-    #       Define Elements
-    ##      Define Nonlinear Elements
-    for i in range(0, numSeg):
-        
-        ops.node(i+1+tagFndnNode, 0., ((i+1)/numSeg)*PlasticHingeLength)
-        
-        if typeEle == 'forceBeamColumn':
-            #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+tagFndnNode, i+1+tagFndnNode], tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
-        elif typeEle == 'dispBeamColumn':
-            #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-            ops.element('dispBeamColumn',  i+1,      *[i+tagFndnNode, i+1+tagFndnNode], tagGTPDelta, tagInt)
-        else:
-            print('UNKNOWN element type!!!');sys.exit()
-            
-
-    ##      Define Linear Element
-    tagTopNode  = numSeg + tagFndnNode + 1
-    ops.node(tagTopNode, 0., L)
-    
-    #   element('elasticBeamColumn', eleTag,   *eleNodes,                                       secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
-    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagFndnNode, numSeg + tagFndnNode + 1], tagSec, tagGTPDelta)
-    
-    return(tagTopNode, tagFndnNode)
-
-def buildCantileverL(L, E, I, A):
-    
-    # Define Nodes
-    ops.node(1, 0., 0.)
-    ops.node(2, 0., L )
-        
-    # Assign boundary constraints
-    ops.fix(1, 1, 1, 1)
-    
-    # Define Geometric Transformation
-    tagGTLinear = 1
-    tagGTPDelta = 2
-    ops.geomTransf('Linear', tagGTLinear)
-    ops.geomTransf('PDelta', tagGTPDelta)
-    
-    # Define Element
-    ops.element('elasticBeamColumn', 1, *[1, 2], A, E, I, tagGTPDelta)
-
-def buildShearCritBeam(tagSec, L, numSeg=3, typeEle='dispBeamColumn'):
-    
-    maxIter     = 10
-    tol         = 1e-12
-    
-    #       Define Geometric Transformation
-    tagGTLinear = 1
-    ops.geomTransf('Linear', tagGTLinear)
-    
-    
-    #       Define beamIntegrator
-    tagInt      = 1
-    NIP         = 5
-    ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
-    
-    #       Define Nodes & Elements
-    ##      Define Base Node
-    tagBaseNode = 1
-    ops.node(tagBaseNode, 0., 0.)
-    ops.fix( tagBaseNode, 1, 1, 1)
-    
-    #       Define Elements
-    ##      Define Nonlinear Elements
-    for i in range(0, numSeg):
-        
-        ops.node(i+1+tagBaseNode, 0., ((i+1)/numSeg)*L)
-        
-        if typeEle == 'forceBeamColumn':
-            #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+tagBaseNode, i+1+tagBaseNode], tagGTLinear, tagInt,         '-iter', maxIter,    tol)
-        elif typeEle == 'dispBeamColumn':
-            #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-            ops.element('dispBeamColumn',  i+1,      *[i+tagBaseNode, i+1+tagBaseNode], tagGTLinear, tagInt)
-        else:
-            print('UNKNOWN element type!!!');sys.exit()
-                 
-    tagTopNode = numSeg+1
-    ops.fix(tagTopNode, 0, 1, 1)
-    return(tagTopNode, tagBaseNode)
 
 def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL):
     
@@ -200,10 +83,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     ops.geomTransf('Linear', tagGTLinear)
     ops.geomTransf('PDelta', tagGTPDelta)
     
-    #   Define beamIntegrator
-    tagInt      = 1
-    NIP         = 5
-    ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    #       Define beamIntegrator
+    # tagInt      = 1
+    # NIP         = 5
+    # ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     
     #   Define material and sections
@@ -234,15 +117,15 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
                 ops.node(tagNode, *coordsLocal[tagNode])
                 tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i}")
                 Walls[tagElement]  = [tagNode-1, tagNode ]
-                # print(f"Wall{tagElement} = {Walls[tagElement]}")
-                # print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
-                # print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
+                print(f"Wall{tagElement} = {Walls[tagElement]}")
+                print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
+                print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
         tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}")
         Walls[tagElement] = [tagNode,   tagNodeJ]
-        # print(f"Wall{tagElement} = {Walls[tagElement]}")
-        # print(f"NodeI({tagNode}) = {coordsLocal[tagNode]}")
-        # print(f"NodeJ({tagNodeJ}) = {coordsGlobal[tagNodeJ]}")
-        # print("End")
+        print(f"Wall{tagElement} = {Walls[tagElement]}")
+        print(f"NodeI({tagNode}) = {coordsLocal[tagNode]}")
+        print(f"NodeJ({tagNodeJ}) = {coordsGlobal[tagNodeJ]}")
+        print("End")
         # return(0)
         
     gridLeaningColumn = f"{(len(L_Bay_List)-1):02}"
@@ -250,36 +133,36 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     Walls           = {}
     LeaningColumns  = {}
     for tagNode, coord in coords.items():
-        # print("LOOP1:")
-        # print(f"tagNode = {tagNode}\tcoord = {coord}")
+        print("LOOP1:")
+        print(f"tagNode = {tagNode}\tcoord = {coord}")
         if f"{tagNode}"[-1] == '0':
             tagNodeI    = tagNode
             tagCoordXI  = f"{tagNodeI}"[3:-1]
             tagCoordYI  = f"{tagNodeI}"[1:-3]
-            # print(f"tagCoordXI = {tagCoordXI}\ttagCoordYI = {tagCoordYI}")
+            print(f"tagCoordXI = {tagCoordXI}\ttagCoordYI = {tagCoordYI}")
         for tagNode, coord in coords.items():
-            # print("LOOP2:")
-            # print(f"tagNode = {tagNode}\tcoord = {coord}")
+            print("LOOP2:")
+            print(f"tagNode = {tagNode}\tcoord = {coord}")
             if f"{tagNode}"[-1] == '0':
                 tagNodeJ    = tagNode
                 tagCoordXJ  = f"{tagNodeJ}"[3:-1]
                 tagCoordYJ  = f"{tagNodeJ}"[1:-3]
-                # print(f"tagCoordXJ = {tagCoordXJ}\ttagCoordYJ = {tagCoordYJ}")
+                print(f"tagCoordXJ = {tagCoordXJ}\ttagCoordYJ = {tagCoordYJ}")
                 
                 if tagCoordXI == tagCoordXJ: # this makes it a column
-                    # print("tagCoordXI == tagCoordXJ")
+                    print("tagCoordXI == tagCoordXJ")
                     if int(tagCoordYJ) - int(tagCoordYI) == 1: 
-                        # print("int(tagCoordYJ) - int(tagCoordYI) == 1")
-                        # print(f"tagCoordXI={tagCoordXI}    gridLeaningColumn={gridLeaningColumn}")
+                        print("int(tagCoordYJ) - int(tagCoordYI) == 1")
+                        print(f"tagCoordXI={tagCoordXI}    gridLeaningColumn={gridLeaningColumn}")
                         if tagCoordXI != gridLeaningColumn:
-                            # print("tagCoordXI != gridLeaningColumn")
-                            # print(f"{tagNodeI} VS {tagNodeJ} ==> tagWall = 5{tagCoordXI}{tagCoordYI}{tagCoordYJ}")
+                            print("tagCoordXI != gridLeaningColumn")
+                            print(f"{tagNodeI} VS {tagNodeJ} ==> tagWall = 5{tagCoordXI}{tagCoordYI}{tagCoordYJ}")
                             if int(tagCoordYJ) == 1:
-                                # print("int(tagCoordYJ) == 1")
+                                print("int(tagCoordYJ) == 1")
                                 discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coords, PHL, numSegWall)
                                 # Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                             else:
-                                # print("int(tagCoordYJ) != 1")
+                                print("int(tagCoordYJ) != 1")
                                 tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}")
                                 Walls[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                         else:
@@ -289,11 +172,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     ##  Define Walls
     for tagElement, tagNodes in Walls.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        if f"{tagElement}"[-1] == '0':
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
-        else:
-            # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+        ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
         
     ##  Define LeaningColumns
     for tagElement, tagNodes in LeaningColumns.items():
@@ -403,6 +282,27 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
             print(f"tagNodeControl = {tagNodeControl}")
 
     return(tagNodeControl, tagNodeBaseList, x, y, coords)
+
+tagSec = 1
+tagNodeControl, tagNodeBaseList, buildingWidth, buildingHeight, coords = coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL)
+
+opv.plot_model(node_labels=0, element_labels=1, 
+               fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+               fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '.', 'markersize': 10})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

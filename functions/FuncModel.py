@@ -88,44 +88,106 @@ def buildCantileverL(L, E, I, A):
     ops.element('elasticBeamColumn', 1, *[1, 2], A, E, I, tagGTPDelta)
 
 def buildShearCritBeam(tagSec, L, numSeg=3, typeEle='dispBeamColumn'):
-    
-    maxIter     = 10
-    tol         = 1e-12
-    
+    L = (520 *mm) * 1
     #       Define Geometric Transformation
     tagGTLinear = 1
     ops.geomTransf('Linear', tagGTLinear)
-    
-    
+
     #       Define beamIntegrator
-    tagInt      = 1
-    NIP         = 5
-    ops.beamIntegration('Legendre', tagInt, tagSec, NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    # tagInt      = 1
+    #   beamIntegration('HingeEndpoint', tag,    secI,  lpI, secJ, lpJ, secE)
+    # ops.beamIntegration('HingeEndpoint', tagInt, tagSec, 0.005*L, tagSec, 0.005*L, tagSec)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #       Define Nodes & Elements
     ##      Define Base Node
-    tagBaseNode = 1
-    ops.node(tagBaseNode, 0., 0.)
-    ops.fix( tagBaseNode, 1, 1, 1)
+    tagNodeBase = 1
+    ops.node(tagNodeBase, 0., 0.)
     
-    #       Define Elements
-    ##      Define Nonlinear Elements
-    for i in range(0, numSeg):
-        
-        ops.node(i+1+tagBaseNode, 0., ((i+1)/numSeg)*L)
-        
-        if typeEle == 'forceBeamColumn':
-            #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+tagBaseNode, i+1+tagBaseNode], tagGTLinear, tagInt,         '-iter', maxIter,    tol)
-        elif typeEle == 'dispBeamColumn':
-            #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-            ops.element('dispBeamColumn',  i+1,      *[i+tagBaseNode, i+1+tagBaseNode], tagGTLinear, tagInt)
-        else:
-            print('UNKNOWN element type!!!');sys.exit()
-                 
-    tagTopNode = numSeg+1
-    ops.fix(tagTopNode, 0, 1, 1)
-    return(tagTopNode, tagBaseNode)
+    ##      Define 1st Mid Node
+    tagNodeMid1 = 2
+    ops.node(tagNodeMid1, 0., 0.)
+    
+    ##      Define 2nd Mid Node
+    tagNodeMid2 = 3
+    ops.node(tagNodeMid2, 0., L)
+    
+    ##      Define Top Node
+    tagNodeTop = 4
+    ops.node(tagNodeTop, 0., L)
+    
+    # Boundary Costraints
+    ops.fix(tagNodeBase, 1, 1, 1)
+    ops.fix(tagNodeTop, 0, 1, 1)
+    ops.equalDOF(tagNodeBase, tagNodeMid1, 2)
+    ops.equalDOF(tagNodeTop, tagNodeMid2, 2)
+    
+    
+    
+
+    #       MATERIAL DEFINITIONS
+    E0                  = 200 *GPa                          # Kelastic (ksi)
+    G                   = E0/(2*(1+0.3))                    # Shear modulus (ksi)
+    Fy                  = 228 * MPa
+    
+    ##      Link Flexural-Hinge Material (Q11)
+    h                   = 350 *mm
+    b                   = 170 *mm
+    tw                  = 10 *mm
+    tf                  = 12 *mm
+    # A                   = h*b - (h-2*tf)*(b-tw)
+    Ashear              = h*tw;                                         print(f"Av = {Ashear*1000**2:.0f} mm2")
+    I                   = 1/12 * (b*h**3 - (b-tw)*(h-2*tf)**3);         print(f"I = {I*1000**4:.0f} mm4")
+    S                   = I/(h/2);                                      print(f"S = {S*1000**3:.0f} mm3")
+    Z                   = (b*tf) * (h-tf) + (h-2*tf)*tw/2 * (h-2*tf)/2; print(f"Z = {Z*1000**3:.0f} mm3")
+    ShapeFactor         = Z/S;                                          print(f"ShapeFactor = {ShapeFactor:.3f}")
+    Mp                  = Z*Fy;                                         print(f"Mp = {Mp:.1f} kN.m")
+    k_rot               = 6*E0*I/L                          # 6 for both ends fixed
+    tagMatHinge         = 10                                # HingeMat Identifier
+    ops.uniaxialMaterial('Steel01', tagMatHinge, Mp, k_rot, 0.001)
+
+    ##      Link Spring Shear Material
+    shearMaterialModel  = "Steel02"
+    tagMatSpring        = 20                                # SpringMat Identifier
+    Vp                  = 0.6*Fy*Ashear;                                print(f"Vp = {Vp:.1f} kN")
+    print(f"emax = {2*Mp/Vp*1000:.0f} mm")
+    # print(f"2.6Mp/L = {2.6*Mp/L:.1f} kN")
+    print(f"2.0Mp/L = {2.0*Mp/L:.1f} kN")
+    # print(f"1.6Mp/L = {1.6*Mp/L:.1f} kN")
+    k_trans             = 2*G*Ashear/L  
+    if shearMaterialModel == "Steel02":
+        b1              = 0.003                             # Ratio of Kyield to Kelastic
+        R0,cR1,cR2      = 18.5, 0.9, 0.1                    # cR1 specifies the radius. 10<=R0<=20
+        a1= a3          = 0.06
+        a2 = a4         = 1.0
+        ops.uniaxialMaterial('Steel02', tagMatSpring, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
+    elif shearMaterialModel == "Steel4":
+        b_k             = 0.0035
+        R0, r1, r2      = 8.0, 0.9, 0.25
+        b_i             = 0.0005
+        b_l             = 0.005
+        rho_i, R_i, l_yp= 2, 8.0, 0.0
+        f_u, R_u        = Vp, 8
+        #   uniaxialMaterial('Steel4', matTag,       Fy, E0,      '-kin', b_k, R0, r1, r2, '-iso', b_i, rho_i, b_l, R_i, l_yp, '-ult', f_u, R_u)
+        ops.uniaxialMaterial('Steel4', tagMatSpring, Vp, k_trans, '-kin', b_k, R0, r1, r2, '-iso', b_i, rho_i, b_l, R_i, l_yp, '-ult', f_u, R_u)
+    else:
+        print("Unknown Material Model!!!\nThe program stopped at FuncModel/buildShearCritBeam!"); sys.exit()
+    
+    ##      Define Nonlinear Elements (Option2: 2 dispBeamColumn + 1 zeroLength(amongst))
+    # ops.element('forceBeamColumn',   1, *[tagNodeMid1, tagNodeMid2], tagGTLinear, tagInt, '-iter', 10, 1e-12)
+    ops.element('elasticBeamColumn', 1, *[tagNodeMid1, tagNodeMid2], tagSec, tagGTLinear)
+    
+    #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags,                       '-dir', *dirs, <'-doRayleigh', rFlag=0>, <'-orient', *vecx, *vecyp>)
+    ops.element('zeroLength', 2,      *[tagNodeBase, tagNodeMid1],  '-mat', *[tagMatHinge, tagMatSpring],   '-dir', *[3, 1])
+    ops.element('zeroLength', 3,      *[tagNodeMid2, tagNodeTop],   '-mat', *[tagMatHinge, tagMatSpring],   '-dir', *[3, 1])
+    
+    return(tagNodeTop, tagNodeBase)
+
+#$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
+#$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
+#$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
+#$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
+#$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
+#$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
 def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL):
     
@@ -169,8 +231,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         y               += storyH
             
     #   Build Model
-    ops.wipe()
-    ops.model('basic', '-ndm', 2, '-ndf', 3)
+    # ops.wipe()
+    # ops.model('basic', '-ndm', 2, '-ndf', 3)
     
     #   Define Nodes
     for tagNode, coord in coords.items():
@@ -208,7 +270,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     
     #   Define material and sections
     A, E, I = 1e5, 200e9, 1
-    ops.uniaxialMaterial('Elastic', 1, E)
+    # ops.uniaxialMaterial('Elastic', 1, E)
     
     #######################################################################################################
     # Define Element
@@ -290,10 +352,13 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     for tagElement, tagNodes in Walls.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
         if f"{tagElement}"[-1] == '0':
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
         else:
-            # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
         
     ##  Define LeaningColumns
     for tagElement, tagNodes in LeaningColumns.items():
@@ -400,7 +465,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         tagSuffixI  = f"{tagNode}"[-1]
         if tagSuffixI == '0' and tagCoordXI == '00' and tagCoordYI == f"{storyNum:02}":
             tagNodeControl = tagNode
-            print(f"tagNodeControl = {tagNodeControl}")
+            # print(f"tagNodeControl = {tagNodeControl}")
 
     return(tagNodeControl, tagNodeBaseList, x, y, coords)
 

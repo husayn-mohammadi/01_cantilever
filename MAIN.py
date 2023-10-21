@@ -19,7 +19,7 @@ import functions.FuncPlot      as fp
 exec(open("Input/unitsSI_kN.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
 exec(open("Input/materialParameters.py").read())
-
+ops.logFile("logFile.txt")
 #=============================================================================
 #    Define Variables
 #=============================================================================
@@ -32,7 +32,7 @@ typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 10                        # Number of Fibers along Y-axis
 
@@ -41,7 +41,7 @@ PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR <
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 4
 # Monotonic Pushover Analysis
-dispTarget      = 10.5 *cm
+dispTarget      = 42 *mm
 
 # Cyclic Pushover Analysis
 dY              = 12 *mm
@@ -164,12 +164,12 @@ for types in typeAnalysis:
 #=============================================================================
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
-        fp.plotStressStrain(outputDir, 'fiberSt',  'top')
-        fp.plotStressStrain(outputDir, 'fiberSt',  'bot')
-        fp.plotStressStrain(outputDir, 'fiberCt1', 'top')
-        fp.plotStressStrain(outputDir, 'fiberCt1', 'bot')
-        fp.plotStressStrain(outputDir, 'fiberCt2', 'top')
-        fp.plotStressStrain(outputDir, 'fiberCt2', 'bot')
+        # fp.plotStressStrain(outputDir, 'fiberSt',  'top')
+        # fp.plotStressStrain(outputDir, 'fiberSt',  'bot')
+        # fp.plotStressStrain(outputDir, 'fiberCt1', 'top')
+        # fp.plotStressStrain(outputDir, 'fiberCt1', 'bot')
+        # fp.plotStressStrain(outputDir, 'fiberCt2', 'top')
+        # fp.plotStressStrain(outputDir, 'fiberCt2', 'bot')
 
 end_time        = time.time()
 elapsed_time    = end_time - start_time

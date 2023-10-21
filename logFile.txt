@@ -1,0 +1,3 @@
+ERROR: No ConvergenceTest yet specified
+WARNING analysis Static - no Algorithm yet specified, 
+ NewtonRaphson default will be used

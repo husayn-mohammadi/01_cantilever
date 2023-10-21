@@ -191,6 +191,7 @@ def buildShearCritBeam(tagSec, L, numSeg=3, typeEle='dispBeamColumn'):
 
 def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL):
     
+    modelLeaning = False     # True False
     
     for L_Bay in L_Bay_List:
         if L_Bay <= Lw:
@@ -361,9 +362,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
         
     ##  Define LeaningColumns
-    for tagElement, tagNodes in LeaningColumns.items():
-        # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('Truss', tagElement, *tagNodes, A, 1)
+    if modelLeaning == True:
+        for tagElement, tagNodes in LeaningColumns.items():
+            # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
+            ops.element('Truss', tagElement, *tagNodes, A, 1)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -453,9 +455,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTLinear)
         # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
     ##  Define Trusses
-    for tagElement, tagNodes in Trusses.items():
-        # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('Truss', tagElement, *tagNodes, A, 1)
+    if modelLeaning == True:
+        for tagElement, tagNodes in Trusses.items():
+            # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
+            ops.element('Truss', tagElement, *tagNodes, A, 1)
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #   Define Top-Left corner node as Control Node

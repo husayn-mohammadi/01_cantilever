@@ -27,24 +27,24 @@ ops.logFile("logFile.txt")
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 10                        # Number of Fibers along Y-axis
+NfibeY          = 3                        # Number of Fibers along Y-axis
 
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
-numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 4
+numSegWall      = 2                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegBeam      = 1
 # Monotonic Pushover Analysis
-dispTarget      = 42 *mm
+dispTarget      = 250 *mm
 
 # Cyclic Pushover Analysis
-dY              = 12 *mm
+dY              = 18 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),

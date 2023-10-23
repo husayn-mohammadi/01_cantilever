@@ -274,7 +274,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     
     
     #   Define material and sections
-    A, E, I = 1e5, 200e9, 1
+    A, E, I = 1e1, 200e9, 1e-2
     # ops.uniaxialMaterial('Elastic', 1, E)
     
     #######################################################################################################

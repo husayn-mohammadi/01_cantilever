@@ -191,7 +191,7 @@ def buildShearCritBeam(tagSec, L, numSeg=3, typeEle='dispBeamColumn'):
 
 def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL):
     
-    modelLeaning = False     # True False
+    modelLeaning = True     # True False
     
     for L_Bay in L_Bay_List:
         if L_Bay <= Lw:
@@ -216,13 +216,13 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
             # gridKey         = f"{gridList[gridIndex]}"
             # print(gridKey)
             # print(f"Grid x = {x}")
-            tagNode         = int(f"1{storyNum:02}{gridIndex:02}0")
+            tagNode         = int(f"1{storyNum:02}{gridIndex:02}0") # This is to create tagNode for wall MAIN nodes
             coords[tagNode] = [x, y]
             
-            if gridIndex == 0 and y != 0:
+            if gridIndex == 0 and y != 0: # This is to create tagNode for nodes at right side of wall in 1st x-grid (in each story level except for base)
                 tagNode     = int(f"1{storyNum:02}{gridIndex:02}2")
                 coords[tagNode] = [x+Lw/2, y]
-            elif gridIndex > 0 and gridIndex < len(L_Bay_List)-1 and y != 0:
+            elif gridIndex > 0 and gridIndex < len(L_Bay_List)-1 and y != 0: # This is to create tagNode for nodes at both side of wall in 1st x-grid (in each story level except for base)
                 tagNode     = int(f"1{storyNum:02}{gridIndex:02}1")
                 coords[tagNode] = [x-Lw/2, y]
                 tagNode     = int(f"1{storyNum:02}{gridIndex:02}2")
@@ -256,6 +256,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     #   Assign Constraints
     ops.fixY(0, *[1, 1, 1], '-tol', 1e-3)
     
+    if modelLeaning == False:
+        print(f"Width of the Building is {x} meters.")
+        ops.fixX(x, *[1, 1, 1], '-tol', 1e-3)
     
     #   Define Geometric Transformation
     tagGTLinear = 1
@@ -365,7 +368,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     if modelLeaning == True:
         for tagElement, tagNodes in LeaningColumns.items():
             # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-            ops.element('Truss', tagElement, *tagNodes, A, 1)
+            # ops.element('Truss', tagElement, *tagNodes, A, 1)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-10*I, tagGTPDelta)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     

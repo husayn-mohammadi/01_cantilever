@@ -5,8 +5,8 @@ import openseespy.opensees as ops
 
 def recordPushover(ControlNode, BaseNode, outputDir):
     
-    #   recorder('Node', '-file', filename,                    '-time', '-node', *nodeTags=[], '-dof', *dofs=[], respType)
-    ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt", '-time', '-node', ControlNode,  '-dof', 1,        'disp')
+    #   recorder('Node', '-file', filename,                        '-time', '-node', *nodeTags=[], '-dof', *dofs=[], respType)
+    ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt",     '-time', '-node', ControlNode,  '-dof', 1,        'disp')
     if type(BaseNode) == "list":
         ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', *BaseNode,     '-dof', 1,        'reaction')
     else: 

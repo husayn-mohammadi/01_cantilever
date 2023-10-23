@@ -319,7 +319,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     for tagNode, coord in coords.items():
         # print("LOOP1:")
         # print(f"tagNode = {tagNode}\tcoord = {coord}")
-        if f"{tagNode}"[-1] == '0':
+        if f"{tagNode}"[-1] == '0': # To distinguish the main nodes
             tagNodeI    = tagNode
             tagCoordXI  = f"{tagNodeI}"[3:-1]
             tagCoordYI  = f"{tagNodeI}"[1:-3]
@@ -327,7 +327,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         for tagNode, coord in coords.items():
             # print("LOOP2:")
             # print(f"tagNode = {tagNode}\tcoord = {coord}")
-            if f"{tagNode}"[-1] == '0':
+            if f"{tagNode}"[-1] == '0': # To distinguish the main nodes
                 tagNodeJ    = tagNode
                 tagCoordXJ  = f"{tagNodeJ}"[3:-1]
                 tagCoordYJ  = f"{tagNodeJ}"[1:-3]

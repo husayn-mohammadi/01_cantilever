@@ -5,11 +5,11 @@ import numpy             as np
 def plotPushoverX(outputDir):
     
     disp    = np.loadtxt(f"{outputDir}/top_disp.txt", delimiter= ' ')
-    reac    = np.loadtxt(f"{outputDir}/reaction.txt", delimiter= ' ')
+    # reac    = np.loadtxt(f"{outputDir}/reaction.txt", delimiter= ' ')
     
     x1       =  disp[:, 1]
-    Vx1      = -reac[:, 1]
-    # Vx1      = -disp[:, 0]
+    # Vx1      = -reac[:, 1]
+    Vx1      =  disp[:, 0]
     
     x0      = np.array([0.])
     Vx0     = np.array([0.])

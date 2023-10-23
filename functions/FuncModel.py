@@ -399,7 +399,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     ##  Define Rigid Beams
     for tagElement, tagNodes in RBeams.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('elasticBeamColumn', tagElement, *tagNodes, 1e10*A, 1e10*E, 1e10*I, tagGTLinear)
+        ops.element('elasticBeamColumn', tagElement, *tagNodes, 1e0*A, 1e0*E, 1e10*I, tagGTLinear)
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -464,7 +464,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     if modelLeaning == True:
         for tagElement, tagNodes in Trusses.items():
             # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-            ops.element('Truss', tagElement, *tagNodes, A, 1)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-10*I, tagGTLinear)
+            # ops.element('Truss', tagElement, *tagNodes, A, 1)
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #   Define Top-Left corner node as Control Node

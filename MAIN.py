@@ -54,6 +54,7 @@ dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.
 
 
 # Plotting Options:
+buildingWidth=10.; buildingHeight=7.
 plot_undefo     = True
 plot_loaded     = True
 plot_defo       = True
@@ -111,7 +112,8 @@ for types in typeAnalysis:
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=0, element_labels=0)
+        opv.plot_model(node_labels=1, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+                       fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     if vfo_display == True:
         vfo.createODB(model="BuildingModel")
         print('BuildingModel is created!')

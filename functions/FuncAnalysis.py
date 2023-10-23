@@ -1,12 +1,12 @@
-import openseespy.opensees as ops
+import openseespy.opensees     as ops
 import time
 import sys
-from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
+# from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 waitTime        = 0.0
 waitTime2       = 0.0
-testerList      = ['NormUnbalance', 'NormDispIncr', 'EnergyIncr', 'RelativeNormUnbalance']
-algorithmList   = [ 'KrylovNewton', 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr', 'RelativeNormUnbalance']
+algorithmList   = [ 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'Linear'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 def gravity(Py, ControlNode):
     
@@ -35,6 +35,7 @@ def gravity(Py, ControlNode):
     # ops.analyze(10)
     ops.analyze(1)
     # ops.loadConst('-time', 0.0)
+
 
 def pushoverDCF(dispTarget, ControlNode): 
     
@@ -111,7 +112,8 @@ def pushoverDCF(dispTarget, ControlNode):
                     if OK == 0:
                         break
                     else:
-                        print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
+                        print("==========\nAnalysis Failed!!\nReducing Incr:\n==========")
+                        # print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
                         curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
                         print(f"======>>> Current   Displacement\t= {curD}")
                         remD    = dispTar - curD
@@ -138,11 +140,14 @@ def pushoverDCF(dispTarget, ControlNode):
                 print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                 time.sleep(waitTime)
                 if tester == testerList[-1] and algorithm == algorithmList[-1]:
-                    print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print("*!*!*!*!*!* The monotonic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                    print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
+                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
+                    # print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
                     return OK
-    
+    # opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+
     return OK
 
 
@@ -233,7 +238,8 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
                             if OK == 0:
                                 break
                             else:
-                                print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
+                                # print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
+                                print("==========\nAnalysis Failed!!\nReducing Incr:\n==========")
                                 curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
                                 print(f"======>>> Current   Displacement\t= {curD}")
                                 remD    = dispTar - curD
@@ -260,9 +266,11 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
                         print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                         time.sleep(waitTime)
                         if tester == testerList[-1] and algorithm == algorithmList[-1]:
-                            print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                            # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                            print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             print("*!*!*!*!*!* The cyclic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                            print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
+                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
+                            # print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
                             return OK
                     
             

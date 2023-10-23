@@ -458,7 +458,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     ##  Define Beams
     for tagElement, tagNodes in Beams.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTLinear)
+        ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-4*I, tagGTLinear)
         # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
     ##  Define Trusses
     if modelLeaning == True:

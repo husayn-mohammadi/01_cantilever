@@ -429,8 +429,42 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         Beams[tagElement] = [tagNode,   tagNodeJ]
         
         # return(0)
-        
+    
+    # Spring Material Properties
+    E0                  = 200 *GPa                          # Kelastic (ksi)
+    G                   = E0/(2*(1+0.3))                    # Shear modulus (ksi)
+    Fy                  = 228 * MPa
+    
+    h                   = 350 *mm
+    b                   = 170 *mm
+    tw                  = 10 *mm
+    tf                  = 12 *mm
+    
+    Ashear              = h*tw;                                         print(f"Av = {Ashear*1000**2:.0f} mm2")
+    I                   = 1/12 * (b*h**3 - (b-tw)*(h-2*tf)**3);         print(f"I = {I*1000**4:.0f} mm4")
+    S                   = I/(h/2);                                      print(f"S = {S*1000**3:.0f} mm3")
+    Z                   = (b*tf) * (h-tf) + (h-2*tf)*tw/2 * (h-2*tf)/2; print(f"Z = {Z*1000**3:.0f} mm3")
+    ShapeFactor         = Z/S;                                          print(f"ShapeFactor = {ShapeFactor:.3f}")
+    Mp                  = Z*Fy;                                         print(f"Mp = {Mp:.1f} kN.m")
+    k_rot               = 6*E0*I/SBL                        # 6 for both ends fixed
+    tagMatHinge         = 10                                # HingeMat Identifier
+    ops.uniaxialMaterial('Steel01', tagMatHinge, Mp, k_rot, 0.001)
 
+    ##      Link Spring Shear Material
+    tagMatSpring        = 20                                # SpringMat Identifier
+    Vp                  = 0.6*Fy*Ashear;                                print(f"Vp = {Vp:.1f} kN")
+    print(f"emax = {2*Mp/Vp*1000:.0f} mm")
+    # print(f"2.6Mp/L = {2.6*Mp/SBL:.1f} kN")
+    print(f"2.0Mp/L = {2.0*Mp/SBL:.1f} kN")
+    # print(f"1.6Mp/L = {1.6*Mp/SBL:.1f} kN")
+    k_trans             = 2*G*Ashear/SBL  
+    
+    b1              = 0.003                             # Ratio of Kyield to Kelastic
+    R0,cR1,cR2      = 18.5, 0.9, 0.1                    # cR1 specifies the radius. 10<=R0<=20
+    a1= a3          = 0.06
+    a2 = a4         = 1.0
+    ops.uniaxialMaterial('Steel02', tagMatSpring, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
+    
     #   Beams and Trusses:
     ##  Define tags of  Beams and Trusses
     Beams   = {}

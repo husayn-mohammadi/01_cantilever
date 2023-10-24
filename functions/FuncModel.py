@@ -508,7 +508,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         ops.equalDOF(tagNodeFRR, tagNodeJ, 1, 2, *[3]) 
         # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
         
-    def FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coordsGlobal, SBL): # FBLR = Flexure Beam Length Ratio
+    def FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coordsGlobal, SBL): # FBLR = Flexure Beam Length Ratio
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
@@ -531,12 +531,16 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
         Beams[tagElement]   = [tagNodeFL, tagNodeFR]
         # Translational and Rotational Springs between Shear Link and Left  Flexure Beam
-        ops.equalDOF(tagNodeFR, tagNodeSL, 1, *[2, 3])  
+        ops.equalDOF(tagNodeFR, tagNodeSL, 1) 
+        tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
+        ops.element('zeroLength', tagElement, *[tagNodeFR, tagNodeSL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3]) 
         # Shear Link
         tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}3")
         Beams[tagElement]   = [tagNodeSL, tagNodeSR]
         # Translational and Rotational Springs between Shear Link and Right Flexure Beam
-        ops.equalDOF(tagNodeSR, tagNodeJ, 1, *[2, 3])
+        ops.equalDOF(tagNodeSR, tagNodeJ, 1)
+        tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
+        ops.element('zeroLength', tagElement, *[tagNodeSR, tagNodeJ], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
         # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
 
     #   Beams and Trusses:
@@ -561,8 +565,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
                         if tagSuffixI != '0' and tagSuffixJ != '0':
                             # print(f"{tagNodeI} VS {tagNodeJ} ==> tagBeam = 4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
                             # discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, numSegBeam)
-                            FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
-                            # FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, SBL)
+                            # FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
+                            FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
                             # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
                 # build truss
                 elif tagCoordXJ == gridLeaningColumn and tagCoordXI == f"{(len(L_Bay_List)-2):02}":

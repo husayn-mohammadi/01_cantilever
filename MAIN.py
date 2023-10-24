@@ -27,21 +27,22 @@ ops.logFile("logFile.txt")
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 3                        # Number of Fibers along Y-axis
+NfibeY          = 2                        # Number of Fibers along Y-axis
 
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
-numSegWall      = 2                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegWall      = 1                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 1
+SBL             = 0.5 *m
 # Monotonic Pushover Analysis
-dispTarget      = 250 *mm
+dispTarget      = 100 *mm
 
 # Cyclic Pushover Analysis
 dY              = 18 *mm
@@ -106,13 +107,13 @@ for types in typeAnalysis:
         if typeBuild == "CantileverColumn":
             ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL)
+            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL)
         else:
             ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=1, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+        opv.plot_model(node_labels=0, element_labels=1, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     if vfo_display == True:
         vfo.createODB(model="BuildingModel")

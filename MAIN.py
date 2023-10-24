@@ -32,7 +32,7 @@ typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 2                        # Number of Fibers along Y-axis
 
@@ -42,10 +42,10 @@ numSegWall      = 1                         # If numSegWall=0, the model will be
 numSegBeam      = 1
 SBL             = 0.5 *m
 # Monotonic Pushover Analysis
-dispTarget      = 100 *mm
+dispTarget      = 500 *mm
 
 # Cyclic Pushover Analysis
-dY              = 18 *mm
+dY              = 5 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),

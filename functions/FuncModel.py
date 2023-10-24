@@ -255,8 +255,11 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     
     #   Assign Constraints
     # ops.fixY(0, *[1, 1, 1], '-tol', 1e-3)
-    for node in tagNodeBaseList:
+    for node in tagNodeBaseList[:-1]:
         ops.fix(node, *[1, 1, 1])
+    # print(tagNodeBaseList[-1])
+    ops.fix(tagNodeBaseList[-1], *[1, 1, 0])
+    
     if modelLeaning == False:
         print(f"Width of the Building is {x} meters.")
         ops.fixX(x, *[1, 1, 1], '-tol', 1e-3)

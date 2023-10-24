@@ -278,7 +278,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     
     #   Define material and sections
     A, E, I = 1e1, 200e9, 1e-2
-    # ops.uniaxialMaterial('Elastic', 1, E)
+    tagMatTruss     = 99
+    ops.uniaxialMaterial('Elastic', tagMatTruss, E)
     
     #######################################################################################################
     # Define Element
@@ -372,7 +373,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     if modelLeaning == True:
         for tagElement, tagNodes in LeaningColumns.items():
             # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-            # ops.element('Truss', tagElement, *tagNodes, A, 1)
+            # ops.element('Truss', tagElement, *tagNodes, A, tagMatTruss)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
             ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-10*I, tagGTPDelta)
     
@@ -467,8 +468,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     if modelLeaning == True:
         for tagElement, tagNodes in Trusses.items():
             # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-10*I, tagGTLinear)
-            # ops.element('Truss', tagElement, *tagNodes, A, 1)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-10*I, tagGTLinear)
+            ops.element('Truss', tagElement, *tagNodes, A, tagMatTruss)
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #   Define Top-Left corner node as Control Node

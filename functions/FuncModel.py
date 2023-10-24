@@ -407,8 +407,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    #   Beams and Trusses:
-    ##  Define tags of  Beams and Trusses
+    
     def discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coordsGlobal, numSegBeam=1):
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
@@ -431,6 +430,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         
         # return(0)
         
+
+    #   Beams and Trusses:
+    ##  Define tags of  Beams and Trusses
     Beams   = {}
     Trusses = {}
     for tagNode, coord in coords.items():
@@ -450,7 +452,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
                     if int(tagSuffixJ)-int(tagSuffixI) == -1 and int(tagCoordXJ)-int(tagCoordXI) == 1:
                         if tagSuffixI != '0' and tagSuffixJ != '0':
                             # print(f"{tagNodeI} VS {tagNodeJ} ==> tagBeam = 4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
-                            discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, numSegBeam)
+                            # discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, numSegBeam)
+                            FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
+                            # FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, SBL)
                             # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
                 # build truss
                 elif tagCoordXJ == gridLeaningColumn and tagCoordXI == f"{(len(L_Bay_List)-2):02}":
@@ -462,8 +466,17 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
     ##  Define Beams
     for tagElement, tagNodes in Beams.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-4*I, tagGTLinear)
+        # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-4*I, tagGTLinear)
         # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
+        tagElementSuffix = f"{tagElement}"[-1]
+        if tagElementSuffix == '1' or tagElementSuffix == '2': # Flexure Beams
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-1*I, tagGTLinear)
+        elif tagElementSuffix == '3': # Shear Beams 
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-1*I, tagGTLinear)
+        else:
+            print("Error in defining beams!!!")
+        
+        
     ##  Define Trusses
     if modelLeaning == True:
         for tagElement, tagNodes in Trusses.items():

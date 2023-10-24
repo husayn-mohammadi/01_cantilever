@@ -362,8 +362,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
         if f"{tagElement}"[-1] == '0':
             # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
-            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
         else:
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)

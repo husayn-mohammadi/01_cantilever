@@ -28,6 +28,7 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
@@ -109,7 +110,7 @@ for types in typeAnalysis:
         if typeBuild == "CantileverColumn":
             ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL)
+            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL, typeCB)
         else:
             ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
         

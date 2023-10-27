@@ -14,9 +14,12 @@ ALR             = 0.0  # Axial Load Ratio
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-
-H_story_List    = [4.*m, *(4*[3.5*m])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
-L_Bay_List      = 1*[5.*m]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
+n               = 20
+H_first         = 4.  *m
+H_typical       = 3.5 *m
+L_Bay           = 4.  *m
+H_story_List    = [H_first, *((n-1)*[H_typical])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
+L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 
 #=============================================================================
 #    Elements

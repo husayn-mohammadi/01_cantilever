@@ -34,7 +34,7 @@ typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, Reinf
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 2                        # Number of Fibers along Y-axis
+NfibeY          = 10                        # Number of Fibers along Y-axis
 
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
@@ -42,15 +42,17 @@ numSegWall      = 1                         # If numSegWall=0, the model will be
 numSegBeam      = 1
 SBL             = 0.5 *m
 # Monotonic Pushover Analysis
-dispTarget      = 500 *mm
+dispTarget      = n*100 *mm
 
 # Cyclic Pushover Analysis
-dY              = 5 *mm
+dY              = 25 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
-dispTarList     = [ *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
+dispTarList     = [ 
+                    *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
                     *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
-                    *(CPD2*[8*dY]), *(CPD2*[9*dY]),   *(CPD2*[10*dY])
+                    *(CPD2*[8*dY]), *(CPD2*[9*dY]),   
+                    *(CPD2*[10*dY])
                    ]
 
 
@@ -63,7 +65,7 @@ sfac            = 10
 plot_anim_defo  = False
     
 plot_Analysis   = True
-plot_section    = True
+plot_section    = False
 
 vfo_display     = False
 #=============================================================================
@@ -113,7 +115,7 @@ for types in typeAnalysis:
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=0, element_labels=1, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+        opv.plot_model(node_labels=0, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     if vfo_display == True:
         vfo.createODB(model="BuildingModel")
@@ -142,7 +144,9 @@ for types in typeAnalysis:
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
-            sfac = opv.plot_defo()
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+                                 #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
+                                 )
             # opv.plot_defo(sfac)
     elif types == 'cyclic':
         start_time_cyclic = time.time()

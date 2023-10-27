@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import opsvis            as opv
 import numpy             as np
+exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
+unitForce   = "kN" if kN==1 else "N"   if N==1  else "kip"
+unitLength  = "m"  if m==1  else "cm"  if cm==1 else "mm" if mm==1 else "in." if inch==1 else "ft" 
 
 def plotPushoverX(outputDir):
     
@@ -21,7 +24,10 @@ def plotPushoverX(outputDir):
     np.savetxt(f"{outputDir}/Pushover.txt", x_Vx)
     
     fig, ax = plt.subplots()
-    plt.plot(x, Vx)
+    fig.suptitle(f"Pushover Curve: {outputDir[16:]}")
+    ax.set_ylabel(f'Shear ({unitForce})'); ax.set_xlabel(f'Displacement ({unitLength})')
+    plt.tight_layout()
+    plt.plot(x, Vx, linewidth=0.5)
     
     return x, Vx
 

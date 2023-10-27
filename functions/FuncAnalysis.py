@@ -5,8 +5,8 @@ import sys
 
 waitTime        = 0.0
 waitTime2       = 0.0
-testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr', 'RelativeNormUnbalance']
-algorithmList   = [ 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'Linear'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
+algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 def gravity(Py, ControlNode):
     
@@ -187,7 +187,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
             curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
-            numIncrList = [*(1*[5]), *(10*[3]), *(1*[5])]
+            numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")

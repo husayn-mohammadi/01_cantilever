@@ -67,7 +67,7 @@ def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBea
     #   element('elasticBeamColumn', eleTag,   *eleNodes,                                       secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
     ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagFndnNode, numSeg + tagFndnNode + 1], tagSec, tagGTPDelta)
     
-    return(tagTopNode, tagFndnNode)
+    return(tagTopNode, tagFndnNode, [1])
 
 def buildCantileverL(L, E, I, A):
     
@@ -368,7 +368,14 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
-        
+    
+    ## Define tag of Wall base elements as an output for stress-strain curve
+    tagElementWallBase = []
+    for tagElement, tagNodes in Walls.items():
+        if f"{tagElement}"[-1] == '1':
+            tagElementWallBase.append(tagElement)
+    print("tagElementWallBase = {tagElementWallBase}")
+    
     ##  Define LeaningColumns
     if modelLeaning == True:
         for tagElement, tagNodes in LeaningColumns.items():
@@ -610,7 +617,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
             tagNodeControl = tagNode
             # print(f"tagNodeControl = {tagNodeControl}")
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase)
 
 
 

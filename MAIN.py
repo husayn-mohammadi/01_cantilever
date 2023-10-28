@@ -108,9 +108,9 @@ for types in typeAnalysis:
         fm.buildCantileverL(L, Es, I, A)
     else:
         if typeBuild == "CantileverColumn":
-            ControlNode, BaseNode = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
+            ControlNode, BaseNode, tagElementWallBase = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            ControlNode, BaseNode, buildingWidth, buildingHeight, coords  = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL, typeCB)
+            ControlNode, BaseNode, buildingWidth, buildingHeight, coords, tagElementWallBase = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL, typeCB)
         else:
             ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
         
@@ -127,9 +127,9 @@ for types in typeAnalysis:
     Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
     fa.gravity(ALR*Pno, ControlNode)
     fr.recordPushover(ControlNode, BaseNode, outputDir)
-    coordsFiberSt = fr.recordStressStrain(outputDir, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
-    coordsFiberCt2= fr.recordStressStrain(outputDir, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
-    coordsFiberCt1= fr.recordStressStrain(outputDir, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
+    coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
+    coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
+    coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
     if types == 'monotonic':
         start_time_monotonic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -172,12 +172,8 @@ for types in typeAnalysis:
 #=============================================================================
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
-        # fp.plotStressStrain(outputDir, 'fiberSt',  'top')
-        # fp.plotStressStrain(outputDir, 'fiberSt',  'bot')
-        # fp.plotStressStrain(outputDir, 'fiberCt1', 'top')
-        # fp.plotStressStrain(outputDir, 'fiberCt1', 'bot')
-        # fp.plotStressStrain(outputDir, 'fiberCt2', 'top')
-        # fp.plotStressStrain(outputDir, 'fiberCt2', 'bot')
+        fiberMat = ['fiberSt', 'fiberCt2', 'fiberCt1']
+        fp.plotStressStrain(outputDir, fiberMat,tagElementWallBase)
 
 end_time        = time.time()
 elapsed_time    = end_time - start_time

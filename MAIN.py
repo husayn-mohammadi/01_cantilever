@@ -16,7 +16,7 @@ import functions.FuncPlot      as fp
 #    Input File
 #=============================================================================
 
-exec(open("Input/unitsSI_kN.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
+exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
 exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
@@ -27,15 +27,15 @@ ops.logFile("logFile.txt")
 recordToLog     = True                      # True, False
 modelFoundation = True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 1                        # Number of Fibers along Y-axis
+NfibeY          = 3                        # Number of Fibers along Y-axis
 
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
@@ -50,9 +50,9 @@ dY              = 25 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 
-                    # *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
-                    # *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
-                    # *(CPD2*[8*dY]), *(CPD2*[9*dY]),   
+                    *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
+                    *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
+                    *(CPD2*[8*dY]), *(CPD2*[9*dY]),   
                     *(CPD2*[10*dY])
                    ]
 

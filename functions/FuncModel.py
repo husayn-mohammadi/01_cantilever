@@ -617,8 +617,19 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         if tagSuffixI == '0' and tagCoordXI == '00' and tagCoordYI == f"{storyNum:02}":
             tagNodeControl = tagNode
             # print(f"tagNodeControl = {tagNodeControl}")
+            
+    #   Define loading nodes
+    tagNodeLoad={}; tagNodeLoad["wall"]=[]; tagNodeLoad["leaningColumn"]=[]
+    for tagNode, coord in coords.items():
+        tagCoordXI  = f"{tagNode}"[3:-1]
+        tagCoordYI  = f"{tagNode}"[1:-3]
+        tagSuffixI  = f"{tagNode}"[-1]
+        if tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI != gridLeaningColumn:
+            tagNodeLoad["wall"].append(tagNode)
+        elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
+            tagNodeLoad["leaningColumn"].append(tagNode)
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad)
 
 
 

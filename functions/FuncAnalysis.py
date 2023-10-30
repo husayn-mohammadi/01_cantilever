@@ -8,15 +8,29 @@ waitTime2       = 0.0
 testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
 algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
-def gravity(Py, ControlNode):
+def gravity(load, tagNodeLoad):
     
     tagTSGravity    = 10
-    # ops.timeSeries('Linear', tagTSGravity)
-    ops.timeSeries('Constant', tagTSGravity)
+    ops.timeSeries('Linear', tagTSGravity)
+    # ops.timeSeries('Constant', tagTSGravity)
     
     tagPtnGravity   = 10
     ops.pattern('Plain', tagPtnGravity, tagTSGravity)
-    ops.load(ControlNode, 0.0, -abs(Py), 0.0)
+    print(f"Type of tagNodeLoad is {type(tagNodeLoad)}")
+    if type(tagNodeLoad) == 'int': 
+        print("Loading is based on Cantilever Column Structure.")
+        ops.load(tagNodeLoad, 0.0, -abs(load), 0.0)
+    else:
+        print("Loading is based on Shear Wall Structure.")
+        for element, tagNodes in tagNodeLoad.items():
+            if element == "wall":
+                for tagNode in tagNodes:
+                    ops.load(tagNode, 0.0, -abs(load["wall"]), 0.0)
+            elif element == "leaningColumn":
+                for tagNode in tagNodes:
+                    ops.load(tagNode, 0.0, -abs(load["leaningColumn"]), 0.0)
+            else:
+                print("In GravityLoading element type was unknown!"); sys.exit()
     
     
     # Gravity Analysis:
@@ -29,17 +43,17 @@ def gravity(Py, ControlNode):
     ops.system('BandGen')
     ops.test('NormDispIncr', tol, iteration)
     ops.algorithm('Newton')
-    # ops.integrator('LoadControl', 0.1)
-    ops.integrator('LoadControl', 1)
+    ops.integrator('LoadControl', 0.1)
+    # ops.integrator('LoadControl', 1)
     ops.analysis('Static')
-    # ops.analyze(10)
-    ops.analyze(1)
-    # ops.loadConst('-time', 0.0)
+    ops.analyze(10)
+    # ops.analyze(1)
+    ops.loadConst('-time', 0.0)
 
 
-def pushoverDCF(dispTarget, ControlNode): 
+def pushoverDCF(dispTarget, tagNodeControl): 
     
-    ControlNodeDoF  = 1
+    dofNodeControl  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
     
     # incr        = dispTarget/numIncr
@@ -56,7 +70,7 @@ def pushoverDCF(dispTarget, ControlNode):
     #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
-    ops.load(ControlNode, *[dForce, 0, 0])
+    ops.load(tagNodeControl, *[dForce, 0, 0])
     
     
     #  Define Analysis Options
@@ -69,7 +83,7 @@ def pushoverDCF(dispTarget, ControlNode):
     numIncrList = [*(1*[30]), *(10*[15]), *(1*[30])]
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
-    curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
+    curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
     for iii in range(0, numFrac):
         numIncr = numIncrList[iii]
         print(f"\nnumIncr\t\t\t= {numIncr}")
@@ -81,7 +95,7 @@ def pushoverDCF(dispTarget, ControlNode):
             for tester in testerList:
                 ops.test(tester, tol, numIter)
                 
-                curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
                 # print(f"curD = {curD}")
                 remD    = dispTar - curD
                 # print(f"remD = {remD}")
@@ -90,7 +104,7 @@ def pushoverDCF(dispTarget, ControlNode):
                 
                 while True:
                     #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
-                    ops.integrator('DisplacementControl', ControlNode, ControlNodeDoF, incr)
+                    ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
                     ops.analysis('Static')
                     
                     print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -107,14 +121,14 @@ def pushoverDCF(dispTarget, ControlNode):
                     #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
                     OK      = ops.analyze(numIncr)
                     print(f"AnalyzeOutput\t= {OK}"); time.sleep(waitTime2)
-                    curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                    curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
                     print(f"======>>> Current   Displacement\t= {curD}")
                     if OK == 0:
                         break
                     else:
                         print("==========\nAnalysis Failed!!\nReducing Incr:\n==========")
                         # print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
-                        curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                        curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
                         print(f"======>>> Current   Displacement\t= {curD}")
                         remD    = dispTar - curD
                         print(f"======>>> Remaining Displacement\t= {remD}")
@@ -151,9 +165,9 @@ def pushoverDCF(dispTarget, ControlNode):
     return OK
 
 
-def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
+def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
     
-    ControlNodeDoF  = 1
+    dofNodeControl  = 1
     dForce          = 1 # The pushover curve is not dependent to the value of dForce
     
     tol         = 1e-8
@@ -169,7 +183,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
     #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
-    ops.load(ControlNode, *[dForce, 0, 0])
+    ops.load(tagNodeControl, *[dForce, 0, 0])
     
     
     #  Define Analysis Options
@@ -184,7 +198,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
         print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}"); time.sleep(waitTime)
         dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
         for dispTarget in dispTargetList:
-            curD        = ops.nodeDisp(ControlNode, ControlNodeDoF)
+            curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
@@ -204,7 +218,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
                     for tester in testerList:
                         ops.test(tester, tol, numIter)
                         
-                        curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                        curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
                         # print(f"curD = {curD}")
                         remD    = dispTar - curD
                         # print(f"remD = {remD}")
@@ -213,7 +227,7 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
                         
                         while True:
                             #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
-                            ops.integrator('DisplacementControl', ControlNode, ControlNodeDoF, incr)
+                            ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
                             ops.analysis('Static') 
                             
                             print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -233,14 +247,14 @@ def cyclicAnalysis(dispList, ControlNode, numCyclesPerDispTarget=1):
                             #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
                             OK      = ops.analyze(numIncr)
                             print(f"AnalyzeOutput\t= {OK}"); time.sleep(waitTime2)
-                            curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                            curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
                             print(f"======>>> Current   Displacement\t= {curD}")
                             if OK == 0:
                                 break
                             else:
                                 # print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
                                 print("==========\nAnalysis Failed!!\nReducing Incr:\n==========")
-                                curD    = ops.nodeDisp(ControlNode, ControlNodeDoF)
+                                curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
                                 print(f"======>>> Current   Displacement\t= {curD}")
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")

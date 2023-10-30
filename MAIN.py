@@ -26,6 +26,7 @@ ops.logFile("logFile.txt")
 # Modeling Options
 recordToLog     = True                      # True, False
 modelFoundation = True
+exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
@@ -125,8 +126,13 @@ for types in typeAnalysis:
     
     # Run Analysis
     Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
-    fa.gravity(ALR*Pno, ControlNode)
-    fr.recordPushover(ControlNode, BaseNode, outputDir)
+    if exertGravityLoad == True:
+        if typeBuild == 'coupledWalls':
+            fa.gravity(load, tagNodeLoad)
+        else:
+            fa.gravity(ALR*Pno, tagNodeControl)
+        
+    fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
     coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
     coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3

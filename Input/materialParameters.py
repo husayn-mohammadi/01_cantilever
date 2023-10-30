@@ -40,7 +40,7 @@ print(f"Ets\t\t= {Ets/MPa:.2f} MPa")
 #=============================================================================
 nu          = 0.28
 
-## Steel Material No. 1
+## Steel Material No. 1 (For Webs of the Composite Walls)
 Es1         = 200   *GPa
 Fy1         = 422   *MPa
 Esh1        = Es1/30
@@ -50,7 +50,7 @@ eps_sh1     = 0.007
 eps_ult1    = 0.12
 alpha1      = 0.65 # Fatigue Ductility Exponent (For ASTM A572 alpha=0.65 and for ASTM A36 alpha=0.55)
 
-## Steel Material No. 2
+## Steel Material No. 2 (For Flanges of the Composite Walls)
 Es2         = Es1     
 Fy2         = Fy1     
 Esh2        = Esh1    
@@ -149,6 +149,39 @@ if (Cd < 0.2):
     print(f"Warning!!! Cd={Cd:.2f} < 0.2")
 if (Cd > 0.75):
     print(f"Warning!!! Cd={Cd:.2f} > 0.75")
+
+
+
+#=============================================================================
+#    Section Effective Stiffness:
+#=============================================================================
+# Flexural Stiffness
+EIs_1       = Es1 * I_Webs
+EIs_2       = Es2 * I_Flanges
+EIs         = EIs_1 + EIs_2
+
+EIc_1       = Ec  * I_UnconfConc
+EIc_2       = Ecc * I_ConfConc
+EIc         = EIc_1 + EIc_2
+
+EIeff       = 0.64 * (EIs + 0.6*EIc)       # AISC 360-22, Eq. (I2-12) 
+
+# Axial Stiffness
+EAs_1       = Es1 * A_Composite_St1
+EAs_2       = Es2 * A_Composite_St2
+EAs         = EAs_1 + EAs_2
+
+EAc_1       = Ec  * A_Composite_Ct1
+EAc_2       = Ecc * A_Composite_Ct2
+EAc         = EAc_1 + EAc_2
+
+EAeff       = 0.8 * (EAs + 0.45*EAc)       # AISC 360-22, I1.5 
+
+
+
+
+
+
 
 
 

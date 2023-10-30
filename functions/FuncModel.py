@@ -1,5 +1,5 @@
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
-
+exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
 import sys
 import openseespy.opensees as ops
 
@@ -363,7 +363,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         if f"{tagElement}"[-1] == '0':
             # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, EAeff/EIeff, EIeff, 1, tagGTPDelta)
         else:
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
@@ -593,9 +594,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
         tagElementSuffix = f"{tagElement}"[-1]
         if tagElementSuffix == '1' or tagElementSuffix == '2': # Flexure Beams
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e0*I, tagGTLinear)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.0003, tagGTLinear)
         elif tagElementSuffix == '3': # Shear Beams 
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-1*I, tagGTLinear)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.00014544948666666684, tagGTLinear)
         else:
             print("Error in defining beams!!!")
         

@@ -47,9 +47,18 @@ A_Composite_St2 = 2*(Bf*tf)     # St2 is used for Flange Plates
 A_Composite_Ct1 = tc*Hc1        # Ct1 (unconfined) is used for middle concrete
 A_Composite_Ct2 = tc*Hc2*2      # Ct2   (confined) is used for boundary elements
 
+As              = A_Composite_St1 + A_Composite_St2
+Ac              = A_Composite_Ct1 + A_Composite_Ct2
 
-#       Element Length
-L               = 108 *inch
+####    Moment of Inertia
+I_Flanges       = (1/12 * Bf * (Hw + tf)**3) - (1/12 * Bf * Hw**3)
+I_Webs          = 1/12 * (2*tw) * Hw**3
+I_UnconfConc    = 1/12 * tc * Hc1**3
+I_ConfConc      = 1/12 * tc * Hw**3 - I_UnconfConc
+
+Is              = I_Flanges + I_Webs
+Ic_uncracked    = I_UnconfConc + I_ConfConc
+
 
 
 

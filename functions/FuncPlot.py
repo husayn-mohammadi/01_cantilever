@@ -59,11 +59,11 @@ def plotStressStrain(outputDir, listFiberMat, tagEleList):
         SS[j] = {}; Stress[j] = {}; Strain[j] = {}
         for i, fiberMat in enumerate(listFiberMat):
             for k, item in enumerate(['top', 'mid', 'bot']):
-                SS[j][k]        = np.loadtxt(f"{outputDir}/{fiberMat}_{item}.txt", delimiter= ' ')
-                Stress[j][k]    = np.append(zero, SS[j][k][:,0])
-                Strain[j][k]    = np.append(zero, SS[j][k][:,1])
+                SSS             = np.loadtxt(f"{outputDir}/{fiberMat}_{item}.txt", delimiter= ' ')
+                Stress[j][k]    = np.append(zero, SSS[:,2*j+0])
+                Strain[j][k]    = np.append(zero, SSS[:,2*j+1])
                 SS[j][k]        = np.column_stack((Strain[j][k], Stress[j][k]))
-                np.savetxt(f"{outputDir}/StressStrain_{fiberMat}_{item}.txt", SS[j][k])
+                np.savetxt(f"{outputDir}/StressStrain{j}_{fiberMat}_{item}.txt", SS[j][k])
                             
             if unitForce == "N":
                 ax[i].plot(Strain[j][0], Stress[j][0]/1e6, color='blue', label='top', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][0], Stress[j][0]/1e6, color='blue', label='top', linewidth=0.8) 

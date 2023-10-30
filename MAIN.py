@@ -26,6 +26,7 @@ ops.logFile("logFile.txt")
 # Modeling Options
 recordToLog     = True                      # True, False
 modelFoundation = True
+exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
@@ -33,20 +34,20 @@ typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 3                        # Number of Fibers along Y-axis
 
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
-numSegWall      = 1                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 1
-SBL             = 0.5 *m
+SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*100 *mm
+dispTarget      = n*300 *mm
 
 # Cyclic Pushover Analysis
-dY              = 25 *mm
+dY              = n*10 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 
@@ -108,11 +109,11 @@ for types in typeAnalysis:
         fm.buildCantileverL(L, Es, I, A)
     else:
         if typeBuild == "CantileverColumn":
-            ControlNode, BaseNode, tagElementWallBase = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
+            tagNodeControl, tagNodeBase, tagElementWallBase = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            ControlNode, BaseNode, buildingWidth, buildingHeight, coords, tagElementWallBase = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL, typeCB)
+            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL, typeCB)
         else:
-            ControlNode, BaseNode  = fm.buildShearCritBeam(tagSec, L)
+            tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(tagSec, L)
         
     # Plot Model
     if plot_undefo == True:
@@ -125,8 +126,13 @@ for types in typeAnalysis:
     
     # Run Analysis
     Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
-    fa.gravity(ALR*Pno, ControlNode)
-    fr.recordPushover(ControlNode, BaseNode, outputDir)
+    if exertGravityLoad == True:
+        if typeBuild == 'coupledWalls':
+            fa.gravity(load, tagNodeLoad)
+        else:
+            fa.gravity(ALR*Pno, tagNodeControl)
+        
+    fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
     coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
     coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
     coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
@@ -135,7 +141,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, ControlNode)
+        fa.pushoverDCF(dispTarget, tagNodeControl)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)
@@ -154,7 +160,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Cyclic Pushover Analysis Initiated at {(time.time() - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.cyclicAnalysis(dispTarList, ControlNode)
+        fa.cyclicAnalysis(dispTarList, tagNodeControl)
         finish_time_cyclic = time.time()
         mins = int((finish_time_cyclic - start_time_cyclic)/60)
         secs = int((finish_time_cyclic - start_time_cyclic)%60)
@@ -162,7 +168,7 @@ for types in typeAnalysis:
         print(f"Cyclic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
-            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
     else:
         print("UNKNOWN Pushover Analysis type!!!");sys.exit()
     

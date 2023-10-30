@@ -1,5 +1,5 @@
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
-
+exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
 import sys
 import openseespy.opensees as ops
 
@@ -24,50 +24,50 @@ def buildCantileverN(tagSec, L, PlasticHingeLength=1, numSeg=3, typeEle='dispBea
              
     #       Define Nodes & Elements
     ##      Define Base Node
-    tagBaseNode = 1
-    ops.node(tagBaseNode, 0., 0.)
-    ops.fix( tagBaseNode, 1, 1, 1)
+    tagNodeBase = 1
+    ops.node(tagNodeBase, 0., 0.)
+    ops.fix( tagNodeBase, 1, 1, 1)
     
     ##      Define Foundation Node
-    tagFndnNode = 2
-    ops.node(tagFndnNode, 0., 0.)
+    tagNodeFndn = 2
+    ops.node(tagNodeFndn, 0., 0.)
     
     if modelFoundation == True:
-        ops.fix( tagFndnNode, 1,  1, 0)
+        ops.fix( tagNodeFndn, 1,  1, 0)
     else:
-        ops.fix( tagFndnNode, 1,  1, 1)
+        ops.fix( tagNodeFndn, 1,  1, 1)
         
     k_rot       = 8400000 *kip*inch
     ops.uniaxialMaterial('Elastic',   100000, k_rot)
     # ops.uniaxialMaterial('ElasticPP', 100000, k_rot, 0.002)
     
     #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
-    ops.element('zeroLength', 100000, *[tagBaseNode, tagFndnNode],  '-mat', 100000,   '-dir', 3)
+    ops.element('zeroLength', 100000, *[tagNodeBase, tagNodeFndn],  '-mat', 100000,   '-dir', 3)
     
     #       Define Elements
     ##      Define Nonlinear Elements
     for i in range(0, numSeg):
         
-        ops.node(i+1+tagFndnNode, 0., ((i+1)/numSeg)*PlasticHingeLength)
+        ops.node(i+1+tagNodeFndn, 0., ((i+1)/numSeg)*PlasticHingeLength)
         
         if typeEle == 'forceBeamColumn':
             #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+tagFndnNode, i+1+tagFndnNode], tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
+            ops.element('forceBeamColumn', i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
         elif typeEle == 'dispBeamColumn':
             #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-            ops.element('dispBeamColumn',  i+1,      *[i+tagFndnNode, i+1+tagFndnNode], tagGTPDelta, tagInt)
+            ops.element('dispBeamColumn',  i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tagInt)
         else:
             print('UNKNOWN element type!!!');sys.exit()
             
 
     ##      Define Linear Element
-    tagTopNode  = numSeg + tagFndnNode + 1
-    ops.node(tagTopNode, 0., L)
+    tagNodeTop  = numSeg + tagNodeFndn + 1
+    ops.node(tagNodeTop, 0., L)
     
     #   element('elasticBeamColumn', eleTag,   *eleNodes,                                       secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
-    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagFndnNode, numSeg + tagFndnNode + 1], tagSec, tagGTPDelta)
+    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagNodeFndn, numSeg + tagNodeFndn + 1], tagSec, tagGTPDelta)
     
-    return(tagTopNode, tagFndnNode, [1])
+    return(tagNodeTop, tagNodeFndn, [1])
 
 def buildCantileverL(L, E, I, A):
     
@@ -363,7 +363,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         if f"{tagElement}"[-1] == '0':
             # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, EAeff/EIeff, EIeff, 1, tagGTPDelta)
         else:
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagInt)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
@@ -593,9 +594,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
         tagElementSuffix = f"{tagElement}"[-1]
         if tagElementSuffix == '1' or tagElementSuffix == '2': # Flexure Beams
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e0*I, tagGTLinear)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.0003, tagGTLinear)
         elif tagElementSuffix == '3': # Shear Beams 
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-1*I, tagGTLinear)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.00014544948666666684, tagGTLinear)
         else:
             print("Error in defining beams!!!")
         
@@ -616,8 +617,19 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, P
         if tagSuffixI == '0' and tagCoordXI == '00' and tagCoordYI == f"{storyNum:02}":
             tagNodeControl = tagNode
             # print(f"tagNodeControl = {tagNodeControl}")
+            
+    #   Define loading nodes
+    tagNodeLoad={}; tagNodeLoad["wall"]=[]; tagNodeLoad["leaningColumn"]=[]
+    for tagNode, coord in coords.items():
+        tagCoordXI  = f"{tagNode}"[3:-1]
+        tagCoordYI  = f"{tagNode}"[1:-3]
+        tagSuffixI  = f"{tagNode}"[-1]
+        if tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI != gridLeaningColumn:
+            tagNodeLoad["wall"].append(tagNode)
+        elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
+            tagNodeLoad["leaningColumn"].append(tagNode)
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad)
 
 
 

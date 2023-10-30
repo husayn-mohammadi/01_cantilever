@@ -34,20 +34,20 @@ typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 NfibeY          = 3                        # Number of Fibers along Y-axis
 
 Lw              = Hw
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
-numSegWall      = 1                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 1
-SBL             = 0.5 *m
+SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*100 *mm
+dispTarget      = n*300 *mm
 
 # Cyclic Pushover Analysis
-dY              = 25 *mm
+dY              = n*10 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

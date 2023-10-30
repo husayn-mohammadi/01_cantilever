@@ -6,12 +6,12 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n               = 2
+n               = 3
 H_first         = 4.  *m
 H_typical       = 3.5 *m
-L_Bay           = 1.  *m
+L_Bay           = 6.  *m
 H_story_List    = [H_first, *((n-1)*[H_typical])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
-L_Bay_List      = 3*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
+L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 
 #=============================================================================
 #    Elements

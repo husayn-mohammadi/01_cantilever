@@ -86,7 +86,6 @@ for types in typeAnalysis:
     ops.model('basic', '-ndm', 2, '-ndf', 3)
     
     # Create the Fiber Section
-    tagSec = 1
     if typeSection == 'Rectangular':
         fib_sec = fs.makeSectionRect(tagSec, Hw, tc, typeMatSt, NfibeY*3) # Use the parameters of Concrete Core tc and Hw
     elif typeSection == 'I_Shaped':

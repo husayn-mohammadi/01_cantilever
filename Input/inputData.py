@@ -20,7 +20,9 @@ L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 L               = 108 *inch
 
 #       Sections
+
 ##      C-PSW/CF Wall Section
+tagSec  = 1
 ###     Flanges
 Bf      = 11.   *inch           # Width
 tf      = 3/16  *inch           # Height

@@ -31,14 +31,14 @@ section = {
         'Hw': 36*inch,
         'tc': 9*inch,
     },
-    'beam': { # Composite Beam Section
-        'tagSec': 2,
-        'Bf': 11*inch,
-        'tf': 3/16*inch,
-        'tw': 3/16*inch,
-        'Hw': 16*inch,
-        'tc': 9*inch,
-    }
+    # 'beam': { # Composite Beam Section
+    #     'tagSec': 2,
+    #     'Bf': 11*inch,
+    #     'tf': 3/16*inch,
+    #     'tw': 3/16*inch,
+    #     'Hw': 16*inch,
+    #     'tc': 9*inch,
+    # }
 }
 
 for typeSection in section:

@@ -4,7 +4,7 @@
 
 ## by file names:
 log.txt
-logFile.txt
+#logFile.txt
 
 # Ignored Folders:
 02_Findings/

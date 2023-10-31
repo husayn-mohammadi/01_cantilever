@@ -618,11 +618,11 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
     ##  Define Beams
     for tagElement, tagNodes in Beams.items():
         # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
-        # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-4*I, tagGTLinear)
-        # ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, tagInt)
         tagElementSuffix = f"{tagElement}"[-1]
         if tagElementSuffix == '1' or tagElementSuffix == '2': # Flexure Beams
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.0003, tagGTLinear)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-4*I, tagGTLinear)
+            # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.0003, tagGTLinear)
+            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, section['beam']['tagInt'])
         elif tagElementSuffix == '3': # Shear Beams 
             ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.00014544948666666684, tagGTLinear)
         else:

@@ -28,7 +28,7 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 # typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'

@@ -5,7 +5,7 @@ import sys
 import openseespy.opensees     as ops
 import opsvis                  as opv
 import vfo.vfo                 as vfo
-import functions.FuncSection   as fs
+# import functions.FuncSection   as fs
 import functions.FuncModel     as fm
 import functions.FuncAnalysis  as fa
 import functions.FuncRecorders as fr
@@ -28,23 +28,19 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
+# typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
-typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
-typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
-NfibeY          = 3                        # Number of Fibers along Y-axis
-
-Lw              = Hw
+Lw              = section['wall']['Hw'] + 2*section['wall']['tf']
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*300 *mm
+dispTarget      = n*15 *mm
 
 # Cyclic Pushover Analysis
 dY              = n*10 *mm
@@ -85,22 +81,10 @@ for types in typeAnalysis:
     ops.wipe()
     ops.model('basic', '-ndm', 2, '-ndf', 3)
     
-    # Create the Fiber Section
-    tagSec = 1
-    if typeSection == 'Rectangular':
-        fib_sec = fs.makeSectionRect(tagSec, Hw, tc, typeMatSt, NfibeY*3) # Use the parameters of Concrete Core tc and Hw
-    elif typeSection == 'I_Shaped':
-        fib_sec = fs.makeSectionI(tagSec, Hw, Bf, tw, tf, typeMatSt, NfibeY)
-    elif typeSection == 'Box':
-        fib_sec = fs.makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt, NfibeY)
-    elif typeSection == 'Box_Composite':
-        fib_sec= fs.makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, typeMatSt, typeMatCt, NfibeY)
-    else:
-        print("UNKNOWN fiber section type!!!");sys.exit()
         
     # Plot the fiber section
-    if plot_section == True:
-        fp.plot_fiber_section(fib_sec)
+    # if plot_section == True:
+    #     fp.plot_fiber_section(fib_sec)
         
     if typeModel == 'Linear':
         I   = 2
@@ -109,11 +93,11 @@ for types in typeAnalysis:
         fm.buildCantileverL(L, Es, I, A)
     else:
         if typeBuild == "CantileverColumn":
-            tagNodeControl, tagNodeBase, tagElementWallBase = fm.buildCantileverN(tagSec, L, PHL, numSegWall, typeEle, modelFoundation)
+            tagNodeControl, tagNodeBase, tagElementWallBase = fm.buildCantileverN(L, definedMatList, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, tagSec, numSegBeam, numSegWall, PHL, SBL, typeCB)
+            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, typeCB)
         else:
-            tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(tagSec, L)
+            tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
     # Plot Model
     if plot_undefo == True:
@@ -125,7 +109,7 @@ for types in typeAnalysis:
         vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
-    Pno = 0.85*(A_Composite_Ct1*abs(fpc) + A_Composite_Ct2*abs(fpcc)) + (A_Composite_St1*abs(Fy1) + A_Composite_St2*abs(Fy2))
+    Pno = 0.85*(section['wall']['A_Composite_Ct1']*abs(fpc) + section['wall']['A_Composite_Ct2']*abs(section['wall']['fpcc'])) + (section['wall']['A_Composite_St1']*abs(Fy1) + section['wall']['A_Composite_St2']*abs(Fy2))
     if exertGravityLoad == True:
         if typeBuild == 'coupledWalls':
             fa.gravity(load, tagNodeLoad)
@@ -133,6 +117,7 @@ for types in typeAnalysis:
             fa.gravity(ALR*Pno, tagNodeControl)
         
     fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
+    Hw = section['wall']['Hw']; tf = section['wall']['tf']; Hc2 = section['wall']['Hc2']
     coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
     coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
     coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3

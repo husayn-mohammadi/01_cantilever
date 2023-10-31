@@ -6,7 +6,7 @@ import openseespy.opensees as ops
 #=============================================================================
 #    Functions:
 #=============================================================================
-
+nameSec = 'wall'
 def matSteel(typeMat, tagMatSt):
     if tagMatSt == 1:
         if typeMat == 'Elastic':
@@ -18,8 +18,8 @@ def matSteel(typeMat, tagMatSt):
         elif typeMat == 'ReinforcingSteel':
             #   uniaxialMaterial('ReinforcingSteel', tagMatSt, Fy, Fu, Es, Esh, eps_sh, eps_ult, '-GABuck', lsr, beta, r, gamma, '-DMBuck', lsr, alpha, '-CMFatigue', Cf, alpha, Cd, '-IsoHard', a1=4.3, limit=1.0, '-MPCurveParams', R1=0.333, R2=18.0, R3=4.0)
             ops.uniaxialMaterial(*['ReinforcingSteel', tagMatSt, Fy1, Fu1, Es1, Esh1, eps_sh1, eps_ult1, 
-                                   '-GABuck', lsr, beta, r, gamma, 
-                                   '-CMFatigue', Cf, alpha1, Cd, 
+                                   '-GABuck', section[nameSec]['lsr'], beta, section[nameSec]['r'], gamma, 
+                                   '-CMFatigue', Cf, alpha1, section[nameSec]['Cd'], 
                                    '-IsoHard', a1, limit
                                    ])
         else:
@@ -35,8 +35,8 @@ def matSteel(typeMat, tagMatSt):
         elif typeMat == 'ReinforcingSteel':
             #   uniaxialMaterial('ReinforcingSteel', tagMatSt, Fy, Fu, Es, Esh, eps_sh, eps_ult, '-GABuck', lsr, beta, r, gamma, '-DMBuck', lsr, alpha, '-CMFatigue', Cf, alpha, Cd, '-IsoHard', a1=4.3, limit=1.0, '-MPCurveParams', R1=0.333, R2=18.0, R3=4.0)
             ops.uniaxialMaterial(*['ReinforcingSteel', tagMatSt, Fy2, Fu2, Es2, Esh2, eps_sh2, eps_ult2, 
-                                   '-GABuck', lsr, beta, r, gamma, 
-                                   '-CMFatigue', Cf, alpha2, Cd, 
+                                   '-GABuck', section[nameSec]['lsr'], beta, section[nameSec]['r'], gamma, 
+                                   '-CMFatigue', Cf, alpha2, section[nameSec]['Cd'], 
                                    '-IsoHard', a1, limit
                                    ])
         else:
@@ -52,20 +52,20 @@ def matConcrete(typeMat, tagMatCt):
         elif typeMat == 'ElasticPP':
             ops.uniaxialMaterial('ElasticPP', tagMatCt, Ec, 0.002)
         elif typeMat == 'Concrete01':
-            ops.uniaxialMaterial('Concrete01', tagMatCt, fpc, epsc0, fpcu, epscU)
+            ops.uniaxialMaterial('Concrete01', tagMatCt, fpc, epsc0, section[nameSec]['fpcu'], section[nameSec]['epscU'])
         elif typeMat == 'Concrete02':
-            ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, fpcu, epscU, lam1, fts, Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCt, fpc, epsc0, section[nameSec]['fpcu'], section[nameSec]['epscU'], lam1, fts, Ets)
         else:
             print('UNKNOWN concrete material!!!');sys.exit()
     elif tagMatCt == 4: # For confined concrete
         if typeMat == 'Elastic':
-            ops.uniaxialMaterial('Elastic', tagMatCt, Ecc)
+            ops.uniaxialMaterial('Elastic', tagMatCt, section[nameSec]['Ecc'])
         elif typeMat == 'ElasticPP':
-            ops.uniaxialMaterial('ElasticPP', tagMatCt, Ecc, 0.002)
+            ops.uniaxialMaterial('ElasticPP', tagMatCt, section[nameSec]['Ecc'], 0.002)
         elif typeMat == 'Concrete01':
-            ops.uniaxialMaterial('Concrete01', tagMatCt, fpcc, epscc0, fpccu, epsccU)
+            ops.uniaxialMaterial('Concrete01', tagMatCt, section[nameSec]['fpcc'], section[nameSec]['epscc0'], section[nameSec]['fpccu'], section[nameSec]['epsccU'])
         elif typeMat == 'Concrete02':
-            ops.uniaxialMaterial('Concrete02', tagMatCt, fpcc, epscc0, fpccu, epsccU, lam2, fts, Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCt, section[nameSec]['fpcc'], section[nameSec]['epscc0'], section[nameSec]['fpccu'], section[nameSec]['epsccU'], lam2, fts, Ets)
         else:
             print('UNKNOWN concrete material!!!');sys.exit()
     else: 

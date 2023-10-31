@@ -5,7 +5,7 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 import openseespy.opensees        as ops
 import functions.FuncMaterial     as fmat
 
-def makeSectionRect(tagSec, H, B, typeMatSt='ReinforcingSteel', NfibeY=120, NfibeZ=1):
+def makeSectionRect(tagSec, H, B, definedMatList, typeMatSt='ReinforcingSteel', NfibeY=120, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry
@@ -13,11 +13,12 @@ def makeSectionRect(tagSec, H, B, typeMatSt='ReinforcingSteel', NfibeY=120, Nfib
     crdsI = [-H/2, -B/2]
     crdsJ = [ H/2,  B/2]
     
-    
     # Steel Material
     tagMatSt        = 1
-    typeMat         = 'Steel02'
-    fmat.matSteel(typeMat, tagMatSt)
+    typeMat         = 'Steel02' # Elastic, ElasticPP, Steel02, ReinforcingSteel
+    if tagMatSt not in definedMatList:
+        fmat.matSteel(typeMat, tagMatSt)
+        definedMatList.append(tagMatSt)
     
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)
@@ -32,7 +33,7 @@ def makeSectionRect(tagSec, H, B, typeMatSt='ReinforcingSteel', NfibeY=120, Nfib
              
     return fib_sec
 
-def makeSectionI(tagSec, Hw, Bf, tw, tf, typeMatSt='ReinforcingSteel', NfibeY=40, NfibeZ=1):
+def makeSectionI(tagSec, Hw, Bf, tw, tf, definedMatList, typeMatSt='ReinforcingSteel', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry
@@ -50,9 +51,11 @@ def makeSectionI(tagSec, Hw, Bf, tw, tf, typeMatSt='ReinforcingSteel', NfibeY=40
     
     # Steel Material
     tagMatSt        = 1
-    typeMat         = 'Steel02'
-    fmat.matSteel(typeMat, tagMatSt)
-    
+    typeMat         = 'Steel02' # Elastic, ElasticPP, Steel02, ReinforcingSteel
+    if tagMatSt not in definedMatList:
+        fmat.matSteel(typeMat, tagMatSt)
+        definedMatList.append(tagMatSt)
+        
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)
     ops.section('Fiber', tagSec, '-GJ', GJ)
@@ -71,7 +74,7 @@ def makeSectionI(tagSec, Hw, Bf, tw, tf, typeMatSt='ReinforcingSteel', NfibeY=40
     
     return fib_sec
 
-def makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt='ReinforcingSteel', NfibeY=40, NfibeZ=1):
+def makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, definedMatList, typeMatSt='ReinforcingSteel', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     #   Section Geometry
@@ -93,7 +96,9 @@ def makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt='ReinforcingSteel', Nfi
     # Steel Material
     tagMatSt        = 1
     typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    fmat.matSteel(typeMat, tagMatSt)
+    if tagMatSt not in definedMatList:
+        fmat.matSteel(typeMat, tagMatSt)
+        definedMatList.append(tagMatSt)
     
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)
@@ -114,7 +119,7 @@ def makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, typeMatSt='ReinforcingSteel', Nfi
     
     return fib_sec
 
-def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeY=40, NfibeZ=1):
+def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, definedMatList, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry
@@ -146,22 +151,30 @@ def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, typeMatSt='Reinforc
     
     #  Material
     ## Steel Material 1
-    tagMatSt1        = 1
+    tagMatSt1       = 1
     typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    fmat.matSteel(typeMat, tagMatSt1)
+    if tagMatSt1 not in definedMatList:
+        fmat.matSteel(typeMat, tagMatSt1)
+        definedMatList.append(tagMatSt1)
     ## Steel Material 2
-    tagMatSt2        = 2
+    tagMatSt2       = 2
     typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    fmat.matSteel(typeMat, tagMatSt2)
+    if tagMatSt2 not in definedMatList:
+        fmat.matSteel(typeMat, tagMatSt2)
+        definedMatList.append(tagMatSt2)
     
     ## Unconfined Concrete Material
     tagMatCt1        = 3
     typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    fmat.matConcrete(typeMat, tagMatCt1)
+    if tagMatCt1 not in definedMatList:
+        fmat.matConcrete(typeMat, tagMatCt1)
+        definedMatList.append(tagMatCt1)
     ## Confined Concrete Material
     tagMatCt2        = 4
     typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    fmat.matConcrete(typeMat, tagMatCt2)
+    if tagMatCt2 not in definedMatList:
+        fmat.matConcrete(typeMat, tagMatCt2)
+        definedMatList.append(tagMatCt2)
     
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)

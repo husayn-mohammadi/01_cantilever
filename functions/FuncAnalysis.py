@@ -17,8 +17,8 @@ def gravity(load, tagNodeLoad):
     tagPtnGravity   = 10
     ops.pattern('Plain', tagPtnGravity, tagTSGravity)
     print(f"Type of tagNodeLoad is {type(tagNodeLoad)}")
-    # if type(tagNodeLoad) == 'int': 
-    if 1: 
+    if type(tagNodeLoad) == 'int': 
+    # if 1: 
         print("Loading is based on Cantilever Column Structure.")
         ops.load(tagNodeLoad, 0.0, -abs(load), 0.0)
     else:

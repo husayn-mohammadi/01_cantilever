@@ -28,11 +28,11 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 # typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 Lw              = section['wall']['Hw'] + 2*section['wall']['tf']
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
@@ -40,10 +40,10 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*15 *mm
+dispTarget      = n*400 *mm
 
 # Cyclic Pushover Analysis
-dY              = n*10 *mm
+dY              = n*17 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

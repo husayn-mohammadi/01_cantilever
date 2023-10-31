@@ -40,10 +40,10 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*250 *mm
+dispTarget      = n*400 *mm
 
 # Cyclic Pushover Analysis
-dY              = n*8 *mm
+dY              = n*17 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

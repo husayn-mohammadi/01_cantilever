@@ -292,32 +292,17 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
     
     #   Define beamIntegrator
     NIP         = 5
-    ##  Walls
-    nameSect    = 'wall'
-    tagIntWall  = 1
-    fib_sec= fs.makeSectionBoxComposite(section[nameSect]['tagSec'], 
-                                        section[nameSect]['Hw'], 
-                                        section[nameSect]['Bf'], 
-                                        section[nameSect]['tw'], 
-                                        section[nameSect]['tf'], 
-                                        section[nameSect]['tc'], 
-                                        section[nameSect]['Hc1'], 
-                                        definedMatList, 
-                                        typeMatSt, typeMatCt, NfibeY)
-    ops.beamIntegration('Legendre', tagIntWall, section[nameSect]['tagSec'], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
-    ##  Flexural Beams
-    nameSect    = 'beam'
-    tagIntBeam  = 2
-    fib_sec= fs.makeSectionBoxComposite(section[nameSect]['tagSec'], 
-                                        section[nameSect]['Hw'], 
-                                        section[nameSect]['Bf'], 
-                                        section[nameSect]['tw'], 
-                                        section[nameSect]['tf'], 
-                                        section[nameSect]['tc'], 
-                                        section[nameSect]['Hc1'], 
-                                        definedMatList, 
-                                        typeMatSt, typeMatCt, NfibeY)
-    ops.beamIntegration('Legendre', tagIntBeam, section[nameSect]['tagSec'], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    for nameSect in section:
+        fib_sec= fs.makeSectionBoxComposite(section[nameSect]['tagSec'], 
+                                            section[nameSect]['Hw'], 
+                                            section[nameSect]['Bf'], 
+                                            section[nameSect]['tw'], 
+                                            section[nameSect]['tf'], 
+                                            section[nameSect]['tc'], 
+                                            section[nameSect]['Hc1'], 
+                                            definedMatList, 
+                                            typeMatSt, typeMatCt, NfibeY)
+        ops.beamIntegration('Legendre', section[nameSect]['tagInt'], section[nameSect]['tagSec'], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #   Define material and sections
     A, E, I = 1e1, 200e9, 1e-2
@@ -409,7 +394,7 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
             ops.element('elasticBeamColumn', tagElement, *tagNodes, section['wall']['EAeff']/section['wall']['EIeff'], section['wall']['EIeff'], 1, tagGTPDelta)
         else:
-            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, tagIntWall)
+            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, section['wall']['tagInt'])
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
     

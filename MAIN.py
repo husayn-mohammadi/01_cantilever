@@ -4,12 +4,12 @@ import os
 import sys
 import openseespy.opensees     as ops
 import opsvis                  as opv
-import vfo.vfo                 as vfo
-# import functions.FuncSection   as fs
 import functions.FuncModel     as fm
 import functions.FuncAnalysis  as fa
 import functions.FuncRecorders as fr
 import functions.FuncPlot      as fp
+import vfo.vfo                 as vfo
+# import functions.FuncSection   as fs
 
 
 #=============================================================================
@@ -32,7 +32,7 @@ typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', '
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 # typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 Lw              = section['wall']['Hw'] + 2*section['wall']['tf']
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
@@ -40,7 +40,7 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*400 *mm
+dispTarget      = n*300 *mm
 
 # Cyclic Pushover Analysis
 dY              = n*17 *mm

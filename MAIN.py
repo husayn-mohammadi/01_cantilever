@@ -8,8 +8,8 @@ import functions.FuncModel     as fm
 import functions.FuncAnalysis  as fa
 import functions.FuncRecorders as fr
 import functions.FuncPlot      as fp
-import vfo.vfo                 as vfo
-# import functions.FuncSection   as fs
+
+
 
 
 #=============================================================================
@@ -40,10 +40,10 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n*300 *mm
+dispTarget      = n_story*300 *mm
 
 # Cyclic Pushover Analysis
-dY              = n*17 *mm
+dY              = n_story*17 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 
@@ -60,15 +60,15 @@ plot_undefo     = True
 plot_loaded     = True
 plot_defo       = True
 sfac            = 10
-plot_anim_defo  = False
     
 plot_Analysis   = True
 plot_section    = False
-
-vfo_display     = False
 #=============================================================================
 #    MAIN
 #=============================================================================
+# Axial Force Capacity of Walls (Pno)
+Pno = 0.85*(section['wall']['A_Composite_Ct1']*abs(fpc) + section['wall']['A_Composite_Ct2']*abs(section['wall']['fpcc'])) + (section['wall']['A_Composite_St1']*abs(Fy1) + section['wall']['A_Composite_St2']*abs(Fy2))
+
 if recordToLog == True:
     logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
 
@@ -103,13 +103,8 @@ for types in typeAnalysis:
     if plot_undefo == True:
         opv.plot_model(node_labels=0, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
-    if vfo_display == True:
-        vfo.createODB(model="BuildingModel")
-        print('BuildingModel is created!')
-        vfo.plot_model(model="BuildingModel", show_nodetags="yes",show_eletags="yes")
     
     # Run Analysis
-    Pno = 0.85*(section['wall']['A_Composite_Ct1']*abs(fpc) + section['wall']['A_Composite_Ct2']*abs(section['wall']['fpcc'])) + (section['wall']['A_Composite_St1']*abs(Fy1) + section['wall']['A_Composite_St2']*abs(Fy2))
     if exertGravityLoad == True:
         if typeBuild == 'coupledWalls':
             fa.gravity(load, tagNodeLoad)

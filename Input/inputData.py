@@ -6,7 +6,7 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n               = 8
+n_story         = 8
 H_first         = 4.  *m
 H_typical       = 3.5 *m
 L_Bay           = 5  *m

@@ -1,16 +1,16 @@
 "C-PSW/CF Section: Shafaei PP=136"
-
+import sys
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"Input/units{'US'}.py").read())
 # exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
 
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 8
+n_story         = 1
 H_first         = 4.  *m
 H_typical       = 3.5 *m
 L_Bay           = 5  *m
-H_story_List    = [H_first, *((n-1)*[H_typical])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
+H_story_List    = [H_first, *((n_story-1)*[H_typical])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
 L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 
 #=============================================================================
@@ -38,14 +38,17 @@ section = {
         'Bf': 11*inch,
         'tf': 3/16*inch,
         'tw': 3/16*inch,
-        'Hw': 16*inch,
+        'Hw': 0.24 *m,
         'tc': 9*inch,
     }
 }
 
+
 for typeSection in section:
     section[typeSection]['Hc2'] = (section[typeSection]['tc'] + 2*section[typeSection]['tw'])/2     # Height of   confined concrete i.e. Region 2 in documentation # Masoumeh Asgharpoor
     section[typeSection]['Hc1'] = section[typeSection]['Hw'] - 2*section[typeSection]['Hc2']        # Height of unconfined concrete i.e. Region 1 in documentation
+    if section[typeSection]['Hc1'] < 0:
+        print(f"Hw is {section[typeSection]['Hw']}, but it cannot be less than {section[typeSection]['tc'] + 2*section[typeSection]['tw']}"); sys.exit()
     
     section[typeSection]['A_Composite_St1'] = 2*(section[typeSection]['tw']*section[typeSection]['Hw'])
     section[typeSection]['A_Composite_St2'] = 2*(section[typeSection]['Bf']*section[typeSection]['tf'])
@@ -70,7 +73,7 @@ for typeSection in section:
 #   Cantilever Loads
 Py              = -3158 *kN
 # or:
-ALR             = 0.0  # Axial Load Ratio
+ALR             = 0.1  # Axial Load Ratio
 #   Frame Loads
 load={}
 DL_Floor        = 90 *psf

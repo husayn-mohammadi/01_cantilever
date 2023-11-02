@@ -119,7 +119,7 @@ def makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, definedMatList, typeMatSt='Reinfo
     
     return fib_sec
 
-def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, definedMatList, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeY=40, NfibeZ=1):
+def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, ALR, definedMatList, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeY=40, NfibeZ=1):
     
     GJ = 1e6
     # Section Geometry

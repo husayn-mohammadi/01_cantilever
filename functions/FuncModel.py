@@ -301,7 +301,7 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
                                             section[nameSect]['tf'], 
                                             section[nameSect]['tc'], 
                                             section[nameSect]['Hc1'], 
-                                            definedMatList, 
+                                            ALR, definedMatList, typeMatSt, typeMatCt, NfibeY)
         # Plot the fiber section
         if plot_section == True:
             fp.plot_fiber_section(fib_sec)

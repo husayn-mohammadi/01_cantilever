@@ -90,7 +90,8 @@ for types in typeAnalysis:
         if typeBuild == "CantileverColumn":
             tagNodeControl, tagNodeBase, tagElementWallBase = fm.buildCantileverN(L, definedMatList, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, typeCB)
+            ALR = n_story * load['wall']/Pno; print(f"ALR = {ALR:.3f}")
+            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, ALR, typeCB, plot_section)
         else:
             tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         

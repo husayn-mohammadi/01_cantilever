@@ -7,7 +7,7 @@ def recordPushover(tagNodeControl, tagNodeBase, outputDir):
     
     #   recorder('Node', '-file', filename,                        '-time', '-node', *nodeTags=[], '-dof', *dofs=[], respType)
     ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt",     '-time', '-node', tagNodeControl,  '-dof', 1,        'disp')
-    if type(tagNodeBase) == "list":
+    if type(tagNodeBase) == list:
         ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', *tagNodeBase,     '-dof', 1,        'reaction')
     else: 
         ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node',  tagNodeBase,     '-dof', 1,        'reaction')

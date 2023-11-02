@@ -3,6 +3,7 @@ exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("In
 import sys
 import openseespy.opensees     as ops
 import functions.FuncSection   as fs
+import functions.FuncPlot      as fp
 
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
@@ -209,7 +210,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, typeCB="FSF"):
+def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, ALR, typeCB="FSF", plot_section=True):
     
     modelLeaning = True     # True False
     
@@ -301,7 +302,9 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
                                             section[nameSect]['tc'], 
                                             section[nameSect]['Hc1'], 
                                             definedMatList, 
-                                            typeMatSt, typeMatCt, NfibeY)
+        # Plot the fiber section
+        if plot_section == True:
+            fp.plot_fiber_section(fib_sec)
         ops.beamIntegration('Legendre', section[nameSect]['tagInt'], section[nameSect]['tagSec'], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #   Define material and sections

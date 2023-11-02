@@ -80,12 +80,7 @@ for types in typeAnalysis:
     # Build Model
     ops.wipe()
     ops.model('basic', '-ndm', 2, '-ndf', 3)
-    
-        
-    # Plot the fiber section
-    # if plot_section == True:
-    #     fp.plot_fiber_section(fib_sec)
-        
+            
     if typeModel == 'Linear':
         I   = 2
         A   = 1

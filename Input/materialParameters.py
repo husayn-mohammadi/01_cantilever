@@ -102,16 +102,16 @@ section['wall']['StFlange']['alpha']    = section['wall']['StWeb']['alpha']
 #=============================================================================
 #    Formulated Parameters:
 #=============================================================================
-Fy          = (Fy1 + Fy2)/2
-print(f"Fy\t\t= {Fy/MPa:.2f} MPa")
-Es          = (Es1 + Es2)/2
-print(f"Es\t\t= {Es/MPa:.2f} MPa")
-Fu          = (Fu1 + Fu2)/2
-print(f"Fu\t\t= {Fu/MPa:.2f} MPa")
-eps_sh      = (eps_sh1  + eps_sh2)/2
-print(f"eps_sh\t= {eps_sh:.5f}")
-eps_ult     = (eps_ult1 + eps_ult2)/2
-print(f"eps_ult\t= {eps_ult:.5f}")
+# Fy          = (Fy1 + Fy2)/2
+# print(f"Fy\t\t= {Fy/MPa:.2f} MPa")
+# Es          = (Es1 + Es2)/2
+# print(f"Es\t\t= {Es/MPa:.2f} MPa")
+# Fu          = (Fu1 + Fu2)/2
+# print(f"Fu\t\t= {Fu/MPa:.2f} MPa")
+# eps_sh      = (eps_sh1  + eps_sh2)/2
+# print(f"eps_sh\t= {eps_sh:.5f}")
+# eps_ult     = (eps_ult1 + eps_ult2)/2
+# print(f"eps_ult\t= {eps_ult:.5f}")
 
 Es          = (section['wall']['StFlange']['Es']        + section['wall']['StWeb']['Es']        )/2
 Fy          = (section['wall']['StFlange']['Fy']        + section['wall']['StWeb']['Fy']        )/2
@@ -130,7 +130,7 @@ R3          = 4.0
 
 section['wall']['b']                     = 114 *mm  # minimum unsupported width of confined region in composite wall cross-section
 section['wall']['lsr']                   = 48. # lsr = lu/db = 12**0.5 * lu/tw
-section['wall']['rhos']                  = (2*section['wall']['tw'])/(section['wall']['tw']) # Percentage of Steel
+section['wall']['rhos']                  = (2*section['wall']['tw'])/(section['wall']['tc']) # Percentage of Steel
 section['wall']['R']                     = section['wall']['b']/section['wall']['tw'] * (12*(1-nu**2)/(4*np.pi**2))**0.5 * (Fy/Es)**0.5 # Masoumeh Asgarpoor
 section['wall']['frp']                   = (-6.5*section['wall']['R']*((section['wall']['CtUnconfined']['fpc']/MPa)**1.46/(Fy/MPa)) + 0.12*(section['wall']['CtUnconfined']['fpc']/MPa)**1.03)*MPa # Masoumeh Asgarpoor
 section['wall']['CtConfined']['fpc']     = ((section['wall']['CtUnconfined']['fpc']/MPa) + 4*(section['wall']['frp']/MPa)*(1+0.8*ALR)**3.5)*MPa # Masoumeh Asgarpoor

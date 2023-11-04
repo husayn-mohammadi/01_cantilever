@@ -1,14 +1,15 @@
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
-exec(open("MAIN.py").readlines()[20]) # It SHOULD read and execute exec(open("Input/materialParameters.py").read())
+exec(open("MAIN.py").readlines()[19]) # It SHOULD read and execute exec(open("Input/inputData.py").read())
 import sys
 import openseespy.opensees     as ops
 import functions.FuncSection   as fs
 import functions.FuncPlot      as fp
+from functions.ClassComposite import compo
 
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 
-def buildCantileverN(L, definedMatList, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
+def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
     
     maxIter     = 10
     tol         = 1e-12
@@ -18,21 +19,20 @@ def buildCantileverN(L, definedMatList, PlasticHingeLength=1, numSeg=3, typeEle=
     tagGTPDelta = 2
     ops.geomTransf('Linear', tagGTLinear)
     ops.geomTransf('PDelta', tagGTPDelta)
-    
+
     NIP         = 5
     #       Define beamIntegrator
-    nameSect    = 'wall'
-    tagInt      = 1
-    fib_sec= fs.makeSectionBoxComposite(section[nameSect]['tagSec'], 
-                                        section[nameSect]['Hw'], 
-                                        section[nameSect]['Bf'], 
-                                        section[nameSect]['tw'], 
-                                        section[nameSect]['tf'], 
-                                        section[nameSect]['tc'], 
-                                        section[nameSect]['Hc1'], 
-                                        definedMatList, 
-                                        typeMatSt, typeMatCt, NfibeY)
-    ops.beamIntegration('Legendre', tagInt, section[nameSect]['tagSec'], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    tags        = Section['wall']['tags']
+    propWeb     = Section['wall']['propWeb']
+    propFlange  = Section['wall']['propFlange']
+    propCore    = Section['wall']['propCore']
+    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    wall        = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    fib_sec= fs.makeSectionBoxComposite(wall)
+    # Plot the fiber section
+    if plot_section == True:
+        fp.plot_fiber_section(fib_sec)
+    ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
     #       Define Nodes & Elements
     ##      Define Base Node
@@ -64,10 +64,10 @@ def buildCantileverN(L, definedMatList, PlasticHingeLength=1, numSeg=3, typeEle=
         
         if typeEle == 'forceBeamColumn':
             #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tagInt,         '-iter', maxIter,    tol)
+            ops.element('forceBeamColumn', i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tags[0],         '-iter', maxIter,    tol)
         elif typeEle == 'dispBeamColumn':
             #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
-            ops.element('dispBeamColumn',  i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tagInt)
+            ops.element('dispBeamColumn',  i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tags[0])
         else:
             print('UNKNOWN element type!!!');sys.exit()
             
@@ -77,9 +77,9 @@ def buildCantileverN(L, definedMatList, PlasticHingeLength=1, numSeg=3, typeEle=
     ops.node(tagNodeTop, 0., L)
     
     #   element('elasticBeamColumn', eleTag,   *eleNodes,                                       secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
-    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagNodeFndn, numSeg + tagNodeFndn + 1], section['wall']['tagSec'], tagGTPDelta)
+    ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagNodeFndn, numSeg + tagNodeFndn + 1], tags[0],tagGTPDelta)
     
-    return(tagNodeTop, tagNodeFndn, [1])
+    return(tagNodeTop, tagNodeFndn, [1], wall)
 
 def buildCantileverL(L, E, I, A):
     
@@ -210,7 +210,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, ALR, typeCB="FSF", plot_section=True):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB="FSF", plot_section=True):
     
     modelLeaning = True     # True False
     
@@ -293,19 +293,24 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
     
     #   Define beamIntegrator
     NIP         = 5
-    for nameSect in section:
-        fib_sec= fs.makeSectionBoxComposite(section[nameSect]['tagSec'], 
-                                            section[nameSect]['Hw'], 
-                                            section[nameSect]['Bf'], 
-                                            section[nameSect]['tw'], 
-                                            section[nameSect]['tf'], 
-                                            section[nameSect]['tc'], 
-                                            section[nameSect]['Hc1'], 
-                                            ALR, definedMatList, typeMatSt, typeMatCt, NfibeY)
-        # Plot the fiber section
-        if plot_section == True:
-            fp.plot_fiber_section(fib_sec)
-        ops.beamIntegration('Legendre', section[nameSect]['tagInt'], section[nameSect]['tagSec'], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    
+    tags        = Section['wall']['tags']
+    propWeb     = Section['wall']['propWeb']
+    propFlange  = Section['wall']['propFlange']
+    propCore    = Section['wall']['propCore']
+    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    wall        = compo(*tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    fib_sec= fs.makeSectionBoxComposite(wall)
+    ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+    
+    tags        = Section['beam']['tags']
+    propWeb     = Section['beam']['propWeb']
+    propFlange  = Section['beam']['propFlange']
+    propCore    = Section['beam']['propCore']
+    #wall       = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    beam        = compo(*tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    fib_sec= fs.makeSectionBoxComposite(beam)
+    ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #   Define material and sections
     A, E, I = 1e1, 200e9, 1e-2
@@ -395,9 +400,9 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
             # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, section['wall']['tagSec'], tagGTPDelta)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, section['wall']['EAeff']/section['wall']['EIeff'], section['wall']['EIeff'], 1, tagGTPDelta)
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, wall.EAeff/wall.EIeff, wall.EIeff, 1, tagGTPDelta)
         else:
-            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, section['wall']['tagInt'])
+            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, wall.tagSec)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
     
@@ -625,7 +630,7 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
         if tagElementSuffix == '1' or tagElementSuffix == '2': # Flexure Beams
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 1e-4*I, tagGTLinear)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.0003, tagGTLinear)
-            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, section['beam']['tagInt'])
+            ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, beam.tagSec)
         elif tagElementSuffix == '3': # Shear Beams 
             ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, 0.00014544948666666684, tagGTLinear)
         else:
@@ -660,7 +665,7 @@ def coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSe
         elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
             tagNodeLoad["leaningColumn"].append(tagNode)
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad, wall)
 
 
 

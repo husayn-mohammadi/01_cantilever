@@ -1,12 +1,14 @@
-# exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
-exec(open("../Input/unitsSI.py").read()) # It SHOULD read and execute exec(open("Input/units    .py").read())
+exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
+# exec(open("../Input/unitsSI.py").read()) # It SHOULD read and execute exec(open("Input/units    .py").read())
 import sys
 import numpy                       as np
 import openseespy.opensees         as ops
+import matplotlib.pyplot           as plt
+import opsvis                      as opv
 
 class steel:
     def __init__(self, Es, Fy, Fu, eps_sh, eps_ult, nu, 
-                 alpha, beta, gamma, Cf, a1, limit, R1, R2, R3):
+                 alpha, beta, gamma, Cf, a1, limit):
         self.Es     = Es
         self.Esh    = Es/30
         self.Fy     = Fy 
@@ -21,9 +23,7 @@ class steel:
         self.Cf     = Cf
         self.a1     = a1
         self.limit  = limit
-        self.R1     = R1
-        self.R2     = R2
-        self.R3     = R3
+        self.A      = 1
 
 class concrete:
     def __init__(self, fpc,  wc, lam):
@@ -37,22 +37,49 @@ class concrete:
         self.Gf         = (73 * (fpc/MPa)**0.18)                                   # Fracture Energy CEB-FIB-2010 section 5.1.5.2
         self.fts        = 1.0*(0.3 * (fpc/MPa - 8)**(2/3))*MPa                     # CEB-FIB-2010 Eq. (5.1-5)
         self.Ets        = abs(1/(1-(2*self.Ec*self.Gf)/(wc*self.fts**2)))*self.Ec
+        self.A          = 1
         
 
 class compo:
-    def __init__(self, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, ALR, lsr, b,
+    def __init__(self, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
                  tw, Hw, Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw, 
                  Bf, tf, Esf, Fyf, Fuf, eps_shf, eps_ultf, nuf, alphaf, betaf, gammaf, Cff, a1f, limitf,
                  tc, fpc, wc, lamConf, lamUnconf
                  ):
         
-        self.tagSec     = tagSec
-        self.ALR        = ALR
+        self.tagSec             = tagSec
+        self.tagMatStFlange     = tagMatStFlange 
+        self.tagMatStWeb        = tagMatStWeb    
+        self.tagMatCtUnconf     = tagMatCtUnconf 
+        self.tagMatCtConf       = tagMatCtConf   
+        
+        self.St_flange  = steel(Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw)
+        self.St_web     = steel(Esf, Fyf, Fuf, eps_shf, eps_ultf, nuf, alphaf, betaf, gammaf, Cff, a1f, limitf)
+        self.Ct_unconf  = concrete(fpc,  wc, lamUnconf)
+        self.Ct_conf    = concrete(fpc,  wc, lamConf) # This is only to create Ct_conf
+        
+        self.d          = Hw + 2*tf
+        self.Hc2        = Hc2 = (tc + 2*tw)/2           # Height of   confined concrete i.e. Region 2 in documentation # Masoumeh Asgharpoor
+        self.Hc1        = Hc1 = Hw - 2*Hc2   # Height of unconfined concrete i.e. Region 1 in documentation
+        if Hc1 < 0:
+            print(f"Hw is {Hw}, but it cannot be less than {tc + 2*tw}"); sys.exit()
+        self.St_web.A   = 2*(tw*Hw)
+        self.St_flange.A= 2*(tf*Bf)
+        self.Ct_unconf.A= self.Hc1 * tc
+        self.Ct_conf.A  = self.Hc2 * tc * 2
+        self.St_A       = self.St_flange.A + self.St_web.A
+        self.Ct_A       = self.Ct_unconf.A + self.Ct_conf.A
+        self.P          = P
+        self.Pno        = 0.85*(self.Ct_A*abs(fpc)) + (self.St_web.A*abs(Fyw) + self.St_flange.A*abs(Fyf))
+        ALR             = P/self.Pno
         self.lsr        = lsr
         self.b          = b
-        self.St_flange  = steel(Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw, R1w, R2w, R3w)
-        self.St_web     = steel(Esf, Fyf, Fuf, eps_shf, eps_ultf, nuf, alphaf, betaf, gammaf, Cff, a1f, limitf, R1f, R2f, R3f)
-        self.Ct_unconf  = concrete(fpc,  wc, lamUnconf)
+        self.NfibeY     = NfibeY
+        self.tw         = tw
+        self.Hw         = Hw
+        self.Bf         = Bf
+        self.tf         = tf
+        self.tc         = tc
         self.Es         = Es        = (self.St_flange.Es        + self.St_web.Es        )/2
         self.Esh        = Esh       = (self.St_flange.Esh       + self.St_web.Esh       )/2
         self.Fy         = Fy        = (self.St_flange.Fy        + self.St_web.Fy        )/2
@@ -85,17 +112,6 @@ class compo:
         
         
         
-        self.d          = Hw + 2*tf
-        self.Hc2        = (tc + 2*tw)/2     # Height of   confined concrete i.e. Region 2 in documentation # Masoumeh Asgharpoor
-        self.Hc1        = Hw - 2*self.Hc2        # Height of unconfined concrete i.e. Region 1 in documentation
-        if self.Hc1 < 0:
-            print(f"Hw is {Hw}, but it cannot be less than {tc + 2*tw}"); sys.exit()
-        self.St_web.A   = 2*(tw*Hw)
-        self.St_flange.A= 2*(tf*Bf)
-        self.Ct_unconf.A= self.Hc1 * tc
-        self.Ct_conf.A  = self.Hc2 * tc * 2
-        self.St_A       = self.St_flange.A + self.St_web.A
-        self.Ct_A       = self.Ct_unconf.A + self.Ct_conf.A
 
         self.EIeff_webs     = self.St_web.Es    * (1/12 * (2*tw) * Hw**3)
         self.EIeff_flanges  = self.St_flange.Es * (1/12 * Bf * (self.d**3 - Hw**3))
@@ -117,6 +133,7 @@ class compo:
         
         self.EAeff          = self.EAeff_St + self.EAeff_Ct
         
+        # Define Materials
         self.tagMatStFlange = tagMatStFlange
         ops.uniaxialMaterial('ReinforcingSteel', tagMatStFlange, Fyf, Fuf, Esf, Esh, eps_shf, eps_ultf, 
                              '-GABuck', lsr, beta, r, gamma, 
@@ -133,27 +150,75 @@ class compo:
         ops.uniaxialMaterial('Concrete02', tagMatCtConf,   fpcc, epscc0, fpccu, self.Ct_conf.epscU,   lamConf,   self.Ct_conf.fts,   self.Ct_conf.Ets)
         
         
-        
-        
-        
-#tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
-tags        = [1,      1,              2,           3,              4           ]
-#propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
-propWeb     = [3/16*inch, 0.24 *m,   200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
-propFlange  = [11*inch,   3/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
-#propCore   = [tc,     fpc,    wc,     lamConf, lamUnconf]
-propCore    = [9*inch, 50*MPa, 0.2*mm, 0.05,    0.25     ]
-lsr         = 48.
-b           = 114*mm
-#beam= compo(*tags, ALR, lsr, b, *propWeb, *propFlange, *propCore)
-beam = compo(*tags, 0.1, lsr, b, *propWeb, *propFlange, *propCore)
+        # Define Fiber Section For Testing
+        if 1:
+            GJ = 1e6
+            # Section Geometry
+            ##  Bottom Flange
+            crdsI1 = [-(Hw/2 + tf), -Bf/2       ]
+            crdsJ1 = [- Hw/2      ,  Bf/2       ]
+            ##  Top Flange
+            crdsI4 = [  Hw/2      , -Bf/2       ]
+            crdsJ4 = [ (Hw/2 + tf),  Bf/2       ]
+            ##  Left Web
+            crdsI2 = [-Hw/2       , -(tc/2 + tw)]
+            crdsJ2 = [ Hw/2       , - tc/2      ]
+            ##  Right Web
+            crdsI3 = [-Hw/2       ,   tc/2      ]
+            crdsJ3 = [ Hw/2       ,  (tc/2 + tw)]
+            ##  Concrete Core - Unconfined
+            crdsI6 = [-Hc1/2      , -tc/2       ]
+            crdsJ6 = [ Hc1/2      ,  tc/2       ]
+            ##  Concrete Core - Confined
+            crdsI5 = [-Hw/2       , -tc/2       ]
+            crdsJ5 = [-Hc1/2      ,  tc/2       ]
+            crdsI7 = [ Hc1/2      , -tc/2       ]
+            crdsJ7 = [ Hw/2       ,  tc/2       ]
+            
+            divider= 10
+            times  = max(1, int((Hw/tf)             /(divider)))
+            times1 = max(1, int((Hc1/tf)            /(divider)))
+            times2 = max(1, int((((Hw-Hc1)/2)/tf)   /(divider)))
+            
 
-print(f"Es of flange material is {beam.St_flange.Es}")
-print(f"Es of web    material is {beam.St_web.Es}")
-print(f"Average Es the beam   is {beam.Es}")
-print(f"Depth of the beam is {beam.d}")
-print(f"EIeff = {beam.EIeff}")
-print(f"EAeff = {beam.EAeff}")
+            # this part of the code is just to sent out a varibale for plotting the fiber section
+            fib_sec = [['section', 'Fiber', tagSec, '-GJ', GJ],
+    
+                     ['patch', 'rect', tagMatStFlange,  NfibeY,        1, *crdsI1, *crdsJ1], #Bot Flange
+                     ['patch', 'rect', tagMatStFlange,  NfibeY,        1, *crdsI4, *crdsJ4], #Top Flange
+                     ['patch', 'rect', tagMatStWeb,     NfibeY*times,  1, *crdsI2, *crdsJ2], #Left Web
+                     ['patch', 'rect', tagMatStWeb,     NfibeY*times,  1, *crdsI3, *crdsJ3], #Right Web
+                     ['patch', 'rect', tagMatCtConf,    NfibeY*times2, 1, *crdsI5, *crdsJ5], #Concrete Core bot
+                     ['patch', 'rect', tagMatCtUnconf,  NfibeY*times1, 1, *crdsI6, *crdsJ6], #Concrete Core mid
+                     ['patch', 'rect', tagMatCtConf,    NfibeY*times2, 1, *crdsI7, *crdsJ7], #Concrete Core top
+                     ]
+        
+            matcolor = ['y', 'b', 'r', 'g', 'y', 'b', 'r', 'g', 'm', 'k', 'y', 'b', 'r', 'g', 'm', 'k']
+            opv.plot_fiber_section(fib_sec, matcolor=matcolor)
+            plt.axis('equal')
+            
+            plt.show()
+        
+        
+# #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
+# tags        = [1,      1,              2,           3,              4           ]
+# #propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
+# propWeb     = [3/16*inch, 1    *m,   200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
+# propFlange  = [11*inch,   3/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
+# #propCore   = [tc,     fpc,    wc,     lamConf, lamUnconf]
+# propCore    = [9*inch, 50*MPa, 0.2*mm, 0.05,    0.25     ]
+# lsr         = 48.
+# b           = 114*mm
+# NfibeY      = 5
+# #beam= compo(*tags, ALR, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+# beam = compo(*tags, 0.1, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+
+# print(f"Es of flange material is {beam.St_flange.Es}")
+# print(f"Es of web    material is {beam.St_web.Es}")
+# print(f"Average Es the beam   is {beam.Es}")
+# print(f"Depth of the beam is {beam.d}")
+# print(f"EIeff = {beam.EIeff}")
+# print(f"EAeff = {beam.EAeff}")
 
 
 

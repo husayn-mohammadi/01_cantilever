@@ -18,7 +18,7 @@ import functions.FuncPlot      as fp
 
 exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
 exec(open("Input/inputData.py").read())
-exec(open("Input/materialParameters.py").read())
+# exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
 #=============================================================================
 #    Define Variables
@@ -34,7 +34,7 @@ typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFl
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
-Lw              = section['wall']['Hw'] + 2*section['wall']['tf']
+Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 1
@@ -62,12 +62,10 @@ plot_defo       = True
 sfac            = 10
     
 plot_Analysis   = True
-plot_section    = True
+plot_section    = False
 #=============================================================================
 #    MAIN
 #=============================================================================
-# Axial Force Capacity of Walls (Pno)
-Pno = 0.85*(section['wall']['A_Composite_Ct1']*abs(fpc) + section['wall']['A_Composite_Ct2']*abs(section['wall']['fpcc'])) + (section['wall']['A_Composite_St1']*abs(Fy1) + section['wall']['A_Composite_St2']*abs(Fy2))
 
 if recordToLog == True:
     logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
@@ -88,10 +86,11 @@ for types in typeAnalysis:
         fm.buildCantileverL(L, Es, I, A)
     else:
         if typeBuild == "CantileverColumn":
-            tagNodeControl, tagNodeBase, tagElementWallBase = fm.buildCantileverN(L, definedMatList, PHL, numSegWall, typeEle, modelFoundation)
+            P = 0 * kN
+            tagNodeControl, tagNodeBase, tagElementWallBase, section = fm.buildCantileverN(L, P, plot_section, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
-            ALR = n_story * load['wall']/Pno; print(f"ALR = {ALR:.3f}")
-            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, definedMatList, Lw, numSegBeam, numSegWall, PHL, SBL, ALR, typeCB, plot_section)
+            P = n_story * load['wall']
+            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB, plot_section)
         else:
             tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
@@ -105,13 +104,15 @@ for types in typeAnalysis:
         if typeBuild == 'coupledWalls':
             fa.gravity(load, tagNodeLoad)
         else:
+            # Axial Force Capacity of Walls (Pno)
+            Pno = section.Pno
             fa.gravity(ALR*Pno, tagNodeControl)
         
     fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
-    Hw = section['wall']['Hw']; tf = section['wall']['tf']; Hc2 = section['wall']['Hc2']
-    coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  1, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
-    coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", 4, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
-    coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", 3, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
+    Hw = section.Hw; tf = section.tf; Hc2 = section.Hc2
+    coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  section, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
+    coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", section, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
+    coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", section, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
     if types == 'monotonic':
         start_time_monotonic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -171,7 +172,7 @@ if recordToLog == True:
     sys.stdout.close()
     sys.stdout = sys.__stdout__
 
-
+ops.wipe()
 
 
 

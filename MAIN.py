@@ -41,7 +41,7 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 3
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = 60 *inch
+dispTarget      = 1 *inch
 
 # Cyclic Pushover Analysis
 dY              = n_story*17 *mm
@@ -63,7 +63,7 @@ plot_defo       = True
 sfac            = 10
     
 plot_Analysis   = True
-plot_StressStrain=True
+plot_StressStrain=False
 plot_section    = False
 #=============================================================================
 #    MAIN
@@ -120,7 +120,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, tagNodeControl)
+        fa.pushoverDCF(dispTarget, tagNodeControl, n_story)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)

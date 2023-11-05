@@ -7,7 +7,7 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 8
+n_story         = 2
 H_first         = 20 *ft
 H_typical       = 14 *ft
 L_Bay           = (144 + 72) *inch
@@ -23,7 +23,7 @@ L               = 108 *inch
 Hw          = 144*inch
 lsr         = 24.
 b           = 114*mm
-NfibeY      = 10
+NfibeY      = 3
 
 Section = {}
 Section = {
@@ -67,8 +67,8 @@ L_Bay_x         = L_Bay
 A_Tributary     = 0.5*L_Bay_y * L_Bay_x
 DL_Tributary    = A_Tributary * DL_Floor
 LL_Tributary    = A_Tributary * LL_Floor
-# load["wall"]    = 1.0*DL_Tributary + 0.25*LL_Tributary
-load["wall"]    = 72 * kip
+load["wall"]    = 1.0*DL_Tributary + 0.25*LL_Tributary
+# load["wall"]    = 72 * kip
 
 ##  Loading the Leaning Columns
 n_Bay_x         = len(L_Bay_List)
@@ -78,7 +78,7 @@ L_PWall         = L_Bay_y + ((n_Bay_x+1) * L_Bay_x) - n_Bay_x*Hw
 DL_Leaning      = A_Leaning * DL_Floor + L_PWall*H_typical * DL_PWalls
 LL_Leaning      = A_Leaning * LL_Floor
 load["leaningColumn"] = 1.0*DL_Leaning + 0.25*LL_Leaning
-load["leaningColumn"] = 1440 * kip
+# load["leaningColumn"] = 1440 * kip
 
 
 

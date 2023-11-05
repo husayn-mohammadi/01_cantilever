@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import opsvis            as opv
 import numpy             as np
+# from matplotlib.animation import FuncAnimation
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
 unitForce   = "kN" if kN==1 else "N"   if N==1  else "kip" if kip==1 else "lb"  
 unitLength  = "m"  if m==1  else "cm"  if cm==1 else "mm"  if mm==1  else "in." if inch==1 else "ft" 
@@ -103,47 +104,36 @@ def plotStressStrain(outputDir, listFiberMat, tagEleList):
 
 
 
+# def plotPushoverX(outputDir):
+#     x0 = np.array([0.])
+#     Vx0 = np.array([0.])
+    
+#     fig, ax = plt.subplots()
+#     fig.suptitle(f"Pushover Curve: {outputDir[16:]}")
+#     ax.set_xlabel(f'Displacement ({unitLength})')
+    
+#     if unitForce == "kN":
+#         ax.set_ylabel('Shear (kN)')
+#     elif unitForce == "N":
+#         ax.set_ylabel('Shear (kN)')
+#     elif unitForce == "kip":
+#         ax.set_ylabel('Shear (kip)')
+#     elif unitForce == "lb":
+#         ax.set_ylabel('Shear (kip)')
+    
+#     line, = ax.plot(x0, Vx0, linewidth=0.8)  # Initialize an empty plot
+    
+#     def update(frame):
+#         try:
+#             data = np.loadtxt(f"{outputDir}/Pushover.txt")
+#             x = data[:, 0]
+#             Vx = data[:, 1]
+#             line.set_data(x, Vx)  # Update the plot with new data
+#         except FileNotFoundError:
+#             pass  # Handle the case where the file doesn't exist
+        
+#     ani = FuncAnimation(fig, update, blit=False, interval=100)  # Update the plot every 100 milliseconds
+#     plt.show()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#     # Return empty arrays for x and Vx, as they are updated in real-time
+#     return np.array([]), np.array([])

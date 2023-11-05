@@ -36,12 +36,12 @@ typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
-PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
+PHL             = 96 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 5
+numSegBeam      = 3
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n_story*247 *mm
+dispTarget      = 60 *inch
 
 # Cyclic Pushover Analysis
 dY              = n_story*17 *mm

@@ -3,16 +3,13 @@ exec(open("MAIN.py").readlines()[19]) # It SHOULD read and execute exec(open("In
 import sys
 import openseespy.opensees     as ops
 import functions.FuncSection   as fs
-import functions.FuncPlot      as fp
+# import functions.FuncPlot      as fp
 from functions.ClassComposite import compo
 
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 
 def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
-    
-    maxIter     = 10
-    tol         = 1e-12
     
     #       Define Geometric Transformation
     tagGTLinear = 1
@@ -45,16 +42,13 @@ def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle
     ops.node(tagNodeFndn, 0., 0.)
     
     if modelFoundation == True:
-        ops.fix( tagNodeFndn, 1,  1, 0)
+        ops.equalDOF(tagNodeBase, tagNodeFndn, 1, 2)
+        k_rot       = 8400000 *kip*inch
+        ops.uniaxialMaterial('Elastic',   100000, k_rot)
+        #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
+        ops.element('zeroLength', 100000, *[tagNodeBase, tagNodeFndn],  '-mat', 100000,   '-dir', 3)
     else:
-        ops.fix( tagNodeFndn, 1,  1, 1)
-        
-    k_rot       = 8400000 *kip*inch
-    ops.uniaxialMaterial('Elastic',   100000, k_rot)
-    # ops.uniaxialMaterial('ElasticPP', 100000, k_rot, 0.002)
-    
-    #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
-    ops.element('zeroLength', 100000, *[tagNodeBase, tagNodeFndn],  '-mat', 100000,   '-dir', 3)
+        ops.equalDOF(tagNodeBase, tagNodeFndn, 1, 2, 3)
     
     #       Define Elements
     ##      Define Nonlinear Elements
@@ -64,7 +58,7 @@ def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle
         
         if typeEle == 'forceBeamColumn':
             #   element('forceBeamColumn', eleTag,   *eleNodes,                         transfTag,   integrationTag, '-iter', maxIter=10, tol=1e-12, '-mass', mass=0.0)
-            ops.element('forceBeamColumn', i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tags[0],         '-iter', maxIter,    tol)
+            ops.element('forceBeamColumn', i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tags[0],         '-iter', 100,    1e-6)
         elif typeEle == 'dispBeamColumn':
             #   element('dispBeamColumn',  eleTag,   *eleNodes,                         transfTag,   integrationTag, '-cMass', '-mass', mass=0.0)
             ops.element('dispBeamColumn',  i+1,      *[i+tagNodeFndn, i+1+tagNodeFndn], tagGTPDelta, tags[0])

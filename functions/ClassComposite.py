@@ -69,9 +69,10 @@ class compo:
         self.Ct_conf.A  = self.Hc2 * tc * 2
         self.St_A       = self.St_flange.A + self.St_web.A
         self.Ct_A       = self.Ct_unconf.A + self.Ct_conf.A
+        self.Ag         = self.St_A + self.Ct_A
         self.P          = P
         self.Pno        = 0.85*(self.Ct_A*abs(fpc)) + (self.St_web.A*abs(Fyw) + self.St_flange.A*abs(Fyf))
-        ALR             = P/self.Pno
+        self.ALR        = ALR = P/self.Pno
         self.lsr        = lsr
         self.b          = b
         self.NfibeY     = NfibeY
@@ -95,19 +96,19 @@ class compo:
         self.limit      = limit     = (self.St_flange.limit     + self.St_web.limit     )/2
         
         epsc0, fpcu         =           self.Ct_unconf.epsc0, self.Ct_unconf.fpcu
-        rhos                =           (2*tw)/(tc + 2*tw) # Percentage of Steel
-        R                   =           b/tw * (12*(1-nu**2)/(4*np.pi**2))**0.5 * (Fy/Es)**0.5 # Masoumeh Asgarpoor
-        frp                 =           (-6.5*R*((fpc/MPa)**1.46/(Fy/MPa)) + 0.12*(fpc/MPa)**1.03)*MPa # Masoumeh Asgarpoor
-        fpcc                =           ((fpc/MPa) + 4*(frp/MPa)*(1+0.8*ALR)**3.5)*MPa # Masoumeh Asgarpoor
-        self.Ct_conf        =           concrete(fpcc, wc, lamConf)
-        self.Ct_conf.Ec     = Ecc =     (21.5e3*MPa * 1.0 * (abs(fpcc/MPa)/10)**(1/3)) # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
-        self.Ct_conf.epsc0  = epscc0 =  2*fpcc/Ecc
-        self.Ct_unconf.fpcu = fpcu =    (0.15 *(fpc/MPa)** 1.5 * (Fy/MPa)**0.01 * rhos**0.16 * (1-ALR)**(-0.5) * lsr**(-0.025))*MPa # Masoumeh Asgarpoor 
-        self.Ct_unconf.epscU= epscU =   0.157   *epsc0 **(-0.67) * (fpcu/MPa) **0.23 *(Fy/MPa)**(-1.4) * rhos**0.06 * (1-ALR)**(-0.17) * lsr**0.12 #Masoumeh Asgarpoor
-        self.Ct_conf.fpcu   = fpccu =   (2.63 *(fpcc/MPa)**0.65 * (Fy/MPa)**0.001 * rhos**(-0.04) * (1-ALR)**(0.4) * lsr**(0.070))*MPa # Masoumeh Asgarpoor 
-        self.Ct_conf.epscU  = epsccU =  1.12e-6 *epscc0**(-0.33) * (fpccu/MPa)**0.83 *(Fy/MPa)**(0.77) * rhos**0.07 * (1-ALR)**( 0.15) * lsr**0.16 #Masoumeh Asgarpoor 
-        self.r              = r =       (15*lsr**0.37 * (Fy/fpc)**0.26 * eps_sh**0.3 * eps_ult**0.85)**-1 # Masoumeh Asgarpoor 
-        self.Cd             = Cd =      16 * (Fy/Fu)**0.78 * eps_ult * ((fpcu/MPa)**0.5/(fpc/MPa))**0.58 * r**0.37 # Masoumeh Asgarpoor 
+        self.rhos           = rhos    = (2*tw)/(tc + 2*tw) # Percentage of Steel
+        self.R              = R       = b/tw * (12*(1-nu**2)/(4*np.pi**2))**0.5 * (Fy/Es)**0.5 # Masoumeh Asgarpoor
+        self.frp            = frp     = (-6.5*R*((fpc/MPa)**1.46/(Fy/MPa)) + 0.12*(fpc/MPa)**1.03)*MPa # Masoumeh Asgarpoor
+        self.fpcc           = fpcc    = ((fpc/MPa) + 4*(frp/MPa)*(1+0.8*ALR)**3.5)*MPa # Masoumeh Asgarpoor
+        self.Ct_conf                  = concrete(fpcc, wc, lamConf)
+        self.Ct_conf.Ec     = Ecc     = (21.5e3*MPa * 1.0 * (abs(fpcc/MPa)/10)**(1/3)) # Tangent Modulus of Elasticity with fpc in MPa  ==> CEB-FIB-2010 5.1.7.2 (Selected by Masoumeh Asgharpoor)
+        self.Ct_conf.epsc0  = epscc0  = 2*fpcc/Ecc
+        self.Ct_unconf.fpcu = fpcu    = (0.15 *(fpc/MPa)** 1.5 * (Fy/MPa)**0.01 * rhos**0.16 * (1-ALR)**(-0.5) * lsr**(-0.025))*MPa # Masoumeh Asgarpoor 
+        self.Ct_unconf.epscU= epscU   = 0.157   *epsc0 **(-0.67) * (fpcu/MPa) **0.23 *(Fy/MPa)**(-1.4) * rhos**0.06 * (1-ALR)**(-0.17) * lsr**0.12 #Masoumeh Asgarpoor
+        self.Ct_conf.fpcu   = fpccu   = (2.63 *(fpcc/MPa)**0.65 * (Fy/MPa)**0.001 * rhos**(-0.04) * (1-ALR)**(0.4) * lsr**(0.070))*MPa # Masoumeh Asgarpoor 
+        self.Ct_conf.epscU  = epsccU  = 1.12e-6 *epscc0**(-0.33) * (fpccu/MPa)**0.83 *(Fy/MPa)**(0.77) * rhos**0.07 * (1-ALR)**( 0.15) * lsr**0.16 #Masoumeh Asgarpoor 
+        self.r              = r       = (15*lsr**0.37 * (Fy/fpc)**0.26 * eps_sh**0.3 * eps_ult**0.85)**-1 # Masoumeh Asgarpoor 
+        self.Cd             = Cd      = 16 * (Fy/Fu)**0.78 * eps_ult * ((fpcu/MPa)**0.5/(fpc/MPa))**0.58 * r**0.37 # Masoumeh Asgarpoor 
         
         
         
@@ -121,7 +122,8 @@ class compo:
         self.EIeff_conf     = self.Ct_conf.  Ec * (1/12 * tc * Hw**3 - 1/12 * tc * self.Hc1**3)
         self.EIeff_Ct       = self.EIeff_unconf + self.EIeff_conf
         
-        self.EIeff          = self.EIeff_St + self.EIeff_Ct
+        self.C3             = min(0.45+3*(self.St_A/self.Ag), 0.9)
+        self.EIeff          = 0.64*(self.EIeff_St + self.C3*self.EIeff_Ct)
         
         self.EAeff_webs     = self.St_web.Es    * self.St_web.A
         self.EAeff_flanges  = self.St_flange.Es * self.St_flange.A
@@ -203,15 +205,17 @@ class compo:
 # #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
 # tags        = [1,      1,              2,           3,              4           ]
 # #propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
-# propWeb     = [3/16*inch, 1    *m,   200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
+# propWeb     = [3/16*inch, 0.24 *m,   200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
 # propFlange  = [11*inch,   3/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01]
 # #propCore   = [tc,     fpc,    wc,     lamConf, lamUnconf]
 # propCore    = [9*inch, 50*MPa, 0.2*mm, 0.05,    0.25     ]
 # lsr         = 48.
 # b           = 114*mm
-# NfibeY      = 5
-# #beam= compo(*tags, ALR, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-# beam = compo(*tags, 0.1, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+# NfibeY      = 1
+# #beam= compo(*tags, P,      lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+# beam = compo(*tags, 200*kN, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+
+# compo.printVar(beam)
 
 # print(f"Es of flange material is {beam.St_flange.Es}")
 # print(f"Es of web    material is {beam.St_web.Es}")
@@ -220,7 +224,7 @@ class compo:
 # print(f"EIeff = {beam.EIeff}")
 # print(f"EAeff = {beam.EAeff}")
 
-
+# ops.wipe()
 
 
 

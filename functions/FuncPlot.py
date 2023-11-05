@@ -88,15 +88,15 @@ def plotStressStrain(outputDir, listFiberMat, tagEleList):
     
     # return Strain, Stress
 
-def plot_fiber_section(fib_sec):
+# def plot_fiber_section(fib_sec):
     
-    matcolor = ['y', 'b', 'r', 'g', 'm', 'k']
-    # matcolor = ['r', 'lightgrey', 'pink', 'gold', 'purple', 'orange', 'w']
-    opv.plot_fiber_section(fib_sec, matcolor=matcolor)
-    plt.axis('equal')
-    # plt.savefig('fibsec_rc.png')
+#     matcolor = ['y', 'b', 'r', 'g', 'm', 'k']
+#     # matcolor = ['r', 'lightgrey', 'pink', 'gold', 'purple', 'orange', 'w']
+#     opv.plot_fiber_section(fib_sec, matcolor=matcolor)
+#     plt.axis('equal')
+#     # plt.savefig('fibsec_rc.png')
     
-    plt.show()
+#     plt.show()
 
 
 

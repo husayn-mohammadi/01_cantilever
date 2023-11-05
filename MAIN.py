@@ -26,6 +26,7 @@ ops.logFile("logFile.txt")
 # Modeling Options
 recordToLog     = True                      # True, False
 modelFoundation = True
+withShearLink   = False
 exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
 typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
@@ -91,7 +92,7 @@ for types in typeAnalysis:
             tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, plot_section, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
             P = n_story * load['wall']
-            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB, plot_section)
+            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, withShearLink, typeCB, plot_section)
         else:
             tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         

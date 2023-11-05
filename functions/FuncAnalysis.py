@@ -59,10 +59,10 @@ def gravity(load, tagNodeLoad):
     ops.loadConst('-time', 0.0)
 
 
-def pushoverDCF(dispTarget, tagNodeControl, n_story): 
+def pushoverDCF(dispTarget, tagNodeLoad, n_story): 
     
     dofNodeControl  = 1
-    tagNodeControl  = tagNodeControl[-1]
+    tagNodeControl  = tagNodeLoad[-1]
     # incr        = dispTarget/numIncr
     tol         = 1e-8
     numIter     = 50
@@ -77,7 +77,9 @@ def pushoverDCF(dispTarget, tagNodeControl, n_story):
     #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
-    ops.load(tagNodeControl, *[1, 0, 0])
+    n_story = len(tagNodeLoad)-1
+    for i, tagNode in enumerate(tagNodeLoad):
+        ops.load(tagNode, *[i/n_story, 0, 0])
     
     
     #  Define Analysis Options

@@ -8,8 +8,12 @@ waitTime2       = 0.0
 testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
 algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
-def create_list(n):
-    myList = list(range(n, 0, -1)) + list(range(2, n + 1))
+# def create_list(n):
+#     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
+#     return myList
+
+def create_list(n1, n2):
+    myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
     return myList
 
 def gravity(load, tagNodeLoad):
@@ -84,8 +88,8 @@ def pushoverDCF(dispTarget, tagNodeControl, n_story):
     ops.system('BandGen')
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
-    numIncrList = [*(10*[10])]
-    # numIncrList = create_list(9)
+    # numIncrList = [*(10*[30])]
+    numIncrList = create_list(15, 3)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
@@ -207,7 +211,7 @@ def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            numIncrList = create_list(9)
+            numIncrList = create_list(15, 4)
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")

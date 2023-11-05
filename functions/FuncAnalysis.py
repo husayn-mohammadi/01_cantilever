@@ -8,8 +8,12 @@ waitTime2       = 0.0
 testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
 algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
-def create_list(n):
-    myList = list(range(n, 0, -1)) + list(range(2, n + 1))
+# def create_list(n):
+#     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
+#     return myList
+
+def create_list(n1, n2):
+    myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
     return myList
 
 def gravity(load, tagNodeLoad):
@@ -55,11 +59,10 @@ def gravity(load, tagNodeLoad):
     ops.loadConst('-time', 0.0)
 
 
-def pushoverDCF(dispTarget, tagNodeControl): 
+def pushoverDCF(dispTarget, tagNodeLoad, n_story): 
     
     dofNodeControl  = 1
-    dForce          = 1 # The pushover curve is not dependent to the value of dForce
-    
+    tagNodeControl  = tagNodeLoad[-1]
     # incr        = dispTarget/numIncr
     tol         = 1e-8
     numIter     = 50
@@ -74,7 +77,9 @@ def pushoverDCF(dispTarget, tagNodeControl):
     #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
-    ops.load(tagNodeControl, *[dForce, 0, 0])
+    n_story = len(tagNodeLoad)-1
+    for i, tagNode in enumerate(tagNodeLoad):
+        ops.load(tagNode, *[i/n_story, 0, 0])
     
     
     #  Define Analysis Options
@@ -85,8 +90,8 @@ def pushoverDCF(dispTarget, tagNodeControl):
     ops.system('BandGen')
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
-    numIncrList = [*(10*[10])]
-    # numIncrList = create_list(9)
+    # numIncrList = [*(10*[30])]
+    numIncrList = create_list(15, 3)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
@@ -208,7 +213,7 @@ def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            numIncrList = create_list(9)
+            numIncrList = create_list(15, 4)
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")

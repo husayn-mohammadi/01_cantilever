@@ -68,7 +68,7 @@ L               = 108 *inch
 Hw          = 36*inch
 lsr         = 48.
 b           = 114*mm
-NfibeY      = 10
+NfibeY      = 3
 
 Section = {}
 Section = {
@@ -120,7 +120,7 @@ Section = {
 #   Cantilever Loads
 Py              = -3158 *kN
 # or:
-ALR             = 0.1  # Axial Load Ratio
+ALR             = 0.0  # Axial Load Ratio
 #   Frame Loads
 load={}
 DL_Floor        = 90 *psf

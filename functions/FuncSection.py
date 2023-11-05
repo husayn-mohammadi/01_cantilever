@@ -4,6 +4,8 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 # import sys
 import openseespy.opensees        as ops
 import functions.FuncMaterial     as fmat
+import opsvis                     as opv
+import matplotlib.pyplot          as plt
 
 def makeSectionRect(tagSec, H, B, definedMatList, typeMatSt='ReinforcingSteel', NfibeY=120, NfibeZ=1):
     
@@ -119,7 +121,20 @@ def makeSectionBox(tagSec, Hw, Bf, tw, tf, tc, definedMatList, typeMatSt='Reinfo
     
     return fib_sec
 
-def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, definedMatList, typeMatSt='ReinforcingSteel', typeMatCt='Concrete02', NfibeY=40, NfibeZ=1):
+def makeSectionBoxComposite(section, NfibeZ=1):
+    tagSec      = section.tagSec        ; print(f"tagSec    = {tagSec   }")
+    tagMatSt2   = section.tagMatStFlange; print(f"tagMatSt2 = {tagMatSt2}")
+    tagMatSt1   = section.tagMatStWeb   ; print(f"tagMatSt1 = {tagMatSt1}")
+    tagMatCt1   = section.tagMatCtUnconf; print(f"tagMatCt1 = {tagMatCt1}")
+    tagMatCt2   = section.tagMatCtConf  ; print(f"tagMatCt2 = {tagMatCt2}")
+    tw          = section.tw            ; print(f"tw        = {tw       }")
+    Hw          = section.Hw            ; print(f"Hw        = {Hw       }")
+    tf          = section.tf            ; print(f"tf        = {tf       }")
+    Bf          = section.Bf            ; print(f"Bf        = {Bf       }")
+    tc          = section.tc            ; print(f"tc        = {tc       }")
+    Hc1         = section.Hc1           ; print(f"Hc1       = {Hc1      }")
+    NfibeY      = section.NfibeY        ; print(f"NfibeY    = {NfibeY   }")
+
     
     GJ = 1e6
     # Section Geometry
@@ -149,36 +164,36 @@ def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, definedMatList, typ
     times1 = max(1, int((Hc1/tf)            /(divider)))
     times2 = max(1, int((((Hw-Hc1)/2)/tf)   /(divider)))
     
-    #  Material
-    ## Steel Material 1
-    tagMatSt1       = 1
-    typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    if tagMatSt1 not in definedMatList:
-        fmat.matSteel(typeMat, tagMatSt1)
-        definedMatList.append(tagMatSt1)
-    ## Steel Material 2
-    tagMatSt2       = 2
-    typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    if tagMatSt2 not in definedMatList:
-        fmat.matSteel(typeMat, tagMatSt2)
-        definedMatList.append(tagMatSt2)
+    # #  Material
+    # ## Steel Material 1
+    # tagMatSt1       = 1
+    # typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
+    # if tagMatSt1 not in definedMatList:
+    #     fmat.matSteel(typeMat, tagMatSt1)
+    #     definedMatList.append(tagMatSt1)
+    # ## Steel Material 2
+    # tagMatSt2       = 2
+    # typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
+    # if tagMatSt2 not in definedMatList:
+    #     fmat.matSteel(typeMat, tagMatSt2)
+    #     definedMatList.append(tagMatSt2)
     
-    ## Unconfined Concrete Material
-    tagMatCt1        = 3
-    typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    if tagMatCt1 not in definedMatList:
-        fmat.matConcrete(typeMat, tagMatCt1)
-        definedMatList.append(tagMatCt1)
-    ## Confined Concrete Material
-    tagMatCt2        = 4
-    typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    if tagMatCt2 not in definedMatList:
-        fmat.matConcrete(typeMat, tagMatCt2)
-        definedMatList.append(tagMatCt2)
-    
+    # ## Unconfined Concrete Material
+    # tagMatCt1        = 3
+    # typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
+    # if tagMatCt1 not in definedMatList:
+    #     fmat.matConcrete(typeMat, tagMatCt1)
+    #     definedMatList.append(tagMatCt1)
+    # ## Confined Concrete Material
+    # tagMatCt2        = 4
+    # typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
+    # if tagMatCt2 not in definedMatList:
+    #     fmat.matConcrete(typeMat, tagMatCt2)
+    #     definedMatList.append(tagMatCt2)
+
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)
-    ops.section('Fiber', tagSec, '-GJ', GJ)
+    ops.section('Fiber', section.tagSec, '-GJ', GJ)
     ops.patch('rect', tagMatSt2, NfibeY,        NfibeZ, *crdsI1, *crdsJ1) #Bot Flange
     ops.patch('rect', tagMatSt2, NfibeY,        NfibeZ, *crdsI4, *crdsJ4) #Top Flange
     ops.patch('rect', tagMatSt1, NfibeY*times,  NfibeZ, *crdsI2, *crdsJ2) #Left Web
@@ -199,7 +214,13 @@ def makeSectionBoxComposite(tagSec, Hw, Bf, tw, tf, tc, Hc1, definedMatList, typ
              ['patch', 'rect', tagMatCt1, NfibeY*times1, NfibeZ, *crdsI6, *crdsJ6],  #Concrete Core mid
              ['patch', 'rect', tagMatCt2, NfibeY*times2, NfibeZ, *crdsI7, *crdsJ7],  #Concrete Core top
              ]
+    # matcolor = ['y', 'b', 'r', 'g', 'm', 'k']
+    # # matcolor = ['r', 'lightgrey', 'pink', 'gold', 'purple', 'orange', 'w']
+    # opv.plot_fiber_section(fib_sec, matcolor=matcolor)
+    # plt.axis('equal')
+    # # plt.savefig('fibsec_rc.png')
     
+    # plt.show()
     return fib_sec
 
 

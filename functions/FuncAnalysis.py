@@ -8,6 +8,10 @@ waitTime2       = 0.0
 testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
 algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
+def create_list(n):
+    myList = list(range(n, 0, -1)) + list(range(2, n + 1))
+    return myList
+
 def gravity(load, tagNodeLoad):
     
     tagTSGravity    = 10
@@ -17,8 +21,7 @@ def gravity(load, tagNodeLoad):
     tagPtnGravity   = 10
     ops.pattern('Plain', tagPtnGravity, tagTSGravity)
     print(f"Type of tagNodeLoad is {type(tagNodeLoad)}")
-    if type(tagNodeLoad) == 'int': 
-    # if 1: 
+    if type(tagNodeLoad) == int: 
         print("Loading is based on Cantilever Column Structure.")
         ops.load(tagNodeLoad, 0.0, -abs(load), 0.0)
     else:
@@ -81,7 +84,8 @@ def pushoverDCF(dispTarget, tagNodeControl):
     ops.numberer('RCM')
     ops.system('BandGen')
     
-    numIncrList = [*(1*[30]), *(10*[15]), *(1*[30])]
+    # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
+    numIncrList = create_list(9)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
@@ -202,7 +206,8 @@ def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
             curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
-            numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
+            # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
+            numIncrList = create_list(9)
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")

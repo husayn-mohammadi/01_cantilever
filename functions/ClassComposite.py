@@ -202,6 +202,58 @@ class compo:
             plt.show()
         
         
+    def printVar(self):
+        print(f"ALR\t\t= {self.ALR:.5f}")
+        print(f"Es\t\t= {self.Es/GPa:.0f} GPa")
+        print(f"Esh\t\t= {self.Esh/GPa:.0f} GPa")
+        print(f"Fy\t\t= {self.Fy/MPa:.2f} MPa")
+        print(f"Fu\t\t= {self.Fu/MPa:.2f} MPa")
+        print(f"eps_sh\t= {self.eps_sh:.5f}")
+        print(f"eps_ult\t= {self.eps_ult:.5f}")
+        print(f"fts\t\t= {self.Ct_unconf.fts/MPa:.2f} MPa")
+        print(f"Ets\t\t= {self.Ct_unconf.Ets/MPa:.2f} MPa")
+        print(f"rhos\t= {self.rhos:.5f}")
+        print(f"R\t\t= {self.R:.5f}")
+        print(f"frp\t\t= {self.frp/MPa:.2f} MPa")
+        print(f"fpc\t\t= {self.Ct_unconf.fpc/MPa:.2f} MPa")
+        print(f"epsc0\t= {self.Ct_unconf.epsc0:.5f}")
+        print(f"Ec\t\t= {self.Ct_unconf.Ec/GPa:.0f} GPa")
+        print(f"fpcu\t= {self.Ct_unconf.fpcu/MPa:.2f} MPa")
+        if (self.Ct_unconf.fpcu/self.Ct_unconf.fpc < 0.45):
+            print(f"Warning!!! fpcu/fpc = {self.Ct_unconf.fpcu/self.Ct_unconf.fpc:.2f} < 0.45")
+        if (self.Ct_unconf.fpcu/self.Ct_unconf.fpc > 0.80):
+            print(f"Warning!!! fpcu/fpc = {self.Ct_unconf.fpcu/self.Ct_unconf.fpc:.2f} > 0.80")
+        print(f"epscU\t= {self.Ct_unconf.epscU:.5f}")
+        if (self.Ct_unconf.epscU/self.Ct_unconf.epsc0 < 1.6):
+            print(f"Warning!!! epscU/epsc0 = {self.Ct_unconf.epscU/self.Ct_unconf.epsc0:.2f} < 1.6")
+        if (self.Ct_unconf.epscU/self.Ct_unconf.epsc0 > 5.5):
+            print(f"Warning!!! epscU/epsc0 = {self.Ct_unconf.epscU/self.Ct_unconf.epsc0:.2f} > 5.5")
+        print(f"fpcc\t= {self.Ct_conf.fpc/MPa:.2f} MPa")
+        print(f"epscc0\t= {self.Ct_conf.epsc0:.5f}")
+        print(f"Ecc\t\t= {self.Ct_conf.Ec/GPa:.0f} GPa")
+        print(f"fpccu\t= {self.Ct_conf.fpcu/MPa:.2f} MPa")
+        if (self.Ct_conf.fpcu/self.Ct_conf.fpc < 0.45):
+            print(f"Warning!!! fpccu/fpcc = {self.Ct_conf.fpcu/self.Ct_conf.fpc:.2f} < 0.45")
+        if (self.Ct_conf.fpcu/self.Ct_conf.fpc > 0.90):
+            print(f"Warning!!! fpccu/fpcc = {self.Ct_conf.fpcu/self.Ct_conf.fpc:.2f} > 0.90")
+        print(f"epsccU\t= {self.Ct_conf.epscU:.5f}")
+        if (self.Ct_conf.epscU/self.Ct_conf.epsc0 < 4.0):
+            print(f"Warning!!! epsccU/epscc0 = {self.Ct_conf.epscU/self.Ct_conf.epsc0:.2f} < 4.0")
+        if (self.Ct_conf.epscU/self.Ct_conf.epsc0 > 8.7):
+            print(f"Warning!!! epsccU/epscc0 = {self.Ct_conf.epscU/self.Ct_conf.epsc0:.2f} > 8.7")
+        print(f"r\t\t= {self.r:.5f}")
+        if (self.r < 0.08):
+            print(f"Warning!!! r = {self.r:.2f} < 0.08")
+        if (self.r > 0.7):
+            print(f"Warning!!! r = {self.r:.2f} > 0.7")
+        print(f"Cd\t\t= {self.Cd:.5f}")
+        if (self.Cd < 0.2):
+            print(f"Warning!!! Cd = {self.Cd:.2f} < 0.2")
+        if (self.Cd > 0.75):
+            print(f"Warning!!! Cd = {self.Cd:.2f} > 0.75")
+        
+        
+        
 # #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
 # tags        = [1,      1,              2,           3,              4           ]
 # #propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 

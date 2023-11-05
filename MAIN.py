@@ -37,10 +37,10 @@ typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 1
+numSegBeam      = 5
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n_story*300 *mm
+dispTarget      = n_story*247 *mm
 
 # Cyclic Pushover Analysis
 dY              = n_story*17 *mm
@@ -62,6 +62,7 @@ plot_defo       = True
 sfac            = 10
     
 plot_Analysis   = True
+plot_StressStrain=True
 plot_section    = False
 #=============================================================================
 #    MAIN
@@ -87,7 +88,7 @@ for types in typeAnalysis:
     else:
         if typeBuild == "CantileverColumn":
             P = 0 * kN
-            tagNodeControl, tagNodeBase, tagElementWallBase, section = fm.buildCantileverN(L, P, plot_section, PHL, numSegWall, typeEle, modelFoundation)
+            tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, plot_section, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
             P = n_story * load['wall']
             tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagElementWallBase, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB, plot_section)
@@ -110,9 +111,9 @@ for types in typeAnalysis:
         
     fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
     Hw = section.Hw; tf = section.tf; Hc2 = section.Hc2
-    coordsFiberSt = fr.recordStressStrain(outputDir, tagElementWallBase, "fiberSt",  section, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
-    coordsFiberCt2= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt2", section, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
-    coordsFiberCt1= fr.recordStressStrain(outputDir, tagElementWallBase, "fiberCt1", section, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
+    coordsFiberSt = fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberSt",  section, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
+    coordsFiberCt2= fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberCt2", section, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
+    coordsFiberCt1= fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberCt1", section, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
     if types == 'monotonic':
         start_time_monotonic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -155,8 +156,9 @@ for types in typeAnalysis:
 #=============================================================================
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
-        fiberMat = ['fiberSt', 'fiberCt2', 'fiberCt1']
-        fp.plotStressStrain(outputDir, fiberMat,tagElementWallBase)
+    if plot_StressStrain == True:
+        fiberMat = ['fiberSt', 'fiberCt1']#, 'fiberCt2'] 
+        fp.plotStressStrain(outputDir, fiberMat,tagEleListToRecord_wall)
 
 end_time        = time.time()
 elapsed_time    = end_time - start_time

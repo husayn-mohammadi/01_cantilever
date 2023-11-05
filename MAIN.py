@@ -38,10 +38,10 @@ typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL             = 96 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 3
+numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = 1 *inch
+dispTarget      = 50 *inch
 
 # Cyclic Pushover Analysis
 dY              = n_story*17 *mm

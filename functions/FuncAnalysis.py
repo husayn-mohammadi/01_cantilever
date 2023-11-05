@@ -85,7 +85,8 @@ def pushoverDCF(dispTarget, tagNodeControl):
     ops.system('BandGen')
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
-    numIncrList = create_list(9)
+    numIncrList = [*(10*[10])]
+    # numIncrList = create_list(9)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)

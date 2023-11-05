@@ -36,12 +36,12 @@ typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
-PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
+PHL             = 96 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 5
+numSegBeam      = 1
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = n_story*247 *mm
+dispTarget      = 50 *inch
 
 # Cyclic Pushover Analysis
 dY              = n_story*17 *mm
@@ -63,7 +63,7 @@ plot_defo       = True
 sfac            = 10
     
 plot_Analysis   = True
-plot_StressStrain=True
+plot_StressStrain=False
 plot_section    = False
 #=============================================================================
 #    MAIN
@@ -110,7 +110,7 @@ for types in typeAnalysis:
             Pno = section.Pno
             fa.gravity(ALR*Pno, tagNodeControl)
         
-    fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
+    fr.recordPushover(tagNodeControl[-1], tagNodeBase, outputDir)
     Hw = section.Hw; tf = section.tf; Hc2 = section.Hc2
     coordsFiberSt = fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberSt",  section, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
     coordsFiberCt2= fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberCt2", section, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
@@ -120,7 +120,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, tagNodeControl)
+        fa.pushoverDCF(dispTarget, tagNodeControl, n_story)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)
@@ -128,7 +128,7 @@ for types in typeAnalysis:
         print(f"Monotonic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
-            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
             sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
                                  #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}

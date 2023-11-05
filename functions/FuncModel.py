@@ -659,15 +659,26 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
             ops.element('Truss', tagElement, *tagNodes, A, tagMatTruss)
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   Define Top-Left corner node as Control Node
+    # #   Define Top-Left corner node as Control Node
+    # for tagNode, coord in coords.items():
+    #     tagCoordXI  = f"{tagNode}"[3:-1]
+    #     tagCoordYI  = f"{tagNode}"[1:-3]
+    #     tagSuffixI  = f"{tagNode}"[-1]
+    #     if tagSuffixI == '0' and tagCoordXI == '00' and tagCoordYI == f"{storyNum:02}":
+    #         tagNodeControl = tagNode
+    #         # print(f"tagNodeControl = {tagNodeControl}")
+    
+    #   Define Wall Centroid Nodes of the left wall as Pushover Loading Nodes
+    tagNodeControl = []
     for tagNode, coord in coords.items():
         tagCoordXI  = f"{tagNode}"[3:-1]
         tagCoordYI  = f"{tagNode}"[1:-3]
         tagSuffixI  = f"{tagNode}"[-1]
-        if tagSuffixI == '0' and tagCoordXI == '00' and tagCoordYI == f"{storyNum:02}":
-            tagNodeControl = tagNode
-            # print(f"tagNodeControl = {tagNodeControl}")
-            
+        if tagSuffixI == '0' and tagCoordXI == '00':
+            tagNodeControl.append(tagNode)
+            # print(f"tagNodeControl = {tagNodeControl}") 
+    
+    
     #   Define loading nodes
     tagNodeLoad={}; tagNodeLoad["wall"]=[]; tagNodeLoad["leaningColumn"]=[]
     for tagNode, coord in coords.items():

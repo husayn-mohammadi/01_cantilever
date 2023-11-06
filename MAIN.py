@@ -29,7 +29,7 @@ modelFoundation = True
 withShearLink   = False
 exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'CantileverColumn'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 # typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
@@ -63,7 +63,7 @@ plot_defo       = True
 sfac            = 10
     
 plot_Analysis   = True
-plot_StressStrain=False
+plot_StressStrain=True
 plot_section    = False
 #=============================================================================
 #    MAIN
@@ -112,9 +112,7 @@ for types in typeAnalysis:
         
     fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
     Hw = section.Hw; tf = section.tf; Hc2 = section.Hc2
-    coordsFiberSt = fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberSt",  section, Hw+tf,  tf, NfibeY)                   # tagMatSt=1
-    coordsFiberCt2= fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberCt2", section, Hw   ,  tf, NfibeY*int(Hw/tf/10))     # tagMatCt2=4
-    coordsFiberCt1= fr.recordStressStrain(outputDir, tagEleListToRecord_wall, "fiberCt1", section, Hw-Hc2, tf, NfibeY*int(Hw/tf/10))     # tagMatCt1=3
+    coordsFiber = fr.recordStressStrain(outputDir, tagEleListToRecord_wall,  section)                   # tagMatSt=1
     if types == 'monotonic':
         start_time_monotonic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -158,8 +156,7 @@ for types in typeAnalysis:
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
     if plot_StressStrain == True:
-        fiberMat = ['fiberSt', 'fiberCt1']#, 'fiberCt2'] 
-        fp.plotStressStrain(outputDir, fiberMat,tagEleListToRecord_wall)
+        fp.plotStressStrain(outputDir,tagEleListToRecord_wall)
 
 end_time        = time.time()
 elapsed_time    = end_time - start_time

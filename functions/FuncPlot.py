@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import opsvis            as opv
+# import opsvis            as opv
 import numpy             as np
 # from matplotlib.animation import FuncAnimation
 exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
@@ -42,7 +42,8 @@ def plotPushoverX(outputDir):
     
     return x, Vx
 
-def plotStressStrain(outputDir, listFiberMat, tagEleList): 
+def plotStressStrain(outputDir,tagEleList): 
+    listFiberMat = ['fiberSt', 'fiberCt1', 'fiberCt2'] 
     n       = len(tagEleList)
     zero    = np.array([0.])
     
@@ -60,6 +61,8 @@ def plotStressStrain(outputDir, listFiberMat, tagEleList):
         SS[j] = {}; Stress[j] = {}; Strain[j] = {}
         for i, fiberMat in enumerate(listFiberMat):
             for k, item in enumerate(['top', 'mid', 'bot']):
+                if fiberMat == "fiberCt2" and item == "mid":
+                    continue 
                 SSS             = np.loadtxt(f"{outputDir}/{fiberMat}_{item}.txt", delimiter= ' ')
                 Stress[j][k]    = np.append(zero, SSS[:,2*j+0])
                 Strain[j][k]    = np.append(zero, SSS[:,2*j+1])
@@ -68,19 +71,23 @@ def plotStressStrain(outputDir, listFiberMat, tagEleList):
                             
             if unitForce == "N":
                 ax[i].plot(Strain[j][0], Stress[j][0]/1e6, color='blue', label='top', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][0], Stress[j][0]/1e6, color='blue', label='top', linewidth=0.8) 
-                ax[i].plot(Strain[j][1], Stress[j][1]/1e6, color='gray', label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1]/1e6, color='gray', label='mid', linewidth=0.8) 
+                if fiberMat != "fiberCt2" and item != "mid":
+                    ax[i].plot(Strain[j][1], Stress[j][1]/1e6, color='gray', label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1]/1e6, color='gray', label='mid', linewidth=0.8) 
                 ax[i].plot(Strain[j][2], Stress[j][2]/1e6, color='red',  label='bot', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][2], Stress[j][2]/1e6, color='red',  label='bot', linewidth=0.8) 
             elif unitForce == "kN":
                 ax[i].plot(Strain[j][0], Stress[j][0]/1e3, color='blue', label='top', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][0], Stress[j][0]/1e3, color='blue', label='top', linewidth=0.8)
-                ax[i].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8)
+                if fiberMat != "fiberCt2" and item != "mid":
+                    ax[i].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8)
                 ax[i].plot(Strain[j][2], Stress[j][2]/1e3, color='red',  label='bot', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][2], Stress[j][2]/1e3, color='red',  label='bot', linewidth=0.8)
             elif unitForce == "lb":
                 ax[i].plot(Strain[j][0], Stress[j][0]/1e3, color='blue', label='top', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][0], Stress[j][0]/1e3, color='blue', label='top', linewidth=0.8)
-                ax[i].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8)
+                if fiberMat != "fiberCt2" and item != "mid":
+                    ax[i].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1]/1e3, color='gray', label='mid', linewidth=0.8)
                 ax[i].plot(Strain[j][2], Stress[j][2]/1e3, color='red',  label='bot', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][2], Stress[j][2]/1e3, color='red',  label='bot', linewidth=0.8)
             elif unitForce == "kip":
                 ax[i].plot(Strain[j][0], Stress[j][0], color='blue',     label='top', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][0], Stress[j][0], color='blue',     label='top', linewidth=0.8) 
-                ax[i].plot(Strain[j][1], Stress[j][1], color='gray',     label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1], color='gray',     label='mid', linewidth=0.8) 
+                if fiberMat != "fiberCt2" and item != "mid":
+                    ax[i].plot(Strain[j][1], Stress[j][1], color='gray',     label='mid', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][1], Stress[j][1], color='gray',     label='mid', linewidth=0.8) 
                 ax[i].plot(Strain[j][2], Stress[j][2], color='red',      label='bot', linewidth=0.8) if n==1 else ax[i,j].plot(Strain[j][2], Stress[j][2], color='red',      label='bot', linewidth=0.8) 
             ax[i].set_title(f"tagEle: {tagEle} | Material: {fiberMat}") if n==1 else ax[i,j].set_title(f"tagEle: {tagEle} | Material: {fiberMat}")
             ax[i].legend() if n==1 else ax[i,j].legend()

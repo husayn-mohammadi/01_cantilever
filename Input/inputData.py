@@ -23,7 +23,7 @@ L           = 108 *inch
 Hw          = 36*inch
 lsr         = 24.
 b           = 114*mm
-NfibeY      = 9
+NfibeY      = 3
 
 Section = {
     'wall': { # C-PSW/CF Wall Section

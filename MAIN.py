@@ -89,7 +89,7 @@ for types in typeAnalysis:
     else:
         if typeBuild == "CantileverColumn":
             P = 0 * kN
-            tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, plot_section, PHL, numSegWall, typeEle, modelFoundation)
+            tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL, numSegWall, typeEle, modelFoundation)
         elif typeBuild == 'coupledWalls':
             P = n_story * load['wall']
             tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, withShearLink, typeCB, plot_section)

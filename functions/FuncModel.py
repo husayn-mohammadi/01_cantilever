@@ -9,7 +9,7 @@ from functions.ClassComposite import compo
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 
-def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
+def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
     
     #       Define Geometric Transformation
     tagGTLinear = 1

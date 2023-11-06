@@ -83,6 +83,39 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColu
     tagElementWallBase = [1]
     return(tagNodeTop, tagNodeBase, tagElementWallBase, composite)
 
+def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHingeLength, numSeg=3):
+    tagEleLocal = 100*tagEleGlobal
+    coordsLocal = {
+        tagNodeI: ops.nodeCoord(tagNodeI),
+        tagNodeJ: ops.nodeCoord(tagNodeJ),
+        }
+    
+    L = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
+    if PlasticHingeLength/L >= 0.5:
+        print("PlasticHingeLength >= L/2"); sys.exit()
+    
+    delta = PlasticHingeLength/numSeg
+    tagNodeII = tagEleLocal-1
+    tagNodeJJ = tagEleLocal+1
+    
+    for i in range(numSeg+1):
+        coordsLocal[tagNodeII-i] = [0, coordsLocal[tagNodeI][1]+i*delta]
+        ops.node(tagNodeII-i, *coordsLocal[tagNodeII-i])
+        coordsLocal[tagNodeJJ+i] = [0, coordsLocal[tagNodeJ][1]-i*delta]
+        ops.node(tagNodeJJ+i, *coordsLocal[tagNodeJJ+i])
+        if i > 0:
+            ops.element('dispBeamColumn',   tagNodeII-i, *[tagNodeII-i, tagNodeII-i+1], tagGT, section.tagSec) # for now instead of tagGTLinear I have written 1
+            ops.element('dispBeamColumn',   tagNodeJJ+i, *[tagNodeJJ+i, tagNodeJJ+i-1], tagGT, section.tagSec) # for now instead of tagGTLinear I have written 1
+    
+    ops.element('elasticBeamColumn',tagEleGlobal, *[tagNodeII-numSeg, tagNodeJJ+numSeg], section.AA, section.EE, 1, tagGT) # I=1 (+) for now instead of tagGTLinear I have written 1
+    
+    ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
+    ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
+    
+    tagEleFibRec = tagNodeII-1
+    
+    return tagEleFibRec
+
 def buildCantileverL(L, E, I, A):
     
     # Define Nodes

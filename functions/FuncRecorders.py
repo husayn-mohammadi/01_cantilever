@@ -6,11 +6,14 @@ import openseespy.opensees as ops
 def recordPushover(tagNodeControl, tagNodeBase, outputDir):
     
     #   recorder('Node', '-file', filename,                        '-time', '-node', *nodeTags=[], '-dof', *dofs=[], respType)
-    ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt",     '-time', '-node', tagNodeControl,  '-dof', 1,        'disp')
+    if type(tagNodeControl) == list:
+        ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt", '-time', '-node', tagNodeControl[-1], '-dof', 1,        'disp')
+    else:
+        ops.recorder('Node', '-file', f"{outputDir}/top_disp.txt", '-time', '-node', tagNodeControl,     '-dof', 1,        'disp')
     if type(tagNodeBase) == list:
-        ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', *tagNodeBase,     '-dof', 1,        'reaction')
+        ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node', *tagNodeBase,       '-dof', 1,        'reaction')
     else: 
-        ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node',  tagNodeBase,     '-dof', 1,        'reaction')
+        ops.recorder('Node', '-file', f"{outputDir}/reaction.txt", '-time', '-node',  tagNodeBase,       '-dof', 1,        'reaction')
 
 def recordStressStrain(outputDir, tagEleList, fiberMat, section, H, tf, NfibeY):
     

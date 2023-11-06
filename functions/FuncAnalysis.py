@@ -62,7 +62,6 @@ def gravity(load, tagNodeLoad):
 def pushoverDCF(dispTarget, tagNodeLoad, n_story): 
     
     dofNodeControl  = 1
-    tagNodeControl  = tagNodeLoad[-1]
     # incr        = dispTarget/numIncr
     tol         = 1e-8
     numIter     = 50
@@ -77,10 +76,14 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
-    n_story = len(tagNodeLoad)-1
-    for i, tagNode in enumerate(tagNodeLoad):
-        ops.load(tagNode, *[i/n_story, 0, 0])
-    
+    if type(tagNodeLoad) == list:
+        tagNodeControl  = tagNodeLoad[-1]
+        n_story = len(tagNodeLoad)-1
+        for i, tagNode in enumerate(tagNodeLoad):
+            ops.load(tagNode, *[i/n_story, 0, 0])
+    else:
+        tagNodeControl  = tagNodeLoad
+        ops.load(tagNodeControl, *[1, 0, 0])
     
     #  Define Analysis Options
     
@@ -91,7 +94,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
     # numIncrList = [*(10*[30])]
-    numIncrList = create_list(15, 3)
+    numIncrList = create_list(20, 10)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
@@ -176,11 +179,13 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     return OK
 
 
-def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
+def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
     
     dofNodeControl  = 1
-    dForce          = 1 # The pushover curve is not dependent to the value of dForce
-    
+    if type(tagNodeLoad) == list:
+        tagNodeControl  = tagNodeLoad[-1]
+    else: 
+        tagNodeControl  = tagNodeLoad
     tol         = 1e-8
     numIter     = 100
     
@@ -194,7 +199,7 @@ def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
     #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
-    ops.load(tagNodeControl, *[dForce, 0, 0])
+    ops.load(tagNodeControl, *[1, 0, 0])
     
     
     #  Define Analysis Options
@@ -213,7 +218,7 @@ def cyclicAnalysis(dispList, tagNodeControl, numCyclesPerDispTarget=1):
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            numIncrList = create_list(15, 4)
+            numIncrList = create_list(9, 4)
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")

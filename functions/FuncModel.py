@@ -6,10 +6,7 @@ import functions.FuncSection   as fs
 # import functions.FuncPlot      as fp
 from functions.ClassComposite import compo
 
-typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
-typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-
-def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
+def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True, typeEle='dispBeamColumn'):#
     
     #       Define Geometric Transformation
     tagGTLinear = 1
@@ -89,8 +86,9 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
         tagNodeI: ops.nodeCoord(tagNodeI),
         tagNodeJ: ops.nodeCoord(tagNodeJ),
         }
-    
-    L = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
+    Lx = abs(coordsLocal[tagNodeJ][0] - coordsLocal[tagNodeI][0])
+    Ly = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
+    L  = (Lx**2 + Ly**2)**0.5
     if PlasticHingeLength/L >= 0.5:
         print("PlasticHingeLength >= L/2"); sys.exit()
     
@@ -99,9 +97,9 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     tagNodeJJ = tagEleLocal+1
     
     for i in range(numSeg+1):
-        coordsLocal[tagNodeII-i] = [0, coordsLocal[tagNodeI][1]+i*delta]
+        coordsLocal[tagNodeII-i] = [coordsLocal[tagNodeI][0]+i*delta/L*Lx, coordsLocal[tagNodeI][1]+i*delta/L*Ly]
         ops.node(tagNodeII-i, *coordsLocal[tagNodeII-i])
-        coordsLocal[tagNodeJJ+i] = [0, coordsLocal[tagNodeJ][1]-i*delta]
+        coordsLocal[tagNodeJJ+i] = [coordsLocal[tagNodeJ][0]-i*delta/L*Lx, coordsLocal[tagNodeJ][1]-i*delta/L*Ly]
         ops.node(tagNodeJJ+i, *coordsLocal[tagNodeJJ+i])
         if i > 0:
             ops.element('dispBeamColumn',   tagNodeII-i, *[tagNodeII-i, tagNodeII-i+1], tagGT, section.tagSec) # for now instead of tagGTLinear I have written 1
@@ -155,24 +153,6 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
     
     return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
-
-def buildCantileverL(L, E, I, A):
-    
-    # Define Nodes
-    ops.node(1, 0., 0.)
-    ops.node(2, 0., L )
-        
-    # Assign boundary constraints
-    ops.fix(1, 1, 1, 1)
-    
-    # Define Geometric Transformation
-    tagGTLinear = 1
-    tagGTPDelta = 2
-    ops.geomTransf('Linear', tagGTLinear)
-    ops.geomTransf('PDelta', tagGTPDelta)
-    
-    # Define Element
-    ops.element('elasticBeamColumn', 1, *[1, 2], A, E, I, tagGTPDelta)
 
 def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
     L       = (520 *mm) * 1
@@ -284,7 +264,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, withShearLink=False, typeCB="FSF", plot_section=True):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True):
     
     modelLeaning = True     # True False
     
@@ -382,6 +362,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     fs.makeSectionBoxComposite(wall)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
+    NIP         = 5
     nameSect    = 'beam'
     tags        = Section[nameSect]['tags']
     propWeb     = Section[nameSect]['propWeb']
@@ -390,6 +371,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     #wall       = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     beam        = compo(*tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
+    EIeff       = wall.EIeff
+    EAeff       = wall.EAeff
+    beam.EE     = EIeff
+    beam.AA     = EAeff/EIeff
     fs.makeSectionBoxComposite(beam)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
@@ -404,14 +389,14 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
     
-    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL, numSegWall=1):
+    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1):
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
         
         Lx  = xJ - xI; Ly = yJ - yI
         L   = (Lx**2 + Ly**2)**0.5
-        PHR = PHL/L
+        PHR = PHL_wall/L
         lx  = PHR*Lx/numSegWall; ly = PHR*Ly/numSegWall
         
         coordsLocal = {}
@@ -464,7 +449,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                             # print(f"{tagNodeI} VS {tagNodeJ} ==> tagWall = 5{tagCoordXI}{tagCoordYI}{tagCoordYJ}")
                             if int(tagCoordYJ) == 1:
                                 # print("int(tagCoordYJ) == 1")
-                                discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coords, PHL, numSegWall)
+                                discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coords, PHL_wall, numSegWall)
                                 # Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                             else:
                                 # print("int(tagCoordYJ) != 1")
@@ -689,16 +674,21 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                     if int(tagSuffixJ)-int(tagSuffixI) == -1 and int(tagCoordXJ)-int(tagCoordXI) == 1:
                         if tagSuffixI != '0' and tagSuffixJ != '0':
                             # print(f"{tagNodeI} VS {tagNodeJ} ==> tagBeam = 4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
-                            if withShearLink == False:
+                            if typeCB == 'discretizedAllFiber':
                                 discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, numSegBeam)
-                            else:
-                                if typeCB == 'FSF':
-                                    FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
-                                elif typeCB == 'FSW':
-                                    FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
-                                else: 
-                                    print("typeCB not recognized!"); sys.exit()
+                            elif typeCB == 'FSF':
+                                FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
+                            elif typeCB == 'FSW':
+                                FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
+                            elif typeCB == 'discritizedBothEnds':
                                 # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
+                                tagEleBeam = f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"
+                                print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
+                                print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
+                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam) # This function models the beams
+                            else: 
+                                print("typeCB not recognized!"); sys.exit()
+                            # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
                 # build truss
                 elif tagCoordXJ == gridLeaningColumn and tagCoordXI == f"{(len(L_Bay_List)-2):02}":
                     if int(tagSuffixJ)-int(tagSuffixI) == -2:
@@ -707,10 +697,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                         Trusses[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 3 is for Trusses
     
     ##  Define Beams
-    if withShearLink == False:
+    if typeCB == 'discretizedAllFiber':
         for tagElement, tagNodes in Beams.items():
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, beam.tagSec)
-    else:
+    elif typeCB == 'FSF' or typeCB == 'FSW':
         for tagElement, tagNodes in Beams.items():
             # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
             tagElementSuffix = f"{tagElement}"[-1]

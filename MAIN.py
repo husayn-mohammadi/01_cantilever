@@ -38,7 +38,7 @@ PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
 PHL_beam        = 3*2/3 * Section['beam']['propWeb'][1]
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 3
-SBL             = 0.52 *m
+SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
 dispTarget      = 10 *inch
 

@@ -6,9 +6,6 @@ import functions.FuncSection   as fs
 # import functions.FuncPlot      as fp
 from functions.ClassComposite import compo
 
-typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
-typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
-
 def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True, typeEle='dispBeamColumn'):#
     
     #       Define Geometric Transformation

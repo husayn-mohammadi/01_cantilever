@@ -9,7 +9,7 @@ from functions.ClassComposite import compo
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 
-def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
+def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
     
     #       Define Geometric Transformation
     tagGTLinear = 1
@@ -82,6 +82,79 @@ def buildCantileverN(L, P, plot_section, PlasticHingeLength=1, numSeg=3, typeEle
     ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagNodeFndn, numSeg + tagNodeFndn + 1], AA, EE, 1, tagGTLinear)
     tagElementWallBase = [1]
     return(tagNodeTop, tagNodeBase, tagElementWallBase, composite)
+
+def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHingeLength, numSeg=3):
+    tagEleLocal = 100*tagEleGlobal
+    coordsLocal = {
+        tagNodeI: ops.nodeCoord(tagNodeI),
+        tagNodeJ: ops.nodeCoord(tagNodeJ),
+        }
+    
+    L = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
+    if PlasticHingeLength/L >= 0.5:
+        print("PlasticHingeLength >= L/2"); sys.exit()
+    
+    delta = PlasticHingeLength/numSeg
+    tagNodeII = tagEleLocal-1
+    tagNodeJJ = tagEleLocal+1
+    
+    for i in range(numSeg+1):
+        coordsLocal[tagNodeII-i] = [0, coordsLocal[tagNodeI][1]+i*delta]
+        ops.node(tagNodeII-i, *coordsLocal[tagNodeII-i])
+        coordsLocal[tagNodeJJ+i] = [0, coordsLocal[tagNodeJ][1]-i*delta]
+        ops.node(tagNodeJJ+i, *coordsLocal[tagNodeJJ+i])
+        if i > 0:
+            ops.element('dispBeamColumn',   tagNodeII-i, *[tagNodeII-i, tagNodeII-i+1], tagGT, section.tagSec) # for now instead of tagGTLinear I have written 1
+            ops.element('dispBeamColumn',   tagNodeJJ+i, *[tagNodeJJ+i, tagNodeJJ+i-1], tagGT, section.tagSec) # for now instead of tagGTLinear I have written 1
+    
+    ops.element('elasticBeamColumn',tagEleGlobal, *[tagNodeII-numSeg, tagNodeJJ+numSeg], section.AA, section.EE, 1, tagGT) # I=1 (+) for now instead of tagGTLinear I have written 1
+    
+    ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
+    ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
+    
+    tagEleFibRec = tagNodeII-1
+    
+    return tagEleFibRec
+
+def buildBeam(L, PlasticHingeLength=1, numSeg=3):
+        
+    #       Define Geometric Transformation
+    tagGTLinear = 1
+    ops.geomTransf('Linear', tagGTLinear)
+    
+    NIP         = 5
+    #       Define beamIntegrator
+    nameSect    = 'beam'
+    tags        = Section[nameSect]['tags']
+    propWeb     = Section[nameSect]['propWeb']
+    propFlange  = Section[nameSect]['propFlange']
+    propCore    = Section[nameSect]['propCore']
+    #composite  = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    compo.printVar(composite)
+    EIeff       = composite.EIeff
+    EAeff       = composite.EAeff
+    composite.EE= EIeff
+    composite.AA= EAeff/EIeff
+    fs.makeSectionBoxComposite(composite)
+    ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+             
+    #       Define Nodes & Elements
+    ##      Define Base Node
+    tagNodeBase = 1
+    ops.node(tagNodeBase, 0., 0.)
+    ops.fix( tagNodeBase, 1, 1, 1)
+    
+    ##      Define Top Node
+    tagNodeTop  = 2
+    ops.node(tagNodeTop, 0., L)
+    ops.fix( tagNodeTop, 0, 1, 1)
+        
+    tagEleGlobal = 1
+    
+    tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
+    
+    return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
 
 def buildCantileverL(L, E, I, A):
     
@@ -304,8 +377,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     compo.printVar(wall)
     EIeff       = wall.EIeff
     EAeff       = wall.EAeff
-    EE          = EIeff
-    AA          = EAeff/EIeff
+    wall.EE     = EIeff
+    wall.AA     = EAeff/EIeff
     fs.makeSectionBoxComposite(wall)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
@@ -408,7 +481,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
             # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, section['wall']['tagSec'], tagGTPDelta)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, AA, EE, 1, tagGTPDelta) 
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, wall.AA, wall.EE, 1, tagGTPDelta) 
         else:
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, wall.tagSec)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)

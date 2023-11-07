@@ -29,7 +29,7 @@ modelFoundation = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 # PHL_wall        = 24 *inch                  # Plastic Hinge Length (0.0 < PHL < H_wall)
@@ -40,10 +40,10 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 3
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-dispTarget      = 10 *inch
+dispTarget      = 30 *cm * n_story
 
 # Cyclic Pushover Analysis
-dY              = n_story*25 *mm
+dY              = 10 *mm * n_story
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

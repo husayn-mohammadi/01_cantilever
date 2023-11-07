@@ -373,6 +373,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     #wall       = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     beam        = compo(*tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
+    EIeff       = wall.EIeff
+    EAeff       = wall.EAeff
+    beam.EE     = EIeff
+    beam.AA     = EAeff/EIeff
     fs.makeSectionBoxComposite(beam)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     

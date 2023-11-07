@@ -89,8 +89,9 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
         tagNodeI: ops.nodeCoord(tagNodeI),
         tagNodeJ: ops.nodeCoord(tagNodeJ),
         }
-    
-    L = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
+    Lx = abs(coordsLocal[tagNodeJ][0] - coordsLocal[tagNodeI][0])
+    Ly = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
+    L  = (Lx**2 + Ly**2)**0.5
     if PlasticHingeLength/L >= 0.5:
         print("PlasticHingeLength >= L/2"); sys.exit()
     
@@ -99,9 +100,9 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     tagNodeJJ = tagEleLocal+1
     
     for i in range(numSeg+1):
-        coordsLocal[tagNodeII-i] = [0, coordsLocal[tagNodeI][1]+i*delta]
+        coordsLocal[tagNodeII-i] = [coordsLocal[tagNodeI][0]+i*delta/L*Lx, coordsLocal[tagNodeI][1]+i*delta/L*Ly]
         ops.node(tagNodeII-i, *coordsLocal[tagNodeII-i])
-        coordsLocal[tagNodeJJ+i] = [0, coordsLocal[tagNodeJ][1]-i*delta]
+        coordsLocal[tagNodeJJ+i] = [coordsLocal[tagNodeJ][0]-i*delta/L*Lx, coordsLocal[tagNodeJ][1]-i*delta/L*Ly]
         ops.node(tagNodeJJ+i, *coordsLocal[tagNodeJJ+i])
         if i > 0:
             ops.element('dispBeamColumn',   tagNodeII-i, *[tagNodeII-i, tagNodeII-i+1], tagGT, section.tagSec) # for now instead of tagGTLinear I have written 1

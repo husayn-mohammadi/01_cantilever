@@ -116,6 +116,46 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     
     return tagEleFibRec
 
+def buildBeam(L, PlasticHingeLength=1, numSeg=3):
+        
+    #       Define Geometric Transformation
+    tagGTLinear = 1
+    ops.geomTransf('Linear', tagGTLinear)
+    
+    NIP         = 5
+    #       Define beamIntegrator
+    nameSect    = 'beam'
+    tags        = Section[nameSect]['tags']
+    propWeb     = Section[nameSect]['propWeb']
+    propFlange  = Section[nameSect]['propFlange']
+    propCore    = Section[nameSect]['propCore']
+    #composite  = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    compo.printVar(composite)
+    EIeff       = composite.EIeff
+    EAeff       = composite.EAeff
+    composite.EE= EIeff
+    composite.AA= EAeff/EIeff
+    fs.makeSectionBoxComposite(composite)
+    ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
+             
+    #       Define Nodes & Elements
+    ##      Define Base Node
+    tagNodeBase = 1
+    ops.node(tagNodeBase, 0., 0.)
+    ops.fix( tagNodeBase, 1, 1, 1)
+    
+    ##      Define Top Node
+    tagNodeTop  = 2
+    ops.node(tagNodeTop, 0., L)
+    ops.fix( tagNodeTop, 0, 1, 1)
+        
+    tagEleGlobal = 1
+    
+    tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
+    
+    return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
+
 def buildCantileverL(L, E, I, A):
     
     # Define Nodes

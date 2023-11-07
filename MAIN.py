@@ -29,7 +29,7 @@ modelFoundation = True
 withShearLink   = False
 exertGravityLoad= True
 typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
-typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'ShearCritBeam', 'coupledWalls'
+typeBuild       = 'buildBeam'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 # typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
@@ -90,6 +90,8 @@ for types in typeAnalysis:
         if typeBuild == "CantileverColumn":
             P = 0 * kN
             tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL, numSegWall, typeEle, modelFoundation)
+        elif typeBuild == 'buildBeam':
+            tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildBeam(L, PHL, numSegBeam)
         elif typeBuild == 'coupledWalls':
             P = n_story * load['wall']
             tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, withShearLink, typeCB, plot_section)
@@ -105,7 +107,7 @@ for types in typeAnalysis:
     if exertGravityLoad == True:
         if typeBuild == 'coupledWalls':
             fa.gravity(load, tagNodeLoad)
-        else:
+        elif typeBuild == 'CantileverColumn':
             # Axial Force Capacity of Walls (Pno)
             Pno = section.Pno
             fa.gravity(ALR*Pno, tagNodeControl)

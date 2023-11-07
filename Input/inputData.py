@@ -7,7 +7,7 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 1
+n_story         = 8
 H_first         = 17 *ft
 H_typical       = 14 *ft
 L_Bay           = (144 + 72) *inch
@@ -42,7 +42,7 @@ Section = {
         'propWeb'   : [9/16*inch, 21*inch,   200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         'propFlange': [11*inch,   9/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         #propCore   = [tc,      fpc,      wc,     lamConf, lamUnconf]
-        'propCore'  : [9 *inch, 44.9*MPa, 0.2*mm, 0.05,    0.2     ]
+        'propCore'  : [9 *inch, 44.9*MPa, 0.2*mm, 0.05,    0.25     ]
     },
     }
 

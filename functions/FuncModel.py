@@ -377,8 +377,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     compo.printVar(wall)
     EIeff       = wall.EIeff
     EAeff       = wall.EAeff
-    EE          = EIeff
-    AA          = EAeff/EIeff
+    wall.EE     = EIeff
+    wall.AA     = EAeff/EIeff
     fs.makeSectionBoxComposite(wall)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
@@ -481,7 +481,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
             # print(f"tagElement = {tagElement} and tagNodes = {tagNodes}")
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, section['wall']['tagSec'], tagGTPDelta)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, A, E, I, tagGTPDelta)
-            ops.element('elasticBeamColumn', tagElement, *tagNodes, AA, EE, 1, tagGTPDelta) 
+            ops.element('elasticBeamColumn', tagElement, *tagNodes, wall.AA, wall.EE, 1, tagGTPDelta) 
         else:
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTPDelta, wall.tagSec)
             # ops.element('elasticBeamColumn', tagElement, *tagNodes, tagSec, tagGTPDelta)

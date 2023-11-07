@@ -32,7 +32,10 @@ typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
-PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
+# PHL_wall        = 24 *inch                  # Plastic Hinge Length (0.0 < PHL < H_wall)
+PHL_wall        = 2/3 * Section['wall']['propWeb'][1] 
+# PHL_beam        = 60 *inch                  # Plastic Hinge Length (0.0 < PHL < L_beam)
+PHL_beam        = 3*2/3 * Section['beam']['propWeb'][1]
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 3
 SBL             = 0.52 *m
@@ -79,12 +82,12 @@ for types in typeAnalysis:
             
     if typeBuild == "CantileverColumn":
         P = 0 * kN
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL, numSegWall, modelFoundation)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
     elif typeBuild == 'buildBeam':
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildBeam(L, PHL, numSegBeam)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildBeam(L, PHL_beam, numSegBeam)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
-        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB, plot_section)
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         

@@ -264,7 +264,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB="discretizedAllFiber", plot_section=True):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True):
     
     modelLeaning = True     # True False
     
@@ -362,6 +362,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     fs.makeSectionBoxComposite(wall)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
+    NIP         = 5
     nameSect    = 'beam'
     tags        = Section[nameSect]['tags']
     propWeb     = Section[nameSect]['propWeb']
@@ -388,14 +389,14 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
     
-    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL, numSegWall=1):
+    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1):
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
         
         Lx  = xJ - xI; Ly = yJ - yI
         L   = (Lx**2 + Ly**2)**0.5
-        PHR = PHL/L
+        PHR = PHL_wall/L
         lx  = PHR*Lx/numSegWall; ly = PHR*Ly/numSegWall
         
         coordsLocal = {}
@@ -448,7 +449,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                             # print(f"{tagNodeI} VS {tagNodeJ} ==> tagWall = 5{tagCoordXI}{tagCoordYI}{tagCoordYJ}")
                             if int(tagCoordYJ) == 1:
                                 # print("int(tagCoordYJ) == 1")
-                                discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coords, PHL, numSegWall)
+                                discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coords, PHL_wall, numSegWall)
                                 # Walls[f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}"] = [tagNodeI, tagNodeJ]  #Prefix 5 is for Walls
                             else:
                                 # print("int(tagCoordYJ) != 1")
@@ -684,7 +685,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                                 tagEleBeam = f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"
                                 print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
                                 print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
-                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL/2, numSegBeam) # This function models the beams
+                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam) # This function models the beams
                             else: 
                                 print("typeCB not recognized!"); sys.exit()
                             # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams

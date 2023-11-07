@@ -33,18 +33,18 @@ typeBuild       = 'buildBeam'        # 'CantileverColumn', 'coupledWalls', 'buil
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 # typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
 typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
-typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
-PHL             = 24 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
+PHL             = 14 *inch                  # Plastic Hinge Length (0.0 < PHLR < L)
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 3
 SBL             = 0.52 *m
 # Monotonic Pushover Analysis
-dispTarget      = 15.3 *inch
+dispTarget      = 10 *inch
 
 # Cyclic Pushover Analysis
-dY              = n_story*17 *mm
+dY              = n_story*25 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

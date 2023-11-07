@@ -26,13 +26,10 @@ ops.logFile("logFile.txt")
 # Modeling Options
 recordToLog     = True                      # True, False
 modelFoundation = True
-withShearLink   = False
 exertGravityLoad= True
-typeModel       = 'Nonlinear'               # 'Linear', 'Nonlinear'
+typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeBuild       = 'buildBeam'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-# typeSection     = 'Box_Composite'           # 'Rectangular', 'I_Shaped', 'Box', 'Box_Composite'
-typeEle         = 'dispBeamColumn'          # 'forceBeamColumn', 'dispBeamColumn'
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
@@ -81,22 +78,16 @@ for types in typeAnalysis:
     ops.wipe()
     ops.model('basic', '-ndm', 2, '-ndf', 3)
             
-    if typeModel == 'Linear':
-        I   = 2
-        A   = 1
-        Es  = 29000*ksi
-        fm.buildCantileverL(L, Es, I, A)
+    if typeBuild == "CantileverColumn":
+        P = 0 * kN
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL, numSegWall, modelFoundation)
+    elif typeBuild == 'buildBeam':
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildBeam(L, PHL, numSegBeam)
+    elif typeBuild == 'coupledWalls':
+        P = n_story * load['wall']
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB, plot_section)
     else:
-        if typeBuild == "CantileverColumn":
-            P = 0 * kN
-            tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL, numSegWall, typeEle, modelFoundation)
-        elif typeBuild == 'buildBeam':
-            tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildBeam(L, PHL, numSegBeam)
-        elif typeBuild == 'coupledWalls':
-            P = n_story * load['wall']
-            tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, withShearLink, typeCB, plot_section)
-        else:
-            tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
+        tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
     # Plot Model
     if plot_undefo == True:

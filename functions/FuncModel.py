@@ -9,7 +9,7 @@ from functions.ClassComposite import compo
 typeMatSt       = 'ReinforcingSteel'        # Elastic, ElasticPP, Steel02, ReinforcingSteel
 typeMatCt       = 'Concrete02'              # Elastic, ElasticPP, Concrete02
 
-def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, typeEle='dispBeamColumn', modelFoundation=True):#
+def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True, typeEle='dispBeamColumn'):#
     
     #       Define Geometric Transformation
     tagGTLinear = 1
@@ -155,24 +155,6 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
     
     return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
-
-def buildCantileverL(L, E, I, A):
-    
-    # Define Nodes
-    ops.node(1, 0., 0.)
-    ops.node(2, 0., L )
-        
-    # Assign boundary constraints
-    ops.fix(1, 1, 1, 1)
-    
-    # Define Geometric Transformation
-    tagGTLinear = 1
-    tagGTPDelta = 2
-    ops.geomTransf('Linear', tagGTLinear)
-    ops.geomTransf('PDelta', tagGTPDelta)
-    
-    # Define Element
-    ops.element('elasticBeamColumn', 1, *[1, 2], A, E, I, tagGTPDelta)
 
 def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
     L       = (520 *mm) * 1

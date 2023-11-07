@@ -28,7 +28,7 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
-typeBuild       = 'buildBeam'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
+typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeCB          = 'FSF'                     # 'FSF', 'FSW' (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 

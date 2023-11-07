@@ -267,7 +267,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, withShearLink=False, typeCB="FSF", plot_section=True):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, SBL, typeCB="discretizedAllFiber", plot_section=True):
     
     modelLeaning = True     # True False
     
@@ -676,16 +676,21 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                     if int(tagSuffixJ)-int(tagSuffixI) == -1 and int(tagCoordXJ)-int(tagCoordXI) == 1:
                         if tagSuffixI != '0' and tagSuffixJ != '0':
                             # print(f"{tagNodeI} VS {tagNodeJ} ==> tagBeam = 4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
-                            if withShearLink == False:
+                            if typeCB == 'discretizedAllFiber':
                                 discretizeBeam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, Beams, coords, numSegBeam)
-                            else:
-                                if typeCB == 'FSF':
-                                    FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
-                                elif typeCB == 'FSW':
-                                    FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
-                                else: 
-                                    print("typeCB not recognized!"); sys.exit()
+                            elif typeCB == 'FSF':
+                                FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
+                            elif typeCB == 'FSW':
+                                FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
+                            elif typeCB == 'discritizedBothEnds':
                                 # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
+                                tagEleBeam = f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"
+                                print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
+                                print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
+                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL/2, numSegBeam) # This function models the beams
+                            else: 
+                                print("typeCB not recognized!"); sys.exit()
+                            # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
                 # build truss
                 elif tagCoordXJ == gridLeaningColumn and tagCoordXI == f"{(len(L_Bay_List)-2):02}":
                     if int(tagSuffixJ)-int(tagSuffixI) == -2:
@@ -694,10 +699,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL, S
                         Trusses[tagElement] = [tagNodeI, tagNodeJ]  #Prefix 3 is for Trusses
     
     ##  Define Beams
-    if withShearLink == False:
+    if typeCB == 'discretizedAllFiber':
         for tagElement, tagNodes in Beams.items():
             ops.element('dispBeamColumn',    tagElement, *tagNodes, tagGTLinear, beam.tagSec)
-    else:
+    elif typeCB == 'FSF' or typeCB == 'FSW':
         for tagElement, tagNodes in Beams.items():
             # print(f"tagElement = {tagElement} & tanNodes = {tagNodes}")
             tagElementSuffix = f"{tagElement}"[-1]

@@ -151,7 +151,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     tagEleGlobal = 1
     
     tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
-    
+    # print(f"tagEleFibRec = {tagEleFibRec}")
     return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
 
 def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
@@ -657,6 +657,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     ##  Define tags of  Beams and Trusses
     Beams   = {}
     Trusses = {}
+    tagElementBeamHinge = []
     for tagNode, coord in coords.items():
         tagNodeI    = tagNode
         tagCoordXI  = f"{tagNodeI}"[3:-1]
@@ -682,10 +683,12 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
                                 FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
                             elif typeCB == 'discritizedBothEnds':
                                 # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
-                                tagEleBeam = f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"
-                                print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
-                                print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
-                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam) # This function models the beams
+                                tagEleBeam = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
+                                # print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
+                                # print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
+                                tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam)
+                                tagElementBeamHinge.append(tagToAppend) # This function models the beams
+                                print(f"tagElementBeamHinge = {tagElementBeamHinge}")
                             else: 
                                 print("typeCB not recognized!"); sys.exit()
                             # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
@@ -753,7 +756,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
             tagNodeLoad["leaningColumn"].append(tagNode)
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad, wall)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, wall, tagElementWallBase, beam, tagElementBeamHinge, tagNodeLoad)
 
 
 

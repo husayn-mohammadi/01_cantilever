@@ -73,8 +73,8 @@ if recordToLog == True:
 
 for types in typeAnalysis:
     
-    outputDir = f"Output/Pushover/{types}"
-    os.makedirs(outputDir, exist_ok=True)
+    outputDir = f"Output/Pushover/{types}"; outputDirWalls = f"Output/Pushover/{types}/wall"; outputDirBeams = f"Output/Pushover/{types}/beams" 
+    os.makedirs(outputDir, exist_ok=True);  os.makedirs(outputDirWalls, exist_ok=True);       os.makedirs(outputDirBeams, exist_ok=True)
     
     # Build Model
     ops.wipe()
@@ -82,12 +82,12 @@ for types in typeAnalysis:
             
     if typeBuild == "CantileverColumn":
         P = 0 * kN
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
     elif typeBuild == 'buildBeam':
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, section = fm.buildBeam(L, PHL_beam, numSegBeam)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
-        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, tagEleListToRecord_wall, tagNodeLoad, section = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section)
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
@@ -102,12 +102,16 @@ for types in typeAnalysis:
             fa.gravity(load, tagNodeLoad)
         elif typeBuild == 'CantileverColumn':
             # Axial Force Capacity of Walls (Pno)
-            Pno = section.Pno
+            Pno = wall.Pno
             fa.gravity(ALR*Pno, tagNodeControl)
         
     fr.recordPushover(tagNodeControl, tagNodeBase, outputDir)
-    Hw = section.Hw; tf = section.tf; Hc2 = section.Hc2
-    coordsFiber = fr.recordStressStrain(outputDir, tagEleListToRecord_wall,  section)                   # tagMatSt=1
+    Hw = wall.Hw; tf = wall.tf; Hc2 = wall.Hc2
+    if typeBuild == "CantileverColumn" or typeBuild == "buildBeam":
+        fr.recordStressStrain(outputDirWalls, tagEleListToRecord_wall,  wall)
+    elif typeBuild == "coupledWalls":
+        fr.recordStressStrain(outputDirWalls, tagEleListToRecord_wall,  wall)
+        fr.recordStressStrain(outputDirBeams, tagEleListToRecord_beam,  beam)
     if types == 'monotonic':
         start_time_monotonic = time.time()
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -151,7 +155,11 @@ for types in typeAnalysis:
     if plot_Analysis == True:
         fp.plotPushoverX(outputDir) 
     if plot_StressStrain == True:
-        fp.plotStressStrain(outputDir,tagEleListToRecord_wall)
+        if typeBuild == "CantileverColumn" or typeBuild == "buildBeam":
+            fp.plotStressStrain(outputDirWalls,tagEleListToRecord_wall)
+        elif typeBuild == 'coupledWalls':
+            fp.plotStressStrain(outputDirWalls,tagEleListToRecord_wall)
+            fp.plotStressStrain(outputDirBeams,tagEleListToRecord_beam)
 
 end_time        = time.time()
 elapsed_time    = end_time - start_time

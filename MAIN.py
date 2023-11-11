@@ -35,15 +35,15 @@ Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'
 # PHL_wall        = 24 *inch                  # Plastic Hinge Length (0.0 < PHL < H_wall)
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1] 
 # PHL_beam        = 60 *inch                  # Plastic Hinge Length (0.0 < PHL < L_beam)
-PHL_beam        = 3*2/3 * Section['beam']['propWeb'][1]
+PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 3
+numSegBeam      = 2
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-dispTarget      = 30 *cm * n_story
+dispTarget      = 27 *cm * n_story
 
 # Cyclic Pushover Analysis
-dY              = 10 *mm * n_story
+dY              = 27 *mm * n_story
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

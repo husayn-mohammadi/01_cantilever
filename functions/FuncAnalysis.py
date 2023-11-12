@@ -6,7 +6,7 @@ import sys
 waitTime        = 0.0
 waitTime2       = 0.0
 testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
-algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+algorithmList   = [ 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'RaphsonNewton']*2#, 'Linear'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 # def create_list(n):
 #     myList = list(range(n, 0, -1)) + list(range(2, n + 1))

@@ -28,7 +28,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     EAeff       = composite.EAeff
     EE          = EIeff
     AA          = EAeff/EIeff
-    fs.makeSectionBoxComposite(composite)
+    compo.defineSection(composite)
 
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
@@ -134,7 +134,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     EAeff       = composite.EAeff
     composite.EE= EIeff
     composite.AA= EAeff/EIeff
-    fs.makeSectionBoxComposite(composite)
+    compo.defineSection(composite)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
     #       Define Nodes & Elements
@@ -359,7 +359,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     EAeff       = wall.EAeff
     wall.EE     = EIeff
     wall.AA     = EAeff/EIeff
-    fs.makeSectionBoxComposite(wall)
+    compo.defineSection(wall) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     NIP         = 5
@@ -375,7 +375,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     EAeff       = wall.EAeff
     beam.EE     = EIeff
     beam.AA     = EAeff/EIeff
-    fs.makeSectionBoxComposite(beam)
+    compo.defineSection(beam) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #   Define material and sections

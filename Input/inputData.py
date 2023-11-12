@@ -18,12 +18,12 @@ L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 #    Elements
 #=============================================================================
 #       Element Length
-L           = 17 *ft
+L           = 25 *ft
 
 Hw          = 144*inch
 lsr         = 24.
 b           = 114*mm
-NfibeY      = 5
+NfibeY      = 40
 
 Section = {
     'wall': { # C-PSW/CF Wall Section
@@ -31,9 +31,9 @@ Section = {
         'tags'      : [1,      1,              2,           3,              4           ],
         #propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
         'propWeb'   : [9/16*inch, Hw,        200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
-        'propFlange': [55 *inch,  9/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
+        'propFlange': [20 *inch,  9/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         #propCore   = [tc,      fpc,      wc,     lamConf, lamUnconf]
-        'propCore'  : [50*inch, 44.9*MPa, 0.2*mm, 0.05,    0.2      ]
+        'propCore'  : [18*inch, 44.9*MPa, 0.2*mm, 0.05,    0.2      ]
     },
     'beam': { # Composite Beam Section
         #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]

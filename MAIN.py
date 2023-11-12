@@ -27,23 +27,21 @@ ops.logFile("logFile.txt")
 recordToLog     = True                      # True, False
 modelFoundation = True
 exertGravityLoad= True
-typeBuild       = 'coupledWalls'        # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
+typeBuild       = 'CantileverColumn'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
-# PHL_wall        = 24 *inch                  # Plastic Hinge Length (0.0 < PHL < H_wall)
-PHL_wall        = 2/3 * Section['wall']['propWeb'][1] 
-# PHL_beam        = 60 *inch                  # Plastic Hinge Length (0.0 < PHL < L_beam)
+PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
 PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
-numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 2
+numSegWall      = 8                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegBeam      = 4
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-dispTarget      = 27 *cm * n_story
+dispTarget      = 10 *cm * n_story
 
 # Cyclic Pushover Analysis
-dY              = 27 *mm * n_story
+dY              = 10 *mm * n_story
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 

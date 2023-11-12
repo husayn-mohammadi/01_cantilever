@@ -14,7 +14,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     ops.geomTransf('Linear', tagGTLinear)
     ops.geomTransf('PDelta', tagGTPDelta)
 
-    NIP         = 5
+    NIP         = 9
     #       Define beamIntegrator
     nameSect    = 'wall'
     tags        = Section[nameSect]['tags']

@@ -60,7 +60,6 @@ def gravity(load, tagNodeLoad):
 
 
 def pushoverDCF(dispTarget, tagNodeLoad, n_story): 
-    
     dofNodeControl  = 1
     # incr        = dispTarget/numIncr
     tol         = 1e-8
@@ -94,7 +93,10 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
     # numIncrList = [*(10*[30])]
-    numIncrList = create_list(20, 10)
+    dispFactor  = int(30*dispTarget)
+    n1          = 4*dispFactor
+    n2          = 3*dispFactor
+    numIncrList = create_list(n1, n2)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
@@ -146,7 +148,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
                         print(f"======>>> Current   Displacement\t= {curD}")
                         remD    = dispTar - curD
                         print(f"======>>> Remaining Displacement\t= {remD}")
-                        numIncr = int(numIncr*3)
+                        numIncr = int(numIncr*1.5)
                         print(f"numIncr\t\t\t= {numIncr}")
                         incr    = remD/numIncr
                         print(f"Incr\t\t\t= {incr}")
@@ -179,7 +181,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     return OK
 
 
-def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
+def cyclicAnalysis(dispList, tagNodeLoad):
     
     dofNodeControl  = 1
     if type(tagNodeLoad) == list:
@@ -212,13 +214,16 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
     # Run Analysis
     for dispIndex, disp in enumerate(dispList):
         print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}"); time.sleep(waitTime)
-        dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
-        for dispTarget in dispTargetList:
+        dispTargetList = [disp, 0, -disp, 0]
+        for index, dispTarget in enumerate(dispTargetList):
             curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            numIncrList = create_list(9, 4)
+            n1          = int(25 * (disp/dispList[-1]) + 3)
+            n2          = int(15 * (disp/dispList[-1]) + 1)
+            print(f"n1 = {n1} and n2 = {n2}")
+            numIncrList = create_list(n1, n2)
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")
@@ -275,12 +280,12 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
                                 print(f"======>>> Current   Displacement\t= {curD}")
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")
-                                numIncr = int(numIncr*3)
+                                numIncr = int(numIncr**1.3)
                                 print(f"numIncr\t\t\t= {numIncr}")
                                 incr    = remD/numIncr
                                 print(f"Incr\t\t\t= {incr}")
                                 time.sleep(waitTime)
-                                if numIncr >= 3000:
+                                if numIncr >= 10000:
                                     print("\nIncrement size is too small!!!")
                                     time.sleep(waitTime)
                                     break

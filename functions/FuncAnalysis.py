@@ -221,10 +221,12 @@ def cyclicAnalysis(dispList, tagNodeLoad):
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            n1          = int(25 * (disp/dispList[-1]) + 3)
-            n2          = int(15 * (disp/dispList[-1]) + 1)
-            print(f"n1 = {n1} and n2 = {n2}")
-            numIncrList = create_list(n1, n2)
+            # numIncrList = [*(int(10 * (disp/dispList[-1]) + 4)*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
+            numIncrList = [int(1 *13*disp/dispList[-1]) + 4] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
+            # n1          = int(10 * (disp/dispList[-1]) + 4)
+            # n2          = int(5  * (disp/dispList[-1]) + 1)
+            # print(f"n1 = {n1} and n2 = {n2}")
+            # numIncrList = create_list(n1, n2)
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")

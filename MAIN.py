@@ -143,6 +143,10 @@ for types in typeAnalysis:
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+        if plot_defo == True:
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+                                 #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
+                                 )
     else:
         print("UNKNOWN Pushover Analysis type!!!");sys.exit()
     

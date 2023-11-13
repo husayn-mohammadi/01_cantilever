@@ -182,6 +182,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
 
 
 def cyclicAnalysis(dispList, tagNodeLoad):
+    t_beg           = time.time()
     
     dofNodeControl  = 1
     if type(tagNodeLoad) == list:
@@ -302,6 +303,11 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                         print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                         time.sleep(waitTime)
                         if tester == testerList[-1] and algorithm == algorithmList[-1]:
+                            t_end           = time.time()
+                            elapsed_time    = t_end - t_beg
+                            mins            = int(elapsed_time/60)
+                            secs            = int(elapsed_time%60)
+                            print(f"\nElapsed time: {mins} min + {secs} sec")
                             # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             print("*!*!*!*!*!* The cyclic pushover analysis failed to converge!!! *!*!*!*!*!*")

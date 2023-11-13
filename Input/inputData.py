@@ -7,7 +7,7 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 4
+n_story         = 1
 H_first         = 17 *ft
 H_typical       = 14 *ft
 L_Bay           = (144 + 2*72) *inch
@@ -18,12 +18,12 @@ L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 #    Elements
 #=============================================================================
 #       Element Length
-L           = 25 *ft
+L           = 22 *ft
 
 Hw          = 144*inch
 lsr         = 24.
 b           = 114*mm
-NfibeY      = 40
+NfibeY      = 10
 
 Section = {
     'wall': { # C-PSW/CF Wall Section

@@ -6,7 +6,7 @@ import sys
 waitTime        = 0.0
 waitTime2       = 0.0
 testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
-algorithmList   = [ 'KrylovNewton', 'Newton', 'NewtonLineSearch', 'RaphsonNewton']*2#, 'Linear'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'Linear'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 # def create_list(n):
 #     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
@@ -283,12 +283,12 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                                 print(f"======>>> Current   Displacement\t= {curD}")
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")
-                                numIncr = int(numIncr**1.3)
+                                numIncr = int(numIncr*3)
                                 print(f"numIncr\t\t\t= {numIncr}")
                                 incr    = remD/numIncr
                                 print(f"Incr\t\t\t= {incr}")
                                 time.sleep(waitTime)
-                                if numIncr >= 10000:
+                                if numIncr >= 3000:
                                     print("\nIncrement size is too small!!!")
                                     time.sleep(waitTime)
                                     break

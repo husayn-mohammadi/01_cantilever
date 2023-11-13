@@ -34,14 +34,14 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
 PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
-numSegWall      = 8                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegWall      = 5                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 4
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
 dispTarget      = 10 *cm * n_story
 
 # Cyclic Pushover Analysis
-dY              = 10 *mm * n_story
+dY              = 60     *mm * n_story
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 
@@ -163,7 +163,7 @@ end_time        = time.time()
 elapsed_time    = end_time - start_time
 mins            = int(elapsed_time/60)
 secs            = int(elapsed_time%60)
-print(f"\nElapsed time: {mins}min+{secs}sec")
+print(f"\nElapsed time: {mins} min + {secs} sec")
 print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 print("The analysis was run successfully.")
 print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")

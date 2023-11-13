@@ -1,6 +1,7 @@
 import openseespy.opensees     as ops
 import time
 import sys
+import random                  as rn
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 waitTime        = 0.0
@@ -250,7 +251,8 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                         numIncr = numIncrList[iii]
                         incr    = remD/numIncr
                         
-                        while True:
+                        for i in range(1000):
+                            print(f"Iteration {i}")
                             #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
                             ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
                             ops.analysis('Static') 
@@ -283,12 +285,13 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                                 print(f"======>>> Current   Displacement\t= {curD}")
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")
-                                numIncr = int(numIncr*3)
+                                # numIncr = int(numIncr*3)
+                                numIncr = rn.randint(5, 3000)
                                 print(f"numIncr\t\t\t= {numIncr}")
                                 incr    = remD/numIncr
                                 print(f"Incr\t\t\t= {incr}")
                                 time.sleep(waitTime)
-                                if numIncr >= 3000:
+                                if numIncr >= 3001:
                                     print("\nIncrement size is too small!!!")
                                     time.sleep(waitTime)
                                     break

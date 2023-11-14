@@ -7,7 +7,7 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 1
+n_story         = 3
 H_first         = 17 *ft
 H_typical       = 14 *ft
 L_Bay           = (144 + 2*72) *inch
@@ -23,7 +23,7 @@ L           = 22 *ft
 Hw          = 144*inch
 lsr         = 24.
 b           = 114*mm
-NfibeY      = 10
+NfibeY      = 3
 
 Section = {
     'wall': { # C-PSW/CF Wall Section
@@ -52,7 +52,7 @@ Section = {
 #   Cantilever Loads
 Py              = -3158 *kN
 # or:
-ALR             = 0.1  # Axial Load Ratio
+ALR             = 0.00000  # Axial Load Ratio
 #   Frame Loads
 load={}
 DL_Floor        = 90 *psf

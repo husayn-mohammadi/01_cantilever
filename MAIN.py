@@ -27,7 +27,7 @@ ops.logFile("logFile.txt")
 recordToLog     = True                      # True, False
 modelFoundation = True
 exertGravityLoad= True
-typeBuild       = 'CantileverColumn'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
+typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
@@ -91,7 +91,7 @@ for types in typeAnalysis:
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=0, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+        opv.plot_model(node_labels=1, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     
     # Run Analysis

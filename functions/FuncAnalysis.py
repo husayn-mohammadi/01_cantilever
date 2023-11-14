@@ -238,7 +238,7 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                 # print(f"curD = {curD}")
                 dispTar         = curD + dispFrac
                 # print(f"dispTar = {dispTar}")
-                for algorithm in algorithmList:
+                for indexAlgorithm, algorithm in enumerate(algorithmList):
                     ops.algorithm(algorithm) 
                     
                     for tester in testerList:
@@ -251,9 +251,10 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                         numIncr = numIncrList[iii]
                         incr    = remD/numIncr
                         
-                        for i in range(1000):
+                        ran = 200 if (algorithm==algorithmList[-1] and indexAlgorithm!=0) else 50 if (tester=='NormDispIncr' or tester=='EnergyIncr') else 10 
+                        for i in range(ran):
                             print(f"Iteration {i}")
-                            #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
+                            #   integrator('DisplacementControl', nodeTag,        dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
                             ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
                             ops.analysis('Static') 
                             
@@ -286,15 +287,18 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")
                                 # numIncr = int(numIncr*3)
-                                numIncr = rn.randint(5, 3000)
+                                if numIncr <= 3000:
+                                    numIncr = int(numIncr*2)
+                                else:
+                                    numIncr = rn.randint(5, 3000)
                                 print(f"numIncr\t\t\t= {numIncr}")
                                 incr    = remD/numIncr
                                 print(f"Incr\t\t\t= {incr}")
                                 time.sleep(waitTime)
-                                if numIncr >= 3001:
-                                    print("\nIncrement size is too small!!!")
-                                    time.sleep(waitTime)
-                                    break
+                                # if numIncr >= 10000:
+                                #     print("\nIncrement size is too small!!!")
+                                #     time.sleep(waitTime)
+                                #     break
                         
                         if OK == 0:
                             break
@@ -307,7 +311,7 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                     elif OK != 0:
                         print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                         time.sleep(waitTime)
-                        if tester == testerList[-1] and algorithm == algorithmList[-1]:
+                        if tester == testerList[-1] and indexAlgorithm == len(algorithmList)-1:
                             t_end           = time.time()
                             elapsed_time    = t_end - t_beg
                             mins            = int(elapsed_time/60)

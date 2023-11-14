@@ -6,8 +6,8 @@ import random                  as rn
 
 waitTime        = 0.0
 waitTime2       = 0.0
-testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
-algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'Linear'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+testerList      = ['EnergyIncr', 'NormUnbalance', 'NormDispIncr', ]#, 'RelativeNormUnbalance']
+algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'KrylovNewton'] #, 'Linear' Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
 
 # def create_list(n):
 #     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
@@ -216,7 +216,7 @@ def cyclicAnalysis(dispList, tagNodeLoad):
     # Run Analysis
     for dispIndex, disp in enumerate(dispList):
         print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}"); time.sleep(waitTime)
-        dispTargetList = [disp, 0, -disp, 0]
+        dispTargetList = [disp]#, 0, -disp, 0]
         for index, dispTarget in enumerate(dispTargetList):
             curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD

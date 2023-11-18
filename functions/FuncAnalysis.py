@@ -1,12 +1,14 @@
 import openseespy.opensees     as ops
 import time
 import sys
+import random                  as rn
+import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 waitTime        = 0.0
 waitTime2       = 0.0
-testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr']#, 'RelativeNormUnbalance']
-algorithmList   = [ 'KrylovNewton', 'Newton', 'Linear', 'NewtonLineSearch', 'RaphsonNewton'] # Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+testerList      = ['EnergyIncr', 'NormUnbalance', 'NormDispIncr', ]#, 'RelativeNormUnbalance']
+algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'KrylovNewton'] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
 
 # def create_list(n):
 #     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
@@ -59,8 +61,8 @@ def gravity(load, tagNodeLoad):
     ops.loadConst('-time', 0.0)
 
 
-def pushoverDCF(dispTarget, tagNodeLoad, n_story): 
-    
+def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story): 
+    t_beg           = time.time()
     dofNodeControl  = 1
     # incr        = dispTarget/numIncr
     tol         = 1e-8
@@ -93,8 +95,11 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     ops.system('BandGen')
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
-    # numIncrList = [*(10*[30])]
-    numIncrList = create_list(20, 10)
+    numIncrList = [dispTarget/incrMono] # if the length unit is m: dispTarget/0.001 makes each incr equal to 1 mm 
+    # dispFactor  = int(30*dispTarget)
+    # n1          = 4*dispFactor
+    # n2          = 3*dispFactor
+    # numIncrList = create_list(n1, n2)
     numFrac     = len(numIncrList)
     dispFrac    = dispTarget/numFrac
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
@@ -113,7 +118,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
                 # print(f"curD = {curD}")
                 remD    = dispTar - curD
                 # print(f"remD = {remD}")
-                numIncr = numIncrList[iii]
+                numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
                 incr    = remD/numIncr
                 
                 while True:
@@ -146,7 +151,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
                         print(f"======>>> Current   Displacement\t= {curD}")
                         remD    = dispTar - curD
                         print(f"======>>> Remaining Displacement\t= {remD}")
-                        numIncr = int(numIncr*3)
+                        numIncr = int(numIncr*1.5)
                         print(f"numIncr\t\t\t= {numIncr}")
                         incr    = remD/numIncr
                         print(f"Incr\t\t\t= {incr}")
@@ -168,10 +173,16 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
                 print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                 time.sleep(waitTime)
                 if tester == testerList[-1] and algorithm == algorithmList[-1]:
+                    t_end           = time.time()
+                    elapsed_time    = t_end - t_beg
+                    mins            = int(elapsed_time/60)
+                    secs            = int(elapsed_time%60)
+                    print(f"\nElapsed time: {mins} min + {secs} sec")
+                    winsound.Beep(1000, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
                     # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print("*!*!*!*!*!* The monotonic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
+                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     # print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
                     return OK
     # opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
@@ -179,7 +190,8 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     return OK
 
 
-def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
+def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
+    t_beg           = time.time()
     
     dofNodeControl  = 1
     if type(tagNodeLoad) == list:
@@ -212,13 +224,19 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
     # Run Analysis
     for dispIndex, disp in enumerate(dispList):
         print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}"); time.sleep(waitTime)
-        dispTargetList = [disp, 0, -disp, 0]*numCyclesPerDispTarget
-        for dispTarget in dispTargetList:
+        dispTargetList = [disp, 0, -disp, 0]
+        for index, dispTarget in enumerate(dispTargetList):
             curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD
             # print (f"delta = {delta}")
             # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            numIncrList = create_list(9, 4)
+            # numIncrList = [*(int(10 * (disp/dispList[-1]) + 4)*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
+            # numIncrList = [int(1 *13*disp/dispList[-1]) + 4] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
+            # n1          = int(10 * (disp/dispList[-1]) + 4)
+            # n2          = int(5  * (disp/dispList[-1]) + 1)
+            # print(f"n1 = {n1} and n2 = {n2}")
+            # numIncrList = create_list(n1, n2)
+            numIncrList = [disp/incrCycl] # if the length unit is m: dispTarget/0.001 makes each incr equal to 1 mm 
             numFrac     = len(numIncrList)
             dispFrac    = delta/numFrac
             # print(f"dispFrac = {dispFrac}")
@@ -229,7 +247,7 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
                 # print(f"curD = {curD}")
                 dispTar         = curD + dispFrac
                 # print(f"dispTar = {dispTar}")
-                for algorithm in algorithmList:
+                for indexAlgorithm, algorithm in enumerate(algorithmList):
                     ops.algorithm(algorithm) 
                     
                     for tester in testerList:
@@ -239,11 +257,13 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
                         # print(f"curD = {curD}")
                         remD    = dispTar - curD
                         # print(f"remD = {remD}")
-                        numIncr = numIncrList[iii]
+                        numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
                         incr    = remD/numIncr
                         
-                        while True:
-                            #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
+                        ran = 200 if (algorithm==algorithmList[-1] and indexAlgorithm!=0) else 50 if (tester=='NormDispIncr' or tester=='EnergyIncr') else 10 
+                        for i in range(ran):
+                            print(f"Iteration {i}")
+                            #   integrator('DisplacementControl', nodeTag,        dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
                             ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
                             ops.analysis('Static') 
                             
@@ -275,15 +295,19 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
                                 print(f"======>>> Current   Displacement\t= {curD}")
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")
-                                numIncr = int(numIncr*3)
+                                # numIncr = int(numIncr*3)
+                                if numIncr <= 10000:
+                                    numIncr = int(numIncr*2)
+                                else:
+                                    numIncr = rn.randint(5, 10000)
                                 print(f"numIncr\t\t\t= {numIncr}")
                                 incr    = remD/numIncr
                                 print(f"Incr\t\t\t= {incr}")
                                 time.sleep(waitTime)
-                                if numIncr >= 3000:
-                                    print("\nIncrement size is too small!!!")
-                                    time.sleep(waitTime)
-                                    break
+                                # if numIncr >= 10000:
+                                #     print("\nIncrement size is too small!!!")
+                                #     time.sleep(waitTime)
+                                #     break
                         
                         if OK == 0:
                             break
@@ -296,11 +320,17 @@ def cyclicAnalysis(dispList, tagNodeLoad, numCyclesPerDispTarget=1):
                     elif OK != 0:
                         print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                         time.sleep(waitTime)
-                        if tester == testerList[-1] and algorithm == algorithmList[-1]:
+                        if tester == testerList[-1] and indexAlgorithm == len(algorithmList)-1:
+                            t_end           = time.time()
+                            elapsed_time    = t_end - t_beg
+                            mins            = int(elapsed_time/60)
+                            secs            = int(elapsed_time%60)
+                            print(f"\nElapsed time: {mins} min + {secs} sec")
+                            winsound.Beep(1000, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
                             # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             print("*!*!*!*!*!* The cyclic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); sys.exit()
+                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             # print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
                             return OK
                     

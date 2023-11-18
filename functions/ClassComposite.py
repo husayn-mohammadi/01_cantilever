@@ -39,7 +39,7 @@ class concrete:
         self.Ets        = abs(1/(1-(2*self.Ec*self.Gf)/(wc*self.fts**2)))*self.Ec
         self.A          = 1
         
-
+NfibeZ = 1
 class compo:
     def __init__(self, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
                  tw, Hw, Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw, 
@@ -152,53 +152,64 @@ class compo:
         ops.uniaxialMaterial('Concrete02', tagMatCtConf,   fpcc, epscc0, fpccu, self.Ct_conf.epscU,   lamConf,   self.Ct_conf.fts,   self.Ct_conf.Ets)
         
         
+                    
+        
+    def defineSection(self):
+        
         # Define Fiber Section For Testing
-        if 1:
-            GJ = 1e6
-            # Section Geometry
-            ##  Bottom Flange
-            crdsI1 = [-(Hw/2 + tf), -Bf/2       ]
-            crdsJ1 = [- Hw/2      ,  Bf/2       ]
-            ##  Top Flange
-            crdsI4 = [  Hw/2      , -Bf/2       ]
-            crdsJ4 = [ (Hw/2 + tf),  Bf/2       ]
-            ##  Left Web
-            crdsI2 = [-Hw/2       , -(tc/2 + tw)]
-            crdsJ2 = [ Hw/2       , - tc/2      ]
-            ##  Right Web
-            crdsI3 = [-Hw/2       ,   tc/2      ]
-            crdsJ3 = [ Hw/2       ,  (tc/2 + tw)]
-            ##  Concrete Core - Unconfined
-            crdsI6 = [-Hc1/2      , -tc/2       ]
-            crdsJ6 = [ Hc1/2      ,  tc/2       ]
-            ##  Concrete Core - Confined
-            crdsI5 = [-Hw/2       , -tc/2       ]
-            crdsJ5 = [-Hc1/2      ,  tc/2       ]
-            crdsI7 = [ Hc1/2      , -tc/2       ]
-            crdsJ7 = [ Hw/2       ,  tc/2       ]
-            
-            divider= 10
-            times  = max(1, int((Hw/tf)             /(divider)))
-            times1 = max(1, int((Hc1/tf)            /(divider)))
-            times2 = max(1, int((((Hw-Hc1)/2)/tf)   /(divider)))
-            
-
+        GJ = 1e8
+        # Section Geometry
+        ##  Bottom Flange
+        crdsI1 = [-(self.Hw/2 + self.tf), -self.Bf/2            ]
+        crdsJ1 = [- self.Hw/2           ,  self.Bf/2            ]
+        ##  Top Flange      
+        crdsI4 = [  self.Hw/2           , -self.Bf/2            ]
+        crdsJ4 = [ (self.Hw/2 + self.tf),  self.Bf/2            ]
+        ##  Left Web
+        crdsI2 = [-self.Hw/2            , -(self.tc/2 + self.tw)]
+        crdsJ2 = [ self.Hw/2            , - self.tc/2           ]
+        ##  Right Web       
+        crdsI3 = [-self.Hw/2            ,   self.tc/2           ]
+        crdsJ3 = [ self.Hw/2            ,  (self.tc/2 + self.tw)]
+        ##  Concrete Core - Unconfined
+        crdsI6 = [-self.Hc1/2           , -self.tc/2            ]
+        crdsJ6 = [ self.Hc1/2           ,  self.tc/2            ]
+        ##  Concrete Core - Confined        
+        crdsI5 = [-self.Hw/2            , -self.tc/2            ]
+        crdsJ5 = [-self.Hc1/2           ,  self.tc/2            ]
+        crdsI7 = [ self.Hc1/2           , -self.tc/2            ]
+        crdsJ7 = [ self.Hw/2            ,  self.tc/2            ]
+        
+        divider= 5
+        times  = max(1, int((self.Hw/self.tf)               /(divider)))
+        times1 = max(1, int((self.Hc1/self.tf)              /(divider)))
+        times2 = max(1, int((((self.Hw-self.Hc1)/2)/self.tf)/(divider)))
+        
+        ops.section('Fiber', self.tagSec, '-GJ', GJ)
+        ops.patch('rect', self.tagMatStFlange,  self.NfibeY,        NfibeZ, *crdsI1, *crdsJ1) #Bot Flange
+        ops.patch('rect', self.tagMatStFlange,  self.NfibeY,        NfibeZ, *crdsI4, *crdsJ4) #Top Flange
+        ops.patch('rect', self.tagMatStWeb,     self.NfibeY*times,       1, *crdsI2, *crdsJ2) #Left Web
+        ops.patch('rect', self.tagMatStWeb,     self.NfibeY*times,       1, *crdsI3, *crdsJ3) #Right Web
+        ops.patch('rect', self.tagMatCtConf,    self.NfibeY*times2, NfibeZ, *crdsI5, *crdsJ5) #Concrete Core bot
+        ops.patch('rect', self.tagMatCtUnconf,  self.NfibeY*times1, NfibeZ, *crdsI6, *crdsJ6) #Concrete Core mid
+        ops.patch('rect', self.tagMatCtConf,    self.NfibeY*times2, NfibeZ, *crdsI7, *crdsJ7) #Concrete Core top
+        
+        if 1: # Do you want to plot the section? (1/0)
             # this part of the code is just to sent out a varibale for plotting the fiber section
-            fib_sec = [['section', 'Fiber', tagSec, '-GJ', GJ],
+            fib_sec = [['section', 'Fiber', self.tagSec, '-GJ', GJ],
     
-                     ['patch', 'rect', tagMatStFlange,  NfibeY,        1, *crdsI1, *crdsJ1], #Bot Flange
-                     ['patch', 'rect', tagMatStFlange,  NfibeY,        1, *crdsI4, *crdsJ4], #Top Flange
-                     ['patch', 'rect', tagMatStWeb,     NfibeY*times,  1, *crdsI2, *crdsJ2], #Left Web
-                     ['patch', 'rect', tagMatStWeb,     NfibeY*times,  1, *crdsI3, *crdsJ3], #Right Web
-                     ['patch', 'rect', tagMatCtConf,    NfibeY*times2, 1, *crdsI5, *crdsJ5], #Concrete Core bot
-                     ['patch', 'rect', tagMatCtUnconf,  NfibeY*times1, 1, *crdsI6, *crdsJ6], #Concrete Core mid
-                     ['patch', 'rect', tagMatCtConf,    NfibeY*times2, 1, *crdsI7, *crdsJ7], #Concrete Core top
+                     ['patch', 'rect', self.tagMatStFlange, self.NfibeY,        NfibeZ, *crdsI1, *crdsJ1], #Bot Flange
+                     ['patch', 'rect', self.tagMatStFlange, self.NfibeY,        NfibeZ, *crdsI4, *crdsJ4], #Top Flange
+                     ['patch', 'rect', self.tagMatStWeb,    self.NfibeY*times,       1, *crdsI2, *crdsJ2], #Left Web
+                     ['patch', 'rect', self.tagMatStWeb,    self.NfibeY*times,       1, *crdsI3, *crdsJ3], #Right Web
+                     ['patch', 'rect', self.tagMatCtConf,   self.NfibeY*times2, NfibeZ, *crdsI5, *crdsJ5], #Concrete Core bot
+                     ['patch', 'rect', self.tagMatCtUnconf, self.NfibeY*times1, NfibeZ, *crdsI6, *crdsJ6], #Concrete Core mid
+                     ['patch', 'rect', self.tagMatCtConf,   self.NfibeY*times2, NfibeZ, *crdsI7, *crdsJ7], #Concrete Core top
                      ]
         
             matcolor = ['y', 'b', 'r', 'g', 'y', 'b', 'r', 'g', 'm', 'k', 'y', 'b', 'r', 'g', 'm', 'k']
             opv.plot_fiber_section(fib_sec, matcolor=matcolor)
             plt.axis('equal')
-            
             plt.show()
         
         

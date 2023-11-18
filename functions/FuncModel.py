@@ -14,7 +14,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     ops.geomTransf('Linear', tagGTLinear)
     ops.geomTransf('PDelta', tagGTPDelta)
 
-    NIP         = 5
+    NIP         = 9
     #       Define beamIntegrator
     nameSect    = 'wall'
     tags        = Section[nameSect]['tags']
@@ -28,7 +28,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     EAeff       = composite.EAeff
     EE          = EIeff
     AA          = EAeff/EIeff
-    fs.makeSectionBoxComposite(composite)
+    compo.defineSection(composite)
 
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
@@ -134,7 +134,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     EAeff       = composite.EAeff
     composite.EE= EIeff
     composite.AA= EAeff/EIeff
-    fs.makeSectionBoxComposite(composite)
+    compo.defineSection(composite)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
     #       Define Nodes & Elements
@@ -151,7 +151,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     tagEleGlobal = 1
     
     tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
-    
+    # print(f"tagEleFibRec = {tagEleFibRec}")
     return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
 
 def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
@@ -359,7 +359,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     EAeff       = wall.EAeff
     wall.EE     = EIeff
     wall.AA     = EAeff/EIeff
-    fs.makeSectionBoxComposite(wall)
+    compo.defineSection(wall) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     NIP         = 5
@@ -375,7 +375,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     EAeff       = wall.EAeff
     beam.EE     = EIeff
     beam.AA     = EAeff/EIeff
-    fs.makeSectionBoxComposite(beam)
+    compo.defineSection(beam) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #   Define material and sections
@@ -657,6 +657,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     ##  Define tags of  Beams and Trusses
     Beams   = {}
     Trusses = {}
+    tagElementBeamHinge = []
     for tagNode, coord in coords.items():
         tagNodeI    = tagNode
         tagCoordXI  = f"{tagNodeI}"[3:-1]
@@ -682,10 +683,12 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
                                 FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
                             elif typeCB == 'discritizedBothEnds':
                                 # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
-                                tagEleBeam = f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"
-                                print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
-                                print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
-                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam) # This function models the beams
+                                tagEleBeam = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
+                                # print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
+                                # print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
+                                tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam)
+                                tagElementBeamHinge.append(tagToAppend) # This function models the beams
+                                print(f"tagElementBeamHinge = {tagElementBeamHinge}")
                             else: 
                                 print("typeCB not recognized!"); sys.exit()
                             # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
@@ -753,7 +756,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
             tagNodeLoad["leaningColumn"].append(tagNode)
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad, wall)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, wall, tagElementWallBase, beam, tagElementBeamHinge, tagNodeLoad)
 
 
 

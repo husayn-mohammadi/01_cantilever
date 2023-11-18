@@ -8,7 +8,7 @@ import functions.FuncModel     as fm
 import functions.FuncAnalysis  as fa
 import functions.FuncRecorders as fr
 import functions.FuncPlot      as fp
-
+import winsound
 
 
 
@@ -180,10 +180,8 @@ if recordToLog == True:
     sys.stdout.close()
     sys.stdout = sys.__stdout__
 
-ops.wipe()
-
-
-
+winsound.Beep(1000, 300)  # generate a 440Hz sound that lasts 500 milliseconds
+winsound.Beep(1000, 300)
 
 
 

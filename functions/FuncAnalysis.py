@@ -2,6 +2,7 @@ import openseespy.opensees     as ops
 import time
 import sys
 import random                  as rn
+import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 waitTime        = 0.0
@@ -171,6 +172,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
                 print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
                 time.sleep(waitTime)
                 if tester == testerList[-1] and algorithm == algorithmList[-1]:
+                    winsound.Beep(1000, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
                     # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print("*!*!*!*!*!* The monotonic pushover analysis failed to converge!!! *!*!*!*!*!*")
@@ -307,6 +309,7 @@ def cyclicAnalysis(dispList, tagNodeLoad):
                         mins            = int(elapsed_time/60)
                         secs            = int(elapsed_time%60)
                         print(f"\nElapsed time: {mins} min + {secs} sec")
+                            winsound.Beep(1000, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
                         # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                         print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                         print("*!*!*!*!*!* The cyclic pushover analysis failed to converge!!! *!*!*!*!*!*")

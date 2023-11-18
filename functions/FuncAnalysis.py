@@ -7,7 +7,7 @@ import random                  as rn
 waitTime        = 0.0
 waitTime2       = 0.0
 testerList      = ['EnergyIncr', 'NormUnbalance', 'NormDispIncr', ]#, 'RelativeNormUnbalance']
-algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'Linear'] #, 'Linear' Linear, Newton, NewtonLineSearch, ModifiedNewton, KrylovNewton, SecantNewton, RaphsonNewton, PeriodicNewton, BFGS, Broyden
+algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'KrylovNewton'] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
 
 # def create_list(n):
 #     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
@@ -191,7 +191,7 @@ def cyclicAnalysis(dispList, tagNodeLoad):
     else: 
         tagNodeControl  = tagNodeLoad
     tol         = 1e-8
-    numIter     = 200
+    numIter     = 100
     
     #  Define Time Series: Constant/Linear/Trigonometric/Triangular/Rectangular/Pulse/Path TimeSeries
     tagTSLinear     = 1

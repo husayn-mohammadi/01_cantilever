@@ -42,12 +42,14 @@ dispTarget      = 10 *cm * n_story
 
 # Cyclic Pushover Analysis
 dY              = 60     *mm * n_story
+dY              = 14    *mm * n_story
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 dispTarList     = [ 
                     *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
                     *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
-                    *(CPD2*[8*dY]), *(CPD2*[9*dY]),   
+                    *(CPD2*[8*dY]), 
+                    *(CPD2*[9*dY]),   
                     *(CPD2*[10*dY])
                    ]
 
@@ -150,7 +152,8 @@ for types in typeAnalysis:
     else:
         print("UNKNOWN Pushover Analysis type!!!");sys.exit()
     
-    
+
+    ops.wipe()
 #=============================================================================
 #    Plot
 #=============================================================================

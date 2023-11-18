@@ -61,7 +61,7 @@ def gravity(load, tagNodeLoad):
     ops.loadConst('-time', 0.0)
 
 
-def pushoverDCF(dispTarget, tagNodeLoad, n_story): 
+def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story): 
     t_beg           = time.time()
     dofNodeControl  = 1
     # incr        = dispTarget/numIncr
@@ -190,7 +190,7 @@ def pushoverDCF(dispTarget, tagNodeLoad, n_story):
     return OK
 
 
-def cyclicAnalysis(dispList, tagNodeLoad):
+def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
     t_beg           = time.time()
     
     dofNodeControl  = 1

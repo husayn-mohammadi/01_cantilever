@@ -38,10 +38,10 @@ numSegWall      = 5                         # If numSegWall=0, the model will be
 numSegBeam      = 4
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-dispTarget      = 10 *cm * n_story
+incrMono        = 1     *mm
 
 # Cyclic Pushover Analysis
-dY              = 60     *mm * n_story
+incrCycl        = 1     *mm
 dY              = 14    *mm * n_story
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
@@ -117,7 +117,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, tagNodeControl, n_story)
+        fa.pushoverDCF(dispTarget, incrMono, tagNodeControl, n_story)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)
@@ -136,7 +136,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Cyclic Pushover Analysis Initiated at {(time.time() - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.cyclicAnalysis(dispTarList, tagNodeControl)
+        fa.cyclicAnalysis(dispTarList, incrCycl, tagNodeControl)
         finish_time_cyclic = time.time()
         mins = int((finish_time_cyclic - start_time_cyclic)/60)
         secs = int((finish_time_cyclic - start_time_cyclic)%60)

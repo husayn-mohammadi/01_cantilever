@@ -39,7 +39,7 @@ numSegBeam      = 4
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
 incrMono        = 1     *mm
-
+dispTarget      = 170   *cm * n_story
 # Cyclic Pushover Analysis
 incrCycl        = 1     *mm
 dY              = 14    *mm * n_story

@@ -346,7 +346,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     ops.geomTransf('PDelta', tagGTPDelta)
     
     #   Define beamIntegrator
-    NIP         = 3
+    NIP         = 7
     nameSect    = 'wall'
     tags        = Section[nameSect]['tags']
     propWeb     = Section[nameSect]['propWeb']
@@ -362,7 +362,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     compo.defineSection(wall) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
-    NIP         = 5
+    NIP         = 7
     nameSect    = 'beam'
     tags        = Section[nameSect]['tags']
     propWeb     = Section[nameSect]['propWeb']

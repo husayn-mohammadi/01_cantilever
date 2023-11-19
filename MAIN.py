@@ -33,26 +33,35 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
-PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
-numSegWall      = 5                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 4
+PHL_beam        = 0.49* Section['beam']['propWeb'][1]
+numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegBeam      = 3
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 1     *mm
-dispTarget      = 170   *cm * n_story
+incrMono        = 0.5 *mm
+dispTarget      = 10   *cm
 # Cyclic Pushover Analysis
-incrCycl        = 1     *mm
-dY              = 14    *mm * n_story
-CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
-CPD2            = 1
+incrCycl        = incrMono
+dY              = 38    *mm
+CPD1            = 2                         # CPD = cyclesPerDisp; which should be an integer
+CPD2            = 2
 dispTarList     = [ 
-                    *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
-                    *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
-                    *(CPD2*[8*dY]), 
-                    *(CPD2*[9*dY]),   
-                    *(CPD2*[10*dY])
-                   ]
+                    *(CPD1*[0.5 *dY]),
+                    *(CPD1*[1.0 *dY]),
+                    *(CPD1*[1.5 *dY]),
+                    *(CPD1*[2.0 *dY]),
+                    *(CPD1*[2.5 *dY]),
+                    *(CPD1*[3.0 *dY]),
+                    *(CPD1*[3.5 *dY]),
+                    ]
 
+# dispTarList     = [ 
+#                     *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
+#                     *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
+#                     *(CPD2*[8*dY]), 
+#                     *(CPD2*[9*dY]),   
+#                     *(CPD2*[10*dY])
+#                     ]
 
 # Plotting Options:
 buildingWidth=10.; buildingHeight=7.

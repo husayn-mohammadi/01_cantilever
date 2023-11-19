@@ -1,7 +1,7 @@
 import openseespy.opensees     as ops
 import time
 import sys
-import random                  as rn
+# import random                  as rn
 import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
@@ -151,12 +151,12 @@ def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story):
                         print(f"======>>> Current   Displacement\t= {curD}")
                         remD    = dispTar - curD
                         print(f"======>>> Remaining Displacement\t= {remD}")
-                        numIncr = int(numIncr*1.5)
+                        numIncr = int(numIncr*1.01**i + 1)
                         print(f"numIncr\t\t\t= {numIncr}")
                         incr    = remD/numIncr
                         print(f"Incr\t\t\t= {incr}")
                         time.sleep(waitTime)
-                        if numIncr >= 3000:
+                        if numIncr >= 300000:
                             print("\nIncrement size is too small!!!")
                             time.sleep(waitTime)
                             break
@@ -260,7 +260,7 @@ def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
                         numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
                         incr    = remD/numIncr
                         
-                        ran = 200 if (algorithm==algorithmList[-1] and indexAlgorithm!=0) else 50 if (tester=='NormDispIncr' or tester=='EnergyIncr') else 10 
+                        ran = 10000 if (algorithm==algorithmList[-1] and indexAlgorithm!=0) else 50 if (tester=='NormDispIncr' or tester=='EnergyIncr') else 10 
                         for i in range(ran):
                             print(f"Iteration {i}")
                             #   integrator('DisplacementControl', nodeTag,        dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
@@ -296,10 +296,11 @@ def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
                                 remD    = dispTar - curD
                                 print(f"======>>> Remaining Displacement\t= {remD}")
                                 # numIncr = int(numIncr*3)
-                                if numIncr <= 10000:
-                                    numIncr = int(numIncr*2)
+                                if numIncr <= 300000:
+                                    numIncr = int(numIncr*1.01**i + 1)
                                 else:
-                                    numIncr = rn.randint(5, 10000)
+                                    break
+                                #     numIncr = rn.randint(10, 400000)
                                 print(f"numIncr\t\t\t= {numIncr}")
                                 incr    = remD/numIncr
                                 print(f"Incr\t\t\t= {incr}")

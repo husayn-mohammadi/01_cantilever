@@ -25,7 +25,7 @@ bf          = 100 *mm
 tc          = bf -2*tw
 lsr         = 50.
 b           = 114*mm
-NfibeY      = 5
+NfibeY      = 4
 
 Section = {
     'wall': { # C-PSW/CF Wall Section

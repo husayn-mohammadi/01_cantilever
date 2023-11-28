@@ -388,6 +388,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     #######################################################################################################
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
+    # k_rot       = 8400 *kip*inch
+    k_rot       = 0.4*8400000 *kip*inch
+    ops.uniaxialMaterial('Elastic',   100000, k_rot)
     
     def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1):
         
@@ -400,16 +403,26 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         lx  = PHR*Lx/numSegWall; ly = PHR*Ly/numSegWall
         
         coordsLocal = {}
-        for i in range(0, numSegWall+1):
+        tagNode = tagNodeI + 1
+        coordsLocal[tagNode] = [xI + 0*lx, yI + 0*ly]
+        ops.node(tagNode, *coordsLocal[tagNode])
+        # if modelFoundation == True:
+        if 1:
+            ops.equalDOF(tagNodeI, tagNode, 1, 2)
+            #   element('zeroLength', eleTag,                                            *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
+            ops.element('zeroLength', int(f"88{tagCoordXI}{tagCoordYI}{tagCoordYJ}{1}"), *[tagNodeI, tagNode],  '-mat', 100000,   '-dir', 3)
+        else:
+            ops.equalDOF(tagNodeI, tagNode, 1, 2, 3)
+            
+        for i in range(2, numSegWall+2):
             tagNode = tagNodeI + i
-            coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
-            if i > 0:
-                ops.node(tagNode, *coordsLocal[tagNode])
-                tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i}")
-                Walls[tagElement]  = [tagNode-1, tagNode ]
-                # print(f"Wall{tagElement} = {Walls[tagElement]}")
-                # print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
-                # print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
+            coordsLocal[tagNode] = [xI + (i-1)*lx, yI + (i-1)*ly]
+            ops.node(tagNode, *coordsLocal[tagNode])
+            tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i-1}")
+            Walls[tagElement]  = [tagNode-1, tagNode ]
+            # print(f"Wall{tagElement} = {Walls[tagElement]}")
+            # print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
+            # print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
         tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}")
         Walls[tagElement] = [tagNode,   tagNodeJ]
         # print(f"Wall{tagElement} = {Walls[tagElement]}")

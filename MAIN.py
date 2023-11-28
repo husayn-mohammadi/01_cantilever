@@ -34,12 +34,12 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
 PHL_beam        = 0.49* Section['beam']['propWeb'][1]
-numSegWall      = 1                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 1
+numSegWall      = 4                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegBeam      = 3
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 1 *mm
-dispTarget      = 1   *cm
+incrMono        = 0.5 *mm
+dispTarget      = 10   *cm
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
 dY              = 38    *mm

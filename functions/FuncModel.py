@@ -389,7 +389,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
     # k_rot       = 8400 *kip*inch
-    k_rot       = 8400000 *kip*inch
+    k_rot       = 0.4*8400000 *kip*inch
     ops.uniaxialMaterial('Elastic',   100000, k_rot)
     
     def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1):

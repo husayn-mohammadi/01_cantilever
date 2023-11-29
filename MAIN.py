@@ -39,10 +39,10 @@ numSegBeam      = 3
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
 incrMono        = 0.5 *mm
-dispTarget      = 10   *cm
+dispTarget      = 3   *cm
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
-dY              = 38    *mm
+dY              = 12    *mm
 CPD1            = 2                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 2
 dispTarList     = [ 
@@ -66,6 +66,7 @@ dispTarList     = [
 # Plotting Options:
 buildingWidth =10.; buildingHeight =7.
 buildingWidth1=20.; buildingHeight1=17.
+plot_undefo     = False
 plot_loaded     = False
 plot_defo       = True
 sfac            = 10
@@ -102,7 +103,7 @@ for types in typeAnalysis:
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=1, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+        opv.plot_model(node_labels=0, element_labels=1, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     
     # Run Analysis
@@ -134,9 +135,9 @@ for types in typeAnalysis:
         print(f"Monotonic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
-            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
-            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                                  #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
                                  )
             # opv.plot_defo(sfac)
@@ -153,9 +154,9 @@ for types in typeAnalysis:
         print(f"Cyclic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
-            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
-            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                                  #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
                                  )
     else:

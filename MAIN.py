@@ -25,7 +25,8 @@ ops.logFile("logFile.txt")
 #=============================================================================
 # Modeling Options
 recordToLog     = True                      # True, False
-modelFoundation = True
+modelFoundation = False
+rotSpring       = False
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
@@ -34,12 +35,12 @@ typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
 PHL_beam        = 0.49* Section['beam']['propWeb'][1]
-numSegWall      = 4                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 3
+numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
+numSegBeam      = 4
 SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
 incrMono        = 0.5 *mm
-dispTarget      = 10   *cm
+dispTarget      = 0.3 *cm
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
 dY              = 38    *mm
@@ -64,8 +65,9 @@ dispTarList     = [
 #                     ]
 
 # Plotting Options:
-buildingWidth=10.; buildingHeight=7.
-plot_undefo     = True
+buildingWidth =10.; buildingHeight =7.
+buildingWidth1=20.; buildingHeight1=17.
+plot_undefo     = False
 plot_loaded     = False
 plot_defo       = True
 sfac            = 10
@@ -96,13 +98,13 @@ for types in typeAnalysis:
         tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
-        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section)
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=1, element_labels=0, fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+        opv.plot_model(node_labels=0, element_labels=1, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     
     # Run Analysis
@@ -134,9 +136,9 @@ for types in typeAnalysis:
         print(f"Monotonic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
-            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
-            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                                  #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
                                  )
             # opv.plot_defo(sfac)
@@ -153,9 +155,9 @@ for types in typeAnalysis:
         print(f"Cyclic Pushover Analysis Finished in {mins}min+{secs}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
         if plot_loaded == True:
-            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+10., buildingHeight+7.), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
-            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+10., buildingHeight+7.),
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                                  #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
                                  )
     else:

@@ -716,7 +716,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
                                 tagEleBeam = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
                                 # print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
                                 # print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
-                                tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam)
+                                if 0:
+                                    ops.equalDOF(tagNodeI, tagNodeJ, 2)
                                 tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam, rotSpring)
                                 tagElementBeamHinge.append(tagToAppend) # This function models the beams
                                 print(f"tagElementBeamHinge = {tagElementBeamHinge}")

@@ -14,7 +14,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     ops.geomTransf('Linear', tagGTLinear)
     ops.geomTransf('PDelta', tagGTPDelta)
 
-    NIP         = 5
+    NIP         = 9
     #       Define beamIntegrator
     nameSect    = 'wall'
     tags        = Section[nameSect]['tags']
@@ -28,7 +28,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     EAeff       = composite.EAeff
     EE          = EIeff
     AA          = EAeff/EIeff
-    fs.makeSectionBoxComposite(composite)
+    compo.defineSection(composite)
 
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
@@ -80,12 +80,17 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     tagElementWallBase = [1]
     return(tagNodeTop, tagNodeBase, tagElementWallBase, composite)
 
-def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHingeLength, numSeg=3):
+def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHingeLength, numSeg=3, rotSpring = False):
     tagEleLocal = 100*tagEleGlobal
     coordsLocal = {
         tagNodeI: ops.nodeCoord(tagNodeI),
         tagNodeJ: ops.nodeCoord(tagNodeJ),
         }
+    tagCoordXI  = f"{tagNodeI}"[3:-1]
+    tagCoordYI  = f"{tagNodeI}"[1:-3]
+    tagCoordXJ  = f"{tagNodeJ}"[3:-1]
+    tagCoordYJ  = f"{tagNodeJ}"[1:-3]
+    
     Lx = abs(coordsLocal[tagNodeJ][0] - coordsLocal[tagNodeI][0])
     Ly = abs(coordsLocal[tagNodeJ][1] - coordsLocal[tagNodeI][1])
     L  = (Lx**2 + Ly**2)**0.5
@@ -107,8 +112,17 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     
     ops.element('elasticBeamColumn',tagEleGlobal, *[tagNodeII-numSeg, tagNodeJJ+numSeg], section.AA, section.EE, 1, tagGT) # I=1 (+) for now instead of tagGTLinear I have written 1
     
-    ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
-    ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
+    # Here is the place for adding the rotational springs
+    if rotSpring == True:
+        ops.equalDOF(tagNodeI, tagNodeII, 1, 2)
+        #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
+        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII],  '-mat', 100001,   '-dir', 3)
+        ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 2)
+        #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
+        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ],  '-mat', 100001,   '-dir', 3)
+    else:
+        ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
+        ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
     
     tagEleFibRec = tagNodeII-1
     
@@ -134,7 +148,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     EAeff       = composite.EAeff
     composite.EE= EIeff
     composite.AA= EAeff/EIeff
-    fs.makeSectionBoxComposite(composite)
+    compo.defineSection(composite)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
              
     #       Define Nodes & Elements
@@ -151,7 +165,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     tagEleGlobal = 1
     
     tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
-    
+    # print(f"tagEleFibRec = {tagEleFibRec}")
     return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
 
 def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
@@ -264,7 +278,13 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False):
+    
+    k_rot       = 0.1*8400000 *kip*inch # Foundations Rotational Spring
+    ops.uniaxialMaterial('Elastic',   100000, k_rot)
+    
+    k_rot       = 0.05*8400000 *kip*inch # Coupling Beams Rotational Spring
+    ops.uniaxialMaterial('Elastic',   100001, k_rot)
     
     modelLeaning = True     # True False
     
@@ -346,7 +366,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     ops.geomTransf('PDelta', tagGTPDelta)
     
     #   Define beamIntegrator
-    NIP         = 3
+    NIP         = 7
     nameSect    = 'wall'
     tags        = Section[nameSect]['tags']
     propWeb     = Section[nameSect]['propWeb']
@@ -359,10 +379,10 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     EAeff       = wall.EAeff
     wall.EE     = EIeff
     wall.AA     = EAeff/EIeff
-    fs.makeSectionBoxComposite(wall)
+    compo.defineSection(wall) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
-    NIP         = 5
+    NIP         = 7
     nameSect    = 'beam'
     tags        = Section[nameSect]['tags']
     propWeb     = Section[nameSect]['propWeb']
@@ -375,7 +395,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     EAeff       = wall.EAeff
     beam.EE     = EIeff
     beam.AA     = EAeff/EIeff
-    fs.makeSectionBoxComposite(beam)
+    compo.defineSection(beam) # This will create the fiber section
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
     
     #   Define material and sections
@@ -389,7 +409,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
     
-    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1):
+    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1, modelFoundation=False):
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
@@ -400,16 +420,26 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         lx  = PHR*Lx/numSegWall; ly = PHR*Ly/numSegWall
         
         coordsLocal = {}
-        for i in range(0, numSegWall+1):
+        tagNode = tagNodeI + 1
+        coordsLocal[tagNode] = [xI + 0*lx, yI + 0*ly]
+        ops.node(tagNode, *coordsLocal[tagNode])
+        
+        if modelFoundation == True:
+            ops.equalDOF(tagNodeI, tagNode, 1, 2)
+            #   element('zeroLength', eleTag,                                            *eleNodes,             '-mat', *matTags, '-dir', *dirs)
+            ops.element('zeroLength', int(f"88{tagCoordXI}"), *[tagNodeI, tagNode],  '-mat', 100000,   '-dir', 3)
+        else:
+            ops.equalDOF(tagNodeI, tagNode, 1, 2, 3)
+            
+        for i in range(2, numSegWall+2):
             tagNode = tagNodeI + i
-            coordsLocal[tagNode] = [xI + i*lx, yI + i*ly]
-            if i > 0:
-                ops.node(tagNode, *coordsLocal[tagNode])
-                tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i}")
-                Walls[tagElement]  = [tagNode-1, tagNode ]
-                # print(f"Wall{tagElement} = {Walls[tagElement]}")
-                # print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
-                # print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
+            coordsLocal[tagNode] = [xI + (i-1)*lx, yI + (i-1)*ly]
+            ops.node(tagNode, *coordsLocal[tagNode])
+            tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{i-1}")
+            Walls[tagElement]  = [tagNode-1, tagNode ]
+            # print(f"Wall{tagElement} = {Walls[tagElement]}")
+            # print(f"NodeI({tagNode-1}) = {coordsLocal[tagNode-1]}")
+            # print(f"NodeJ({tagNode}) = {coordsLocal[tagNode]}")
         tagElement = int(f"5{tagCoordXI}{tagCoordYI}{tagCoordYJ}{0}")
         Walls[tagElement] = [tagNode,   tagNodeJ]
         # print(f"Wall{tagElement} = {Walls[tagElement]}")
@@ -657,6 +687,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     ##  Define tags of  Beams and Trusses
     Beams   = {}
     Trusses = {}
+    tagElementBeamHinge = []
     for tagNode, coord in coords.items():
         tagNodeI    = tagNode
         tagCoordXI  = f"{tagNodeI}"[3:-1]
@@ -682,10 +713,14 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
                                 FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coords, SBL)
                             elif typeCB == 'discritizedBothEnds':
                                 # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
-                                tagEleBeam = f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"
-                                print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
-                                print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
-                                subStructBeam(int(tagEleBeam), tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam) # This function models the beams
+                                tagEleBeam = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}")
+                                # print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
+                                # print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
+                                if 0:
+                                    ops.equalDOF(tagNodeI, tagNodeJ, 2)
+                                tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam, rotSpring)
+                                tagElementBeamHinge.append(tagToAppend) # This function models the beams
+                                print(f"tagElementBeamHinge = {tagElementBeamHinge}")
                             else: 
                                 print("typeCB not recognized!"); sys.exit()
                             # Beams[f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}"] = [tagNodeI, tagNodeJ]  #Prefix 4 is for Beams
@@ -753,7 +788,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
             tagNodeLoad["leaningColumn"].append(tagNode)
 
-    return(tagNodeControl, tagNodeBaseList, x, y, coords, tagElementWallBase, tagNodeLoad, wall)
+    return(tagNodeControl, tagNodeBaseList, x, y, coords, wall, tagElementWallBase, beam, tagElementBeamHinge, tagNodeLoad)
 
 
 

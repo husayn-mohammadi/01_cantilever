@@ -4,8 +4,8 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 # import sys
 import openseespy.opensees        as ops
 import functions.FuncMaterial     as fmat
-import opsvis                     as opv
-import matplotlib.pyplot          as plt
+# import opsvis                     as opv
+# import matplotlib.pyplot          as plt
 
 def makeSectionRect(tagSec, H, B, definedMatList, typeMatSt='ReinforcingSteel', NfibeY=120, NfibeZ=1):
     
@@ -164,33 +164,6 @@ def makeSectionBoxComposite(section, NfibeZ=1):
     times1 = max(1, int((Hc1/tf)            /(divider)))
     times2 = max(1, int((((Hw-Hc1)/2)/tf)   /(divider)))
     
-    # #  Material
-    # ## Steel Material 1
-    # tagMatSt1       = 1
-    # typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    # if tagMatSt1 not in definedMatList:
-    #     fmat.matSteel(typeMat, tagMatSt1)
-    #     definedMatList.append(tagMatSt1)
-    # ## Steel Material 2
-    # tagMatSt2       = 2
-    # typeMat         = 'ReinforcingSteel' # Elastic, ElasticPP, Steel02, ReinforcingSteel
-    # if tagMatSt2 not in definedMatList:
-    #     fmat.matSteel(typeMat, tagMatSt2)
-    #     definedMatList.append(tagMatSt2)
-    
-    # ## Unconfined Concrete Material
-    # tagMatCt1        = 3
-    # typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    # if tagMatCt1 not in definedMatList:
-    #     fmat.matConcrete(typeMat, tagMatCt1)
-    #     definedMatList.append(tagMatCt1)
-    # ## Confined Concrete Material
-    # tagMatCt2        = 4
-    # typeMat         = 'Concrete02' # Elastic, ElasticPP, Concrete02
-    # if tagMatCt2 not in definedMatList:
-    #     fmat.matConcrete(typeMat, tagMatCt2)
-    #     definedMatList.append(tagMatCt2)
-
     # Define Sections
     #        section('Fiber', tagSec, '-GJ', GJ)
     ops.section('Fiber', section.tagSec, '-GJ', GJ)

@@ -7,10 +7,10 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open(f"I
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 1
-H_first         = 17 *ft
-H_typical       = 14 *ft
-L_Bay           = (144 + 2*72) *inch
+n_story         = 5
+H_first         = 700 *mm
+H_typical       = 800 *mm
+L_Bay           = (600 + 300) *mm
 H_story_List    = [H_first, *((n_story-1)*[H_typical])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
 L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 
@@ -18,31 +18,33 @@ L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
 #    Elements
 #=============================================================================
 #       Element Length
-L           = 108 *inch
-
-Hw          = 144*inch
-lsr         = 24.
+L           = 22 *ft
+tw = tf     = 5.9 *mm
+Hw          = 600 *mm
+bf          = 100 *mm
+tc          = bf -2*tw
+lsr         = 50.
 b           = 114*mm
-NfibeY      = 5
+NfibeY      = 10
 
 Section = {
     'wall': { # C-PSW/CF Wall Section
         #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
         'tags'      : [1,      1,              2,           3,              4           ],
-        #propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
-        'propWeb'   : [9/16*inch, Hw,        200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
-        'propFlange': [20 *inch,  9/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
-        #propCore   = [tc,      fpc,      wc,     lamConf, lamUnconf]
-        'propCore'  : [18*inch, 44.9*MPa, 0.2*mm, 0.05,    0.25     ]
+        #propStPart = [B,      H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
+        'propWeb'   : [tw,     Hw,        200*GPa, 372*MPa, 453*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
+        'propFlange': [bf,     tf,        200*GPa, 372*MPa, 453*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
+        #propCore   = [tc,     fpc,       wc,      lamConf, lamUnconf]
+        'propCore'  : [tc,     58.7*MPa,  0.2*mm,  0.05,    0.2      ]
     },
     'beam': { # Composite Beam Section
         #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
         'tags'      : [2,      5,              6,           7,              8           ],
-        #propStPart = [B,         H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
-        'propWeb'   : [9/16*inch, 20*inch,   200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
-        'propFlange': [20*inch,   9/16*inch, 200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
-        #propCore   = [tc,      fpc,      wc,     lamConf, lamUnconf]
-        'propCore'  : [18*inch, 44.9*MPa, 0.2*mm, 0.05,    0.25     ]
+        #propStPart = [B,      H,         Es,      Fy,      Fu,      eps_sh, eps_ult, nu,   alpha, beta, gamma, Cf,  a1,  limit] 
+        'propWeb'   : [tw,     200 *mm,   200*GPa, 372*MPa, 453*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
+        'propFlange': [bf,     tf,        200*GPa, 372*MPa, 453*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
+        #propCore   = [tc,     fpc,       wc,      lamConf, lamUnconf]
+        'propCore'  : [tc,     58.7*MPa,  0.2*mm,  0.05,    0.2      ]
     },
     }
 
@@ -67,7 +69,7 @@ A_Tributary     = 0.5*L_Bay_y * L_Bay_x
 DL_Tributary    = A_Tributary * DL_Floor
 LL_Tributary    = A_Tributary * LL_Floor
 # load["wall"]    = 1.0*DL_Tributary + 0.25*LL_Tributary
-load["wall"]    = 72 * kip
+load["wall"]    = 0 * kip
 
 ##  Loading the Leaning Columns
 n_Bay_x         = len(L_Bay_List)
@@ -77,7 +79,7 @@ L_PWall         = L_Bay_y + ((n_Bay_x+1) * L_Bay_x) - n_Bay_x*Hw
 DL_Leaning      = A_Leaning * DL_Floor + L_PWall*H_typical * DL_PWalls
 LL_Leaning      = A_Leaning * LL_Floor
 # load["leaningColumn"] = 1.0*DL_Leaning + 0.25*LL_Leaning
-load["leaningColumn"] = 1440 * kip
+load["leaningColumn"] = 0 * kip
 
 
 

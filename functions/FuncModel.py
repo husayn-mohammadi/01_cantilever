@@ -283,7 +283,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     k_rot       = 0.1*8400000 *kip*inch # Foundations Rotational Spring
     ops.uniaxialMaterial('Elastic',   100000, k_rot)
     
-    k_rot       = 0.1*8400000 *kip*inch # Coupling Beams Rotational Spring
+    k_rot       = 0.05*8400000 *kip*inch # Coupling Beams Rotational Spring
     ops.uniaxialMaterial('Elastic',   100001, k_rot)
     
     modelLeaning = True     # True False

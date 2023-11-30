@@ -80,7 +80,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     tagElementWallBase = [1]
     return(tagNodeTop, tagNodeBase, tagElementWallBase, composite)
 
-def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHingeLength, numSeg=3):
+def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHingeLength, numSeg=3, rotSpring = False):
     tagEleLocal = 100*tagEleGlobal
     coordsLocal = {
         tagNodeI: ops.nodeCoord(tagNodeI),
@@ -113,7 +113,7 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     ops.element('elasticBeamColumn',tagEleGlobal, *[tagNodeII-numSeg, tagNodeJJ+numSeg], section.AA, section.EE, 1, tagGT) # I=1 (+) for now instead of tagGTLinear I have written 1
     
     # Here is the place for adding the rotational springs
-    if 1:
+    if rotSpring == True:
         ops.equalDOF(tagNodeI, tagNodeII, 1, 2)
         #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
         ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII],  '-mat', 100001,   '-dir', 3)
@@ -278,7 +278,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False):
     
     k_rot       = 0.1*8400000 *kip*inch # Foundations Rotational Spring
     ops.uniaxialMaterial('Elastic',   100000, k_rot)
@@ -409,7 +409,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     #   Walls:
     ##  Define tags of Walls and LeaningColumns
     
-    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1):
+    def discretizeWall(tagNodeI, tagNodeJ, tagCoordXI, tagCoordYI, tagCoordYJ, Walls, coordsGlobal, PHL_wall, numSegWall=1, modelFoundation=False):
         
         xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
         xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
@@ -423,8 +423,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         tagNode = tagNodeI + 1
         coordsLocal[tagNode] = [xI + 0*lx, yI + 0*ly]
         ops.node(tagNode, *coordsLocal[tagNode])
-        # if modelFoundation == True:
-        if 1:
+        
+        if modelFoundation == True:
             ops.equalDOF(tagNodeI, tagNode, 1, 2)
             #   element('zeroLength', eleTag,                                            *eleNodes,             '-mat', *matTags, '-dir', *dirs)
             ops.element('zeroLength', int(f"88{tagCoordXI}"), *[tagNodeI, tagNode],  '-mat', 100000,   '-dir', 3)
@@ -717,6 +717,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
                                 # print(f"coordNodeI = {ops.nodeCoord(tagNodeI)}")
                                 # print(f"coordNodeJ = {ops.nodeCoord(tagNodeJ)}")
                                 tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam)
+                                tagToAppend = subStructBeam(tagEleBeam, tagNodeI, tagNodeJ, tagGTLinear, beam, PHL_beam, numSegBeam, rotSpring)
                                 tagElementBeamHinge.append(tagToAppend) # This function models the beams
                                 print(f"tagElementBeamHinge = {tagElementBeamHinge}")
                             else: 

@@ -116,10 +116,10 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     if 1:
         ops.equalDOF(tagNodeI, tagNodeII, 1, 2)
         #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordYI}"), *[tagNodeI, tagNodeII],  '-mat', 100001,   '-dir', 3)
+        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII],  '-mat', 100001,   '-dir', 3)
         ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 2)
         #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ],  '-mat', 100001,   '-dir', 3)
+        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ],  '-mat', 100001,   '-dir', 3)
     else:
         ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
         ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)

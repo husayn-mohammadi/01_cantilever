@@ -21,8 +21,8 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    #wall       = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(composite)
     EIeff       = composite.EIeff
     EAeff       = composite.EAeff
@@ -44,8 +44,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     
     if modelFoundation == True:
         ops.equalDOF(tagNodeBase, tagNodeFndn, 1, 2)
-        k_rot       = 8400000 *kip*inch
-        ops.uniaxialMaterial('Elastic',   100000, k_rot)
+        k_rot       = 20*EIeff/L; print(f"k_rot = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot)
         #   element('zeroLength', eleTag, *eleNodes,                    '-mat', *matTags, '-dir', *dirs)
         ops.element('zeroLength', 100000, *[tagNodeBase, tagNodeFndn],  '-mat', 100000,   '-dir', 3)
     else:
@@ -114,12 +113,12 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     
     # Here is the place for adding the rotational springs
     if rotSpring == True:
-        ops.equalDOF(tagNodeI, tagNodeII, 1, 2)
-        #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII],  '-mat', 100001,   '-dir', 3)
-        ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 2)
-        #   element('zeroLength', eleTag,                                            *eleNodes,               '-mat', *matTags, '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ],  '-mat', 100001,   '-dir', 3)
+        ops.equalDOF(tagNodeI, tagNodeII, 1)
+        #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002, 100001], '-dir', *[2, 3])
+        ops.equalDOF(tagNodeJJ, tagNodeJ, 1)
+        #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002, 100001], '-dir', *[2, 3])
     else:
         ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
         ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
@@ -128,7 +127,7 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     
     return tagEleFibRec
 
-def buildBeam(L, PlasticHingeLength=1, numSeg=3):
+def buildBeam(L, PlasticHingeLength=1, numSeg=3, rotSpring=True):
         
     #       Define Geometric Transformation
     tagGTLinear = 1
@@ -141,10 +140,10 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #composite  = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    #composite  = compo("beam", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("beam", *tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(composite)
-    EIeff       = composite.EIeff
+    EIeff       = composite.EIeff; k_rot = 20*EIeff/L; print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
     EAeff       = composite.EAeff
     composite.EE= EIeff
     composite.AA= EAeff/EIeff
@@ -164,7 +163,7 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
         
     tagEleGlobal = 1
     
-    tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg)
+    tagEleFibRec = subStructBeam(tagEleGlobal, tagNodeBase, tagNodeTop, tagGTLinear, composite, PlasticHingeLength, numSeg, rotSpring)
     # print(f"tagEleFibRec = {tagEleFibRec}")
     return(tagNodeTop, tagNodeBase, [tagEleFibRec], composite)
 
@@ -181,8 +180,8 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    #wall       = compo("beam", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("beam", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(composite)
     fs.makeSectionBoxComposite(composite)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
@@ -280,13 +279,13 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 
 def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False):
     
-    k_rot       = 0.1*8400000 *kip*inch # Foundations Rotational Spring
-    ops.uniaxialMaterial('Elastic',   100000, k_rot)
+    # k_rot       = 0.4*8400000 *kip*inch # Foundations Rotational Spring
+    # ops.uniaxialMaterial('Elastic',   100000, k_rot)
     
-    k_rot       = 0.05*8400000 *kip*inch # Coupling Beams Rotational Spring
-    ops.uniaxialMaterial('Elastic',   100001, k_rot)
+    # k_rot       = 0.05*8400000 *kip*inch # Coupling Beams Rotational Spring
+    # ops.uniaxialMaterial('Elastic',   100001, k_rot)
     
-    modelLeaning = True     # True False
+    modelLeaning = False     # True False
     
     for L_Bay in L_Bay_List:
         if L_Bay <= Lw:
@@ -372,11 +371,11 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    wall        = compo(*tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    #wall       = compo("wall", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
+    wall        = compo("wall", *tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(wall)
-    EIeff       = wall.EIeff
-    EAeff       = wall.EAeff
+    EIeff       = wall.EIeff; k_rot = 20*EIeff/y; print(f"k_rot1 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot)
+    EAeff       = wall.EAeff; k_elo = 20*EAeff/y; print(f"k_elo = {k_elo}"); ops.uniaxialMaterial('Elastic',   100003, k_elo)
     wall.EE     = EIeff
     wall.AA     = EAeff/EIeff
     compo.defineSection(wall) # This will create the fiber section
@@ -388,10 +387,12 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    beam        = compo(*tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    #beam       = compo("beam", *tags, 0, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
+    beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
-    EIeff       = wall.EIeff
+    EIeff       = wall.EIeff; k_rot = 20*EIeff/(300*mm); print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
+    Av          = beam.St_web.A; G=beam.St_web.Es/(2*(1+0.3)); k_trans=2*G*Av/SBL/10; b1=0.003; R0,cR1,cR2      = 18.5, 0.9, 0.1; a1=a3= 0.06; a2=a4= 1.0; Vp=0.6*beam.St_web.Fy*Av; 
+    ops.uniaxialMaterial('Steel02', 100002, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
     EAeff       = wall.EAeff
     beam.EE     = EIeff
     beam.AA     = EAeff/EIeff
@@ -425,9 +426,9 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         ops.node(tagNode, *coordsLocal[tagNode])
         
         if modelFoundation == True:
-            ops.equalDOF(tagNodeI, tagNode, 1, 2)
+            ops.equalDOF(tagNodeI, tagNode, 2)
             #   element('zeroLength', eleTag,                                            *eleNodes,             '-mat', *matTags, '-dir', *dirs)
-            ops.element('zeroLength', int(f"88{tagCoordXI}"), *[tagNodeI, tagNode],  '-mat', 100000,   '-dir', 3)
+            ops.element('zeroLength', int(f"88{tagCoordXI}"), *[tagNodeI, tagNode],  '-mat', *[100000, 100003],   '-dir', *[3, 1])
         else:
             ops.equalDOF(tagNodeI, tagNode, 1, 2, 3)
             

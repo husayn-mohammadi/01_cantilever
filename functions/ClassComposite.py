@@ -41,7 +41,7 @@ class concrete:
         
 NfibeZ = 1
 class compo:
-    def __init__(self, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
+    def __init__(self, typeEle, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
                  tw, Hw, Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw, 
                  Bf, tf, Esf, Fyf, Fuf, eps_shf, eps_ultf, nuf, alphaf, betaf, gammaf, Cff, a1f, limitf,
                  tc, fpc, wc, lamConf, lamUnconf
@@ -123,7 +123,11 @@ class compo:
         self.EIeff_Ct       = self.EIeff_unconf + self.EIeff_conf
         
         self.C3             = min(0.45+3*(self.St_A/self.Ag), 0.9)
-        self.EIeff          = 0.64*(self.EIeff_St + self.C3*self.EIeff_Ct)
+        if typeEle == "wall":
+            self.EIeff      = self.EIeff_St + 0.35*self.EIeff_Ct
+        else:
+            self.EIeff      = 0.64*(self.EIeff_St + self.C3*self.EIeff_Ct)
+            
         
         self.EAeff_webs     = self.St_web.Es    * self.St_web.A
         self.EAeff_flanges  = self.St_flange.Es * self.St_flange.A
@@ -133,7 +137,7 @@ class compo:
         self.EAeff_conf     = self.Ct_conf.Ec   * self.Ct_conf.A
         self.EAeff_Ct       = self.EAeff_unconf + self.EAeff_conf
         
-        self.EAeff          = self.EAeff_St + self.EAeff_Ct
+        self.EAeff          = self.EAeff_St + 0.45*self.EAeff_Ct
         
         # Define Materials
         self.tagMatStFlange = tagMatStFlange

@@ -92,7 +92,7 @@ def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story):
     ops.wipeAnalysis()
     ops.constraints('Transformation')
     ops.numberer('RCM')
-    ops.system('BandGen')
+    ops.system('FullGeneral')   # 'FullGeneral', 'UmfPack', 'SparseSYM', 
     
     # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
     numIncrList = [dispTarget/incrMono] # if the length unit is m: dispTarget/0.001 makes each incr equal to 1 mm 
@@ -121,6 +121,7 @@ def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story):
                 numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
                 incr    = remD/numIncr
                 
+                i = 0
                 while True:
                     #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
                     ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
@@ -219,7 +220,7 @@ def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
     ops.wipeAnalysis()
     ops.constraints('Transformation')
     ops.numberer('RCM') # Plain, RCM, AMD, ParallelPlain, ParallelRCM
-    ops.system('UmfPack') # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
+    ops.system('FullGeneral') # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
     
     # Run Analysis
     for dispIndex, disp in enumerate(dispList):

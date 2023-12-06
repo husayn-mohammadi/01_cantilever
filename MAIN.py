@@ -25,35 +25,35 @@ ops.logFile("logFile.txt")
 #=============================================================================
 # Modeling Options
 recordToLog     = True                      # True, False
-modelFoundation = False
-rotSpring       = False
+modelFoundation = True
+rotSpring       = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
-PHL_beam        = 0.49* Section['beam']['propWeb'][1]
+PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 4
-SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
+numSegBeam      = 3
+SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
 incrMono        = 0.5 *mm
-dispTarget      = 0.3 *cm
+dispTarget      = 1 *cm
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
-dY              = 38    *mm
+dY              = 38 *mm
 CPD1            = 2                         # CPD = cyclesPerDisp; which should be an integer
-CPD2            = 2
+CPD2            = 1
 dispTarList     = [ 
                     *(CPD1*[0.5 *dY]),
                     *(CPD1*[1.0 *dY]),
                     *(CPD1*[1.5 *dY]),
                     *(CPD1*[2.0 *dY]),
-                    *(CPD1*[2.5 *dY]),
-                    *(CPD1*[3.0 *dY]),
-                    *(CPD1*[3.5 *dY]),
+                    # *(CPD1*[2.5 *dY]),
+                    # *(CPD1*[3.0 *dY]),
+                    # *(CPD1*[3.5 *dY]),
                     ]
 
 # dispTarList     = [ 
@@ -95,7 +95,7 @@ for types in typeAnalysis:
         P = 0 * kN
         tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
     elif typeBuild == 'buildBeam':
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam, rotSpring)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
         tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)

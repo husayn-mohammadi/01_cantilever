@@ -285,7 +285,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     # k_rot       = 0.05*8400000 *kip*inch # Coupling Beams Rotational Spring
     # ops.uniaxialMaterial('Elastic',   100001, k_rot)
     
-    modelLeaning = True     # True False
+    modelLeaning = False     # True False
     
     for L_Bay in L_Bay_List:
         if L_Bay <= Lw:

@@ -21,8 +21,8 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    #wall       = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(composite)
     EIeff       = composite.EIeff
     EAeff       = composite.EAeff
@@ -141,8 +141,8 @@ def buildBeam(L, PlasticHingeLength=1, numSeg=3):
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #composite  = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    #composite  = compo("beam", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("beam", *tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(composite)
     EIeff       = composite.EIeff
     EAeff       = composite.EAeff
@@ -181,8 +181,8 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    #wall       = compo("beam", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("beam", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(composite)
     fs.makeSectionBoxComposite(composite)
     ops.beamIntegration('Legendre', tags[0], tags[0], NIP)  # 'Lobatto', 'Legendre' for the latter NIP should be odd integer.
@@ -372,8 +372,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    wall        = compo(*tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    #wall       = compo("wall", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
+    wall        = compo("wall", *tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(wall)
     EIeff       = wall.EIeff
     EAeff       = wall.EAeff
@@ -388,8 +388,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #wall       = compo(*tags, 0, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    beam        = compo(*tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    #beam       = compo("beam", *tags, 0, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
+    beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
     EIeff       = wall.EIeff
     EAeff       = wall.EAeff

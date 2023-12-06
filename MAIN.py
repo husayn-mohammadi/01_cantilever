@@ -25,8 +25,8 @@ ops.logFile("logFile.txt")
 #=============================================================================
 # Modeling Options
 recordToLog     = True                      # True, False
-modelFoundation = False
-rotSpring       = False
+modelFoundation = True
+rotSpring       = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
@@ -95,7 +95,7 @@ for types in typeAnalysis:
         P = 0 * kN
         tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
     elif typeBuild == 'buildBeam':
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam, rotSpring)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
         tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)

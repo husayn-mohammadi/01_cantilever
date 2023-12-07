@@ -28,7 +28,7 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 rotSpring       = True
 exertGravityLoad= True
-typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
+typeBuild       = 'CantileverColumn'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic'
 
@@ -68,7 +68,7 @@ dispTarList     = [
 buildingWidth =10.; buildingHeight =7.
 buildingWidth1=20.; buildingHeight1=17.
 plot_undefo     = False
-plot_loaded     = False
+plot_loaded     = True
 plot_defo       = True
 sfac            = 10
     
@@ -92,13 +92,15 @@ for types in typeAnalysis:
     ops.model('basic', '-ndm', 2, '-ndf', 3)
             
     if typeBuild == "CantileverColumn":
-        P = 0 * kN
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
+        # Py = 1 * kN
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, Py, PHL_wall, numSegWall, modelFoundation)
+        fa.analyzeEigen(1, True)
     elif typeBuild == 'buildBeam':
         tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam, rotSpring)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
-        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
+        fa.analyzeEigen(n_story, True)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         

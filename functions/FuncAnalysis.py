@@ -1,4 +1,5 @@
 import openseespy.opensees     as ops
+import numpy                   as np
 import time
 import sys
 # import random                  as rn
@@ -17,6 +18,25 @@ algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), '
 def create_list(n1, n2):
     myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
     return myList
+
+def analyzeEigen(nEigen, printIt):
+    omega2List  = ops.eigen(nEigen)
+    if printIt == True:
+        for index, omega2 in enumerate(omega2List):
+            period  = 2 * np.pi/omega2**0.5
+            print(f"Period{index:02} = {period}")
+
+def rayleighDamping(nEigen, zeta):
+    eigenList = ops.eigen(nEigen)
+    # print(eigenList)
+    omegaI2 = eigenList[0]
+    omegaJ2 = eigenList[1]
+    omegaI = omegaI2**0.5
+    omegaJ = omegaJ2**0.5
+    alphaM = 2.0*zeta*(omegaI*omegaJ)/(omegaI+omegaJ)
+    betaKinit = 2.0*zeta/(omegaI+omegaJ)
+    # rayleigh(alphaM, betaK, betaKinit, betaKcomm)
+    ops.rayleigh(alphaM, 0.0, betaKinit, 0.0)
 
 def gravity(load, tagNodeLoad):
     

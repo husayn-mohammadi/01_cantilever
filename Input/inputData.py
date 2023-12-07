@@ -56,7 +56,7 @@ Py              = -3158 *kN
 # or:
 ALR             = 0.1  # Axial Load Ratio
 #   Frame Loads
-load={}; mass={}
+load={}
 DL_Floor        = 90 *psf
 DL_PWalls       = 25 *psf
 LL_Floor        = 50 *psf
@@ -69,8 +69,8 @@ A_Tributary     = 0.5*L_Bay_y * L_Bay_x
 DL_Tributary    = A_Tributary * DL_Floor
 LL_Tributary    = A_Tributary * LL_Floor
 # load["wall"]    = 1.0*DL_Tributary + 0.25*LL_Tributary
-load["wall"]    = 0 * kip
-mass["wall"]    = load["wall"]/g
+load["wall"]    = 72 * kip
+
 ##  Loading the Leaning Columns
 n_Bay_x         = len(L_Bay_List)
 A_SFRS          = (1.5 * L_Bay_y) * ((n_Bay_x+1) * L_Bay_x)
@@ -79,8 +79,8 @@ L_PWall         = L_Bay_y + ((n_Bay_x+1) * L_Bay_x) - n_Bay_x*Hw
 DL_Leaning      = A_Leaning * DL_Floor + L_PWall*H_typical * DL_PWalls
 LL_Leaning      = A_Leaning * LL_Floor
 # load["leaningColumn"] = 1.0*DL_Leaning + 0.25*LL_Leaning
-load["leaningColumn"] = 0 * kip
-mass["leaningColumn"] = load["leaningColumn"]/g
+load["leaningColumn"] = 1440 * kip
+
 
 
 

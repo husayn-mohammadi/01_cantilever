@@ -26,6 +26,18 @@ def analyzeEigen(nEigen, printIt):
             period  = 2 * np.pi/omega2**0.5
             print(f"Period{index:02} = {period}")
 
+def rayleighDamping(nEigen, zeta):
+    eigenList = ops.eigen(nEigen)
+    # print(eigenList)
+    omegaI2 = eigenList[0]
+    omegaJ2 = eigenList[1]
+    omegaI = omegaI2**0.5
+    omegaJ = omegaJ2**0.5
+    alphaM = 2.0*zeta*(omegaI*omegaJ)/(omegaI+omegaJ)
+    betaKinit = 2.0*zeta/(omegaI+omegaJ)
+    # rayleigh(alphaM, betaK, betaKinit, betaKcomm)
+    ops.rayleigh(alphaM, 0.0, betaKinit, 0.0)
+
 def gravity(load, tagNodeLoad):
     
     tagTSGravity    = 10

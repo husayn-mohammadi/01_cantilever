@@ -281,7 +281,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False):
     
     # k_rot       = 0.4*8400000 *kip*inch # Foundations Rotational Spring
     # ops.uniaxialMaterial('Elastic',   100000, k_rot)
@@ -329,6 +329,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
             x               += L_Bay
         y               += storyH
             
+    gridLeaningColumn = f"{(len(L_Bay_List)-1):02}"
+    
     #   Build Model
     # ops.wipe()
     # ops.model('basic', '-ndm', 2, '-ndf', 3)
@@ -358,6 +360,33 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     # print(tagNodeBaseList[-1])
     ops.fix(tagNodeBaseList[-1], *[1, 1, 0])
     
+    #   Assign Nodal Masses: ops.mass(nodeTag, *massValues)
+    
+    ##  Define gravity loading nodes
+    tagNodeLoad={}; tagNodeLoad["wall"]=[]; tagNodeLoad["leaningColumn"]=[]
+    for tagNode, coord in coords.items():
+        tagCoordXI  = f"{tagNode}"[3:-1]
+        tagCoordYI  = f"{tagNode}"[1:-3]
+        tagSuffixI  = f"{tagNode}"[-1]
+        if tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI != gridLeaningColumn:
+            tagNodeLoad["wall"].append(tagNode)
+        elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
+            tagNodeLoad["leaningColumn"].append(tagNode)
+
+    ## Assigning Masses
+    mass={}; mass["wall"] = load["wall"]/g; mass["leaningColumn"] = load["leaningColumn"]/g
+    massValuesT = [mass["wall"], mass["wall"], 1e-8]
+    massValuesL = [mass["leaningColumn"], mass["leaningColumn"], 1e-8]
+    
+    for element, tagNodes in tagNodeLoad.items():
+        if element == "wall":               ###  Tributary Masses
+            for tagNode in tagNodes:
+                ops.mass(tagNode, *massValuesT)
+        elif element == "leaningColumn":    ###  Leaning Column Masses
+            for tagNode in tagNodes:
+                ops.mass(tagNode, *massValuesL)
+    
+    #   for deciding whether to model the leaning columns
     if modelLeaning == False:
         print(f"Width of the Building is {x} meters.")
         ops.fixX(x, *[1, 1, 1], '-tol', 1e-3)
@@ -391,7 +420,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
     propWeb     = Section[nameSect]['propWeb']
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
-    #beam       = compo("beam", *tags, 0, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
+    #beam       = compo("beam", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
     beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
     EIeff       = wall.EIeff; k_rot = 20*EIeff/(300*mm); print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
@@ -453,8 +482,6 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
         # print("End")
         # return(0)
         
-    gridLeaningColumn = f"{(len(L_Bay_List)-1):02}"
-    
     Walls           = {}
     LeaningColumns  = {}
     for tagNode, coord in coords.items():
@@ -781,18 +808,6 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wa
             tagNodeControl.append(tagNode)
             # print(f"tagNodeControl = {tagNodeControl}") 
     
-    
-    #   Define loading nodes
-    tagNodeLoad={}; tagNodeLoad["wall"]=[]; tagNodeLoad["leaningColumn"]=[]
-    for tagNode, coord in coords.items():
-        tagCoordXI  = f"{tagNode}"[3:-1]
-        tagCoordYI  = f"{tagNode}"[1:-3]
-        tagSuffixI  = f"{tagNode}"[-1]
-        if tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI != gridLeaningColumn:
-            tagNodeLoad["wall"].append(tagNode)
-        elif tagSuffixI == '0' and tagCoordYI != '00' and tagCoordXI == gridLeaningColumn:
-            tagNodeLoad["leaningColumn"].append(tagNode)
-
     return(tagNodeControl, tagNodeBaseList, x, y, coords, wall, tagElementWallBase, beam, tagElementBeamHinge, tagNodeLoad)
 
 

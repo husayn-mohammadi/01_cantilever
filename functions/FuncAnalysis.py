@@ -1,4 +1,5 @@
 import openseespy.opensees     as ops
+import numpy                   as np
 import time
 import sys
 # import random                  as rn
@@ -17,6 +18,12 @@ algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), '
 def create_list(n1, n2):
     myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
     return myList
+
+def analyzeEigen(nEigen):
+    omega2List  = ops.eigen(nEigen)
+    for index, omega2 in enumerate(omega2List):
+        period  = 2 * np.pi/omega2**0.5
+        print(f"Period{index:02} = {period}")
 
 def gravity(load, tagNodeLoad):
     

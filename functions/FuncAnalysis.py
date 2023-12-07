@@ -19,11 +19,12 @@ def create_list(n1, n2):
     myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
     return myList
 
-def analyzeEigen(nEigen):
+def analyzeEigen(nEigen, printIt):
     omega2List  = ops.eigen(nEigen)
-    for index, omega2 in enumerate(omega2List):
-        period  = 2 * np.pi/omega2**0.5
-        print(f"Period{index:02} = {period}")
+    if printIt == True:
+        for index, omega2 in enumerate(omega2List):
+            period  = 2 * np.pi/omega2**0.5
+            print(f"Period{index:02} = {period}")
 
 def gravity(load, tagNodeLoad):
     

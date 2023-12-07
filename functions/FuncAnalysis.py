@@ -1,3 +1,4 @@
+exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
 import openseespy.opensees     as ops
 import numpy                   as np
 import time
@@ -361,30 +362,61 @@ def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
 
                 
 
+def NTHA():
+    
+    recList     = [1]
+    NPTSList    = [4000] # you can add more values to this list programmatically, instead of typing them manually
+    dtGMList    = [0.01] # you can add more values to this list programmatically, instead of typing them manually
 
+    print("SaGM corresponding to the Tn should be inserted into SaGMList manually for each record!!!")
+    SaGMList    = [0.04973] # you can add more values to this list programmatically, instead of typing them manually
+    SaTarget    = 1.5 * 0.63 /10# MCE = 1.5*DBE
+    extraTime   = 0
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    timeSeriesTag       = 100
+    
+    for i_rec, rec in enumerate(recList):
+        print(f"\n\n{'#'*65}\nRunning record: {rec} for Sa = {SaTarget} g\n{'#'*65}")
+        # outputDir = f"outputs/NTHA/{rec}/{SaTarget}"
+        # analyzeEigen(2, True)
+        rayleighDamping(2, 0.05)
+        
+        # 01) Extract Parameters from Lists:
+        SaGM = SaGMList[i_rec]
+        dtGM = dtGMList[i_rec]
+        NPTS = NPTSList[i_rec]
+        
+        # 02) Lateral Load Pattern:
+        filePath = f"Input/GM/2_txt/{rec}.txt" # Is there a way to read the name of all files in a folder and save them in an array? Yes: open readfilesinfolder.py
+        dtAnalysis = dtGM # it can't be greater than dt
+        recDur = NPTS*dtGM + extraTime
+        numIncr = int(recDur/dtAnalysis)
+        scaleFactor = SaTarget/SaGM*g
+        
+        #   timeSeries('Path', tag,           '-dt', dt=0.0, '-values', *values, '-time', *time, '-filePath', filePath='', '-fileTime', fileTime='', '-factor', factor=1.0, '-startTime', startTime=0.0, '-useLast', '-prependZero')
+        ops.timeSeries('Path', timeSeriesTag, '-dt', dtGM,                                       '-filePath', filePath,                              '-factor', scaleFactor)
+        
+        nthaLoadPatternTag  = 4
+        direction           = 1
+        #   pattern('UniformExcitation', patternTag,         dir,       '-disp', dispSeriesTag, '-vel', velSeriesTag, '-accel', accelSeriesTag, '-vel0', vel0, '-fact', fact)
+        ops.pattern('UniformExcitation', nthaLoadPatternTag, direction,                                               '-accel', timeSeriesTag)
+        
+        # 03) Nonlinear Time-History Analysis:
+        gamma = 0.5
+        beta = 0.25
+        
+        tol = 1.0e-6
+        iteration = 2000
+        
+        ops.wipeAnalysis()
+        ops.constraints('Transformation')
+        ops.numberer('RCM')
+        ops.system('BandGeneral')
+        ops.test('NormDispIncr', tol, iteration)
+        ops.algorithm('Newton')
+        ops.integrator('Newmark', gamma, beta)
+        ops.analysis('Transient')
+        ops.analyze(numIncr, dtAnalysis)
 
 
 

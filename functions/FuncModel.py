@@ -76,6 +76,10 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     #   element('elasticBeamColumn', eleTag,   *eleNodes,                                       secTag, transfTag, <'-mass', mass>, <'-cMass'>, <'-release', releaseCode>)
     # ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagNodeFndn, numSeg + tagNodeFndn + 1], tags[0], tagGTPDelta)
     ops.element('elasticBeamColumn', numSeg+1, *[numSeg+tagNodeFndn, numSeg + tagNodeFndn + 1], AA, EE, 1, tagGTLinear)
+    
+    mass = P/g
+    ops.mass(tagNodeTop, *[mass,mass,1e-8])
+    
     tagElementWallBase = [1]
     return(tagNodeTop, tagNodeBase, tagElementWallBase, composite)
 

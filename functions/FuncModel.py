@@ -387,6 +387,22 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
             for tagNode in tagNodes:
                 ops.mass(tagNode, *massValuesL)
     
+    ##  Assigning equalDOF for rigid diaphragm
+    for element, tagNodes in tagNodeLoad.items():
+        if element == "wall":               ###  Tributary Masses
+            for tagNode in tagNodes:
+                tagNodeI    = tagNode
+                tagCoordXI  = int(f"{tagNodeI}"[3:-1])
+                tagCoordYI  = int(f"{tagNodeI}"[1:-3])
+                for tagNode in tagNodes:
+                    tagNodeJ    = tagNode
+                    tagCoordXJ  = int(f"{tagNodeJ}"[3:-1])
+                    tagCoordYJ  = int(f"{tagNodeJ}"[1:-3])
+                    if tagCoordYI == tagCoordYJ and tagCoordXJ - tagCoordXI == 1:
+                        ops.equalDOF(tagNodeI, tagNodeJ, 1)
+                        print(f"tagNodeI = {tagNodeI}\ttagNodeJ = {tagNodeJ}")
+                
+    
     #   for deciding whether to model the leaning columns
     if modelLeaning == False:
         print(f"Width of the Building is {x} meters.")

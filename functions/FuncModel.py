@@ -457,7 +457,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
     beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
     EIeff       = wall.EIeff; k_rot = 4*20*EIeff/L_CB; print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
-    Av          = beam.St_web.A; G=beam.St_web.Es/(2*(1+0.3)); k_trans=2*G*Av/SBL/10; b1=0.003; R0,cR1,cR2      = 18.5, 0.9, 0.1; a1=a3= 0.06; a2=a4= 1.0; Vp=0.6*beam.St_web.Fy*Av; 
+    Av          = beam.St_web.A; G=beam.St_web.Es/(2*(1+0.3)); k_trans=20*2*G*Av/SBL/10; b1=0.003; R0,cR1,cR2= 18.5, 0.9, 0.1; a1=a3= 0.06; a2=a4= 1.0; Vp=0.6*beam.St_web.Fy*Av; 
     ops.uniaxialMaterial('Steel02', 100002, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
     EAeff       = wall.EAeff
     beam.EE     = EIeff

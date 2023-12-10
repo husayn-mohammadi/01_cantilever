@@ -67,7 +67,8 @@ def recordStressStrain(outputDir, tagEleList, section):
     return(coords)
     
 
-
+# def recordDataNTHA():
+    
 
 
 

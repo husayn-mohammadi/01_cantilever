@@ -68,6 +68,82 @@ def gravity(load, tagNodeLoad):
     # ops.analyze(1)
     ops.loadConst('-time', 0.0)
 
+def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrInit, incr, numIncr, dispIndex, dispList, disp, dispTarget, dispTar, numFrac, iii, t_beg):
+    
+    testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr', ]#, 'RelativeNormUnbalance']
+    algorithmList   = [*(1*['KrylovNewton', 'Newton', 'RaphsonNewton', 'NewtonLineSearch 0.65', ]), 'KrylovNewton'] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
+    tol = 1e-8; numIter = 200
+    numIncrMax      = 300000
+    
+    for i in range(100000000):
+        for algorithm in algorithmList:
+            for tester in testerList:
+                ops.test(tester, tol, numIter)
+                ops.algorithm(algorithm)  
+                #   integrator('DisplacementControl', nodeTag,        dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
+                ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
+                ops.analysis('Static')
+                
+                curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
+                # print(f"curD = {curD}")
+                remD    = dispTar - curD
+                # print(f"remD = {remD}")
+                # numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
+                # incr    = remD/numIncr
+                
+                print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                print(f"--------------------------------------\nAlgorithm:\t{algorithm}")
+                print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------")
+                print(f"======>>> disp({dispIndex+1:02}/{len(dispList):02})\t\t\t\t= {disp}")
+                print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
+                print(f"======>>> dispTar({iii+1:02}/{numFrac:02})\t\t\t= {dispTar}")
+                print(f"======>>> Current   Displacement\t= {curD}")
+                print(f"======>>> Remaining Displacement\t= {remD}")
+                print(f"numIncr\t\t\t= {numIncr}")
+                print(f"Incr\t\t\t= {incr}")
+                
+                # Run Analysis
+                #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
+                OK = ops.analyze(numIncr)
+                print(f"AnalyzeOutput\t= {OK}")
+                if OK == 0:
+                    curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
+                    remD    = dispTar - curD
+                    numIncr = max(int(remD/incrInit), 1)
+                    incr    = remD/numIncr
+                    break
+                elif OK != 0:
+                    t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
+                    print(f"\nElapsed time: {mins} min + {secs} sec")
+                    print(f"\n=============== The tester {tester} failed to converge!!! ===============")
+                    curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
+                    remD    = dispTar - curD
+                    numIncr = int(remD/incr)
+                    incr    = remD/numIncr
+            
+            if OK == 0:
+                break
+            elif OK != 0:
+                print(f"\n=============== THE ALGORITHM {algorithm} FAILED TO CONVERGE!!! ===============")
+                
+        if OK == 0:
+            break
+        else:
+            tol = 1.5*tol;                                          print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the Incr size:\n{'#'*65}"); print(f"\ntolerance = {tol}");              
+            curD    = ops.nodeDisp(tagNodeControl, dofNodeControl); print(f"======>>> Current   Displacement\t= {curD}")
+            remD    = dispTar - curD;                               print(f"======>>> Remaining Displacement\t= {remD}")
+            numIncr = int(numIncr*1.01**i + 1);                     print(f"numIncr\t\t\t= {numIncr}")
+            incr    = remD/numIncr;                                 print(f"Incr\t\t\t= {incr}")
+            if numIncr >= numIncrMax:
+                print("\nIncrement size is too small!!!")
+                t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
+                print(f"\nElapsed time: {mins} min + {secs} sec")
+                winsound.Beep(440, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
+                print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print(f"*!*!*!*!*!* The {typeAnalysis} pushover analysis failed to converge!!! *!*!*!*!*!*")
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                break
+    return OK
 
 def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story): 
     t_beg           = time.time()

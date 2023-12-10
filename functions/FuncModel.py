@@ -118,15 +118,31 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     # Here is the place for adding the rotational springs
     eAve = section.eAve; print(f"eAve = {eAve}")
     if rotSpring == True:
-        ops.equalDOF(tagNodeI, tagNodeII, 1)
-        #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002, 100001], '-dir', *[2, 3])
-        ops.equalDOF(tagNodeJJ, tagNodeJ, 1)
-        #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002, 100001], '-dir', *[2, 3])
+        if L <= eAve:
+            ops.equalDOF(tagNodeI, tagNodeII, 1)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002, 100001], '-dir', *[2, 3])
+            ops.equalDOF(tagNodeJJ, tagNodeJ, 1)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002, 100001], '-dir', *[2, 3])
+        else:
+            ops.equalDOF(tagNodeI, tagNodeII, 1, 2)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags, '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', 100001,   '-dir', 3)
+            ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 2)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags, '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', 100001,   '-dir', 3)
     else:
-        ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
-        ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
+        if L <= eAve:
+            ops.equalDOF(tagNodeI, tagNodeII, 1, 3)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002], '-dir', *[2])
+            ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 3)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002], '-dir', *[2])
+        else:
+            ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
+            ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
     
     tagEleFibRec = tagNodeII-1
     

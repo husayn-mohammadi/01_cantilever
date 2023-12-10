@@ -148,31 +148,6 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrInit, incr, num
 def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story): 
     t_beg           = time.time()
     dofNodeControl  = 1
-    # incr        = dispTarget/numIncr
-    tol         = 1e-8
-    numIter     = 50
-    
-    #  Define Time Series: Constant/Linear/Trigonometric/Triangular/Rectangular/Pulse/Path TimeSeries
-    tagTSLinear     = 1
-    #   timeSeries('Linear',   tag, '-factor', factor=1.0, '-tStart', tStart=0.0)
-    ops.timeSeries('Linear',   tagTSLinear)
-    
-    #  Define Loads: Plain/UniformExcitation/Multi-Support Excitation Pattern
-    tagPatternPlain = 1
-    #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
-    ops.pattern('Plain', tagPatternPlain, tagTSLinear)
-    #   load(nodeTag,     *loadValues)
-    if type(tagNodeLoad) == list:
-        tagNodeControl  = tagNodeLoad[-1]
-        n_story = len(tagNodeLoad)-1
-        for i, tagNode in enumerate(tagNodeLoad):
-            ops.load(tagNode, *[i/n_story, 0, 0])
-    else:
-        tagNodeControl  = tagNodeLoad
-        ops.load(tagNodeControl, *[1, 0, 0])
-    
-    #  Define Analysis Options
-    
     ops.wipeAnalysis()
     ops.constraints('Transformation')
     ops.numberer('RCM')

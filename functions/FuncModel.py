@@ -116,6 +116,7 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     ops.element('elasticBeamColumn',tagEleGlobal, *[tagNodeII-numSeg, tagNodeJJ+numSeg], section.AA, section.EE, 1, tagGT) # I=1 (+) for now instead of tagGTLinear I have written 1
     
     # Here is the place for adding the rotational springs
+    eAve = section.eAve; print(f"eAve = {eAve}")
     if rotSpring == True:
         ops.equalDOF(tagNodeI, tagNodeII, 1)
         #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)

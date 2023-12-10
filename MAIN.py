@@ -28,9 +28,9 @@ recordToLog     = True                      # True, False
 modelFoundation = True
 rotSpring       = True
 exertGravityLoad= True
-typeBuild       = 'CantileverColumn'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
+typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeAnalysis    = ['NTHA']             # 'monotonic', 'cyclic', "NTHA"
+typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic', "NTHA"
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
@@ -39,30 +39,30 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 3
 SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 0.5 *mm
-dispTarget      = 1 *cm
+incrMono        = 1 *mm
+dispTarget      = 10 *cm    *n_story
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
-dY              = 38 *mm
-CPD1            = 2                         # CPD = cyclesPerDisp; which should be an integer
+dY              = 20 *mm
+CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
-dispTarList     = [ 
-                    *(CPD1*[0.5 *dY]),
-                    *(CPD1*[1.0 *dY]),
-                    *(CPD1*[1.5 *dY]),
-                    *(CPD1*[2.0 *dY]),
-                    # *(CPD1*[2.5 *dY]),
-                    # *(CPD1*[3.0 *dY]),
-                    # *(CPD1*[3.5 *dY]),
-                    ]
-
 # dispTarList     = [ 
-#                     *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
-#                     *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
-#                     *(CPD2*[8*dY]), 
-#                     *(CPD2*[9*dY]),   
-#                     *(CPD2*[10*dY])
+#                     *(CPD1*[0.5 *dY]),
+#                     *(CPD1*[1.0 *dY]),
+#                     *(CPD1*[1.5 *dY]),
+#                     *(CPD1*[2.0 *dY]),
+#                     # *(CPD1*[2.5 *dY]),
+#                     # *(CPD1*[3.0 *dY]),
+#                     # *(CPD1*[3.5 *dY]),
 #                     ]
+
+dispTarList     = [ 
+                    *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
+                    *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
+                    *(CPD2*[8*dY]), 
+                    *(CPD2*[9*dY]),   
+                    *(CPD2*[10*dY])
+                    ]
 
 # Plotting Options:
 buildingWidth =10.; buildingHeight =7.
@@ -100,7 +100,7 @@ for types in typeAnalysis:
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
         tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
-        fa.analyzeEigen(n_story, True)
+        # fa.analyzeEigen(n_story, True)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         

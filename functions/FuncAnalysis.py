@@ -7,19 +7,6 @@ import sys
 import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
-waitTime        = 0.0
-waitTime2       = 0.0
-testerList      = ['EnergyIncr', 'NormUnbalance', 'NormDispIncr', ]#, 'RelativeNormUnbalance']
-algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'KrylovNewton'] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
-
-# def create_list(n):
-#     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
-#     return myList
-
-def create_list(n1, n2):
-    myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
-    return myList
-
 def analyzeEigen(nEigen, printIt):
     omega2List  = ops.eigen(nEigen)
     if printIt == True:

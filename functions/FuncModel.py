@@ -440,8 +440,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
     #wall       = compo("wall", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
     wall        = compo("wall", *tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(wall)
-    EIeff       = wall.EIeff; k_rot = 20*EIeff/y; print(f"k_rot1 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot)
-    EAeff       = wall.EAeff; k_elo = 20*EAeff/y; print(f"k_elo = {k_elo}"); ops.uniaxialMaterial('Elastic',   100003, k_elo)
+    EIeff       = wall.EIeff; k_rot = 20*EIeff/y; print(f"k_rot1 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot) # 4* is to consider 12EI/L instead of 3EI/L
+    EAeff       = wall.EAeff; k_elo = 20*EAeff/y; print(f"k_elo = {k_elo}"); ops.uniaxialMaterial('Elastic',   100003, k_elo) # 4* is to consider 12EI/L instead of 3EI/L
     wall.EE     = EIeff
     wall.AA     = EAeff/EIeff
     compo.defineSection(wall) # This will create the fiber section

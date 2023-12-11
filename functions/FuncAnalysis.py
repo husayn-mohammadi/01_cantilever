@@ -215,7 +215,42 @@ def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
 
     
 
-def NTHA():
+def NTHA(tagNodeLoad):
+    t_beg           = time.time()
+    dofNodeControl  = 1
+    if type(tagNodeLoad) == list:
+        tagNodeControl  = tagNodeLoad[-1]
+    else:
+        tagNodeControl  = tagNodeLoad
+    filePath        = "Input/GM/0.0200_RSN825_CAPEMEND_CPM000.txt"
+    SaTarget        = 1.5 * 0.63 # MCE = 1.5*DBE
+    SaGM            = 0.04973/0.1
+    scaleFactor     = SaTarget/SaGM*g
+    dtGM            = 0.02
+    NPTS            = 1500
+    tagTSPath       = 1
+    ops.timeSeries('Path', tagTSPath, '-dt', dtGM, '-filePath', filePath, '-factor', scaleFactor)
+    tagPatternNTHA  = 1
+    direction       = 1
+    ops.pattern('UniformExcitation', tagPatternNTHA, direction,'-accel', tagTSPath)
+    
+    #  Define Analysis Options
+    ops.wipeAnalysis()
+    ops.constraints('Transformation')
+    ops.numberer('RCM')
+    ops.system('FullGeneral')
+    
+    # Run Analysis
+    dispList    = ["No list required!"]
+    dispIndex   = 0
+    disp        = NPTS * dtGM
+    dispTarget  = disp
+    curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
+    delta       = dispTarget - curD
+    numFrac     = NPTS
+    incrFrac    = delta/numFrac
+    OK          = convergeIt('NTHA', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg)
+    return OK
     
     recList     = [1]
     NPTSList    = [4000] # you can add more values to this list programmatically, instead of typing them manually
@@ -270,6 +305,25 @@ def NTHA():
         ops.integrator('Newmark', gamma, beta)
         ops.analysis('Transient')
         ops.analyze(numIncr, dtAnalysis)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -167,7 +167,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"NTHA Initiated at {(time.time() - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.NTHA()
+        fa.NTHA(tagNodeControl)
         finish_time_NTHA = time.time()
         mins = int((finish_time_NTHA - start_time_NTHA)/60)
         secs = int((finish_time_NTHA - start_time_NTHA)%60)

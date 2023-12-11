@@ -83,7 +83,7 @@ L_PWall         = L_Bay_y + ((n_Bay_x+1) * L_Bay_x) - n_Bay_x*Hw
 DL_Leaning      = A_Leaning * DL_Floor + L_PWall*H_typical * DL_PWalls
 LL_Leaning      = A_Leaning * LL_Floor
 # load["leaningColumn"] = 1.0*DL_Leaning + 0.25*LL_Leaning
-load["leaningColumn"] = 0.1 * kip
+load["leaningColumn"] = 70 * kip
 
 
 

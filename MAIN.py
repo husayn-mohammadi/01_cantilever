@@ -211,8 +211,8 @@ if recordToLog == True:
     sys.stdout.close()
     sys.stdout = sys.__stdout__
 
-winsound.Beep(1000, 300)  # generate a 440Hz sound that lasts 500 milliseconds
-winsound.Beep(1000, 300)
+winsound.Beep(440, 300)  # generate a 440Hz sound that lasts 300 milliseconds
+winsound.Beep(440, 300)
 
 
 

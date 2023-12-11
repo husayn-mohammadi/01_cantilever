@@ -238,6 +238,7 @@ def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
             curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD
             numFrac     = int(abs(delta)/incrInit)
+            if numFrac == 0: numFrac=1
             incrFrac    = delta/numFrac
             OK          = convergeIt('Cyclic', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=2)
             if OK < 0: break

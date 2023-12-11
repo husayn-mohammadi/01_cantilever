@@ -68,7 +68,7 @@ def gravity(load, tagNodeLoad):
     # ops.analyze(1)
     ops.loadConst('-time', 0.0)
 
-def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg):
+def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=5):
     
     def curD():
         if typeAnalysis=="NTHA":
@@ -118,15 +118,15 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
             print(f"numIncr\t\t\t= {numIncr}")
             print(f"Incr\t\t\t= {incr}")
     
-    numIncr     = 5
     for iii in range(1, numFrac+1):
         dispTar = iii * incrFrac
         testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr', ]#, 'RelativeNormUnbalance']
         algorithmList   = [*(1*['Newton', 'KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch 0.65', ])] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
         tol = 1e-8; numIter = 200; gamma = 0.5; beta = 0.25
-        numIncrMax      = 300000
+        numIncrMax      = 30000
         
-        incr        = incrFrac/numIncr
+        numIncr     = numIncrInit
+        incr        = incrFrac/numIncrInit
         for i in range(100000000):
         
             for algorithm in algorithmList:
@@ -243,7 +243,7 @@ def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
             delta       = dispTarget - curD
             numFrac     = int(abs(delta)/incrInit)
             incrFrac    = delta/numFrac
-            OK          = convergeIt('Cyclic', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg)
+            OK          = convergeIt('Cyclic', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=2)
             if OK < 0:
                 break
         if OK < 0:
@@ -279,7 +279,7 @@ def NTHA(tagNodeLoad):
     
     # Run Analysis
     dispList    = ["No list required!"]
-    dispIndex   = 0
+    OK          = convergeIt('NTHA', tagNodeControl, dofNodeControl, dtGM, NPTS, Tmax, 0, ["No list required!"], Tmax, t_beg, numIncrInit=2)
     disp        = NPTS * dtGM
     dispTarget  = disp
     curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)

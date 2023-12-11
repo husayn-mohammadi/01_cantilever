@@ -149,18 +149,15 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
                     print(f"AnalyzeOutput\t= {OK}")
                     t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
                     print(f"\nElapsed time: {mins} min + {secs} sec")
-                    if OK == 0:
-                        break
+                    if OK == 0: break
                     elif OK != 0:
                         t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
                         print(f"\nElapsed time: {mins} min + {secs} sec")
                         print(f"\n=============== The tester {tester} failed to converge!!! ===============")
-                if OK == 0:
-                    break
+                if OK == 0: break
                 elif OK != 0:
                     print(f"\n=============== THE ALGORITHM {algorithm} FAILED TO CONVERGE!!! ===============")
-            if OK == 0:
-                break
+            if OK == 0: break
             else:
                 tol = min(1.5*tol, 1e-4)
                 remD    = dispTar - curD()
@@ -177,8 +174,7 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
                     print(f"*!*!*!*!*!* The {typeAnalysis}{text} analysis failed to converge!!! *!*!*!*!*!*")
                     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     break
-        if OK < 0:
-            break
+        if OK < 0: break
     return OK
 
 def pushoverDCF(dispTarget, incrInit, tagNodeLoad): 
@@ -244,10 +240,8 @@ def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
             numFrac     = int(abs(delta)/incrInit)
             incrFrac    = delta/numFrac
             OK          = convergeIt('Cyclic', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=2)
-            if OK < 0:
-                break
-        if OK < 0:
-            break
+            if OK < 0: break
+        if OK < 0: break
     return OK
 
     
@@ -260,7 +254,7 @@ def NTHA(tagNodeLoad):
     else:
         tagNodeControl  = tagNodeLoad
     filePath        = "Input/GM/0.0200_RSN825_CAPEMEND_CPM000.txt"
-    SaTarget        = 1.5 * 0.63 # MCE = 1.5*DBE
+    SaTarget        = 1.5 * 0.63 /1                                   # MCE = 1.5*DBE
     SaGM            = 0.04973/0.1
     scaleFactor     = SaTarget/SaGM*g
     dtGM            = 0.02
@@ -278,15 +272,8 @@ def NTHA(tagNodeLoad):
     ops.system('FullGeneral')
     
     # Run Analysis
-    dispList    = ["No list required!"]
+    Tmax        = NPTS * dtGM
     OK          = convergeIt('NTHA', tagNodeControl, dofNodeControl, dtGM, NPTS, Tmax, 0, ["No list required!"], Tmax, t_beg, numIncrInit=2)
-    disp        = NPTS * dtGM
-    dispTarget  = disp
-    curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
-    delta       = dispTarget - curD
-    numFrac     = NPTS
-    incrFrac    = delta/numFrac
-    OK          = convergeIt('NTHA', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg)
     return OK
     
     recList     = [1]

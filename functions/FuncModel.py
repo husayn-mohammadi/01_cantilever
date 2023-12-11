@@ -116,16 +116,33 @@ def subStructBeam(tagEleGlobal, tagNodeI, tagNodeJ, tagGT, section, PlasticHinge
     ops.element('elasticBeamColumn',tagEleGlobal, *[tagNodeII-numSeg, tagNodeJJ+numSeg], section.AA, section.EE, 1, tagGT) # I=1 (+) for now instead of tagGTLinear I have written 1
     
     # Here is the place for adding the rotational springs
+    eAve = section.eAve; print(f"eAve = {eAve}")
     if rotSpring == True:
-        ops.equalDOF(tagNodeI, tagNodeII, 1)
-        #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002, 100001], '-dir', *[2, 3])
-        ops.equalDOF(tagNodeJJ, tagNodeJ, 1)
-        #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
-        ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002, 100001], '-dir', *[2, 3])
+        if L <= eAve:
+            ops.equalDOF(tagNodeI, tagNodeII, 1)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002, 100001], '-dir', *[2, 3])
+            ops.equalDOF(tagNodeJJ, tagNodeJ, 1)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002, 100001], '-dir', *[2, 3])
+        else:
+            ops.equalDOF(tagNodeI, tagNodeII, 1, 2)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags, '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', 100001,   '-dir', 3)
+            ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 2)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags, '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', 100001,   '-dir', 3)
     else:
-        ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
-        ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
+        if L <= eAve:
+            ops.equalDOF(tagNodeI, tagNodeII, 1, 3)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXI}{tagCoordXJ}{tagCoordYI}"), *[tagNodeI, tagNodeII], '-mat', *[100002], '-dir', *[2])
+            ops.equalDOF(tagNodeJJ, tagNodeJ, 1, 3)
+            #   element('zeroLength', eleTag,                                         *eleNodes,              '-mat', *matTags,          '-dir', *dirs)
+            ops.element('zeroLength', int(f"89{tagCoordXJ}{tagCoordXI}{tagCoordYJ}"), *[tagNodeJJ, tagNodeJ], '-mat', *[100002], '-dir', *[2])
+        else:
+            ops.equalDOF(tagNodeI,  tagNodeII, 1, 2, 3)
+            ops.equalDOF(tagNodeJJ, tagNodeJ,  1, 2, 3)
     
     tagEleFibRec = tagNodeII-1
     
@@ -386,6 +403,22 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
             for tagNode in tagNodes:
                 ops.mass(tagNode, *massValuesL)
     
+    ##  Assigning equalDOF for rigid diaphragm
+    for element, tagNodes in tagNodeLoad.items():
+        if element == "wall":               ###  Tributary Masses
+            for tagNode in tagNodes:
+                tagNodeI    = tagNode
+                tagCoordXI  = int(f"{tagNodeI}"[3:-1])
+                tagCoordYI  = int(f"{tagNodeI}"[1:-3])
+                for tagNode in tagNodes:
+                    tagNodeJ    = tagNode
+                    tagCoordXJ  = int(f"{tagNodeJ}"[3:-1])
+                    tagCoordYJ  = int(f"{tagNodeJ}"[1:-3])
+                    if tagCoordYI == tagCoordYJ and tagCoordXJ - tagCoordXI == 1:
+                        ops.equalDOF(tagNodeI, tagNodeJ, 1)
+                        print(f"tagNodeI = {tagNodeI}\ttagNodeJ = {tagNodeJ}")
+                
+    
     #   for deciding whether to model the leaning columns
     if modelLeaning == False:
         print(f"Width of the Building is {x} meters.")
@@ -407,8 +440,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
     #wall       = compo("wall", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
     wall        = compo("wall", *tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(wall)
-    EIeff       = wall.EIeff; k_rot = 20*EIeff/y; print(f"k_rot1 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot)
-    EAeff       = wall.EAeff; k_elo = 20*EAeff/y; print(f"k_elo = {k_elo}"); ops.uniaxialMaterial('Elastic',   100003, k_elo)
+    EIeff       = wall.EIeff; k_rot = 20*EIeff/y; print(f"k_rot1 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot) # 4* is to consider 12EI/L instead of 3EI/L
+    EAeff       = wall.EAeff; k_elo = 20*EAeff/y; print(f"k_elo = {k_elo}"); ops.uniaxialMaterial('Elastic',   100003, k_elo) # 4* is to consider 12EI/L instead of 3EI/L
     wall.EE     = EIeff
     wall.AA     = EAeff/EIeff
     compo.defineSection(wall) # This will create the fiber section
@@ -423,8 +456,8 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
     #beam       = compo("beam", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
     beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
     compo.printVar(beam)
-    EIeff       = wall.EIeff; k_rot = 20*EIeff/(300*mm); print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
-    Av          = beam.St_web.A; G=beam.St_web.Es/(2*(1+0.3)); k_trans=2*G*Av/SBL/10; b1=0.003; R0,cR1,cR2      = 18.5, 0.9, 0.1; a1=a3= 0.06; a2=a4= 1.0; Vp=0.6*beam.St_web.Fy*Av; 
+    EIeff       = wall.EIeff; k_rot = 4*20*EIeff/L_CB; print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
+    Av          = beam.St_web.A; G=beam.St_web.Es/(2*(1+0.3)); k_trans=20*2*G*Av/SBL/10; b1=0.003; R0,cR1,cR2= 18.5, 0.9, 0.1; a1=a3= 0.06; a2=a4= 1.0; Vp=0.6*beam.St_web.Fy*Av; 
     ops.uniaxialMaterial('Steel02', 100002, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
     EAeff       = wall.EAeff
     beam.EE     = EIeff
@@ -602,117 +635,117 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
         
         # return(0)
     
-    # Spring Material Properties
-    E0                  = 200 *GPa                          # Kelastic (ksi)
-    G                   = E0/(2*(1+0.3))                    # Shear modulus (ksi)
-    Fy                  = 228 * MPa
+    # # Spring Material Properties
+    # E0                  = 200 *GPa                          # Kelastic (ksi)
+    # G                   = E0/(2*(1+0.3))                    # Shear modulus (ksi)
+    # Fy                  = 228 * MPa
     
-    h                   = 350 *mm
-    b                   = 170 *mm
-    tw                  = 10 *mm
-    tf                  = 12 *mm
+    # h                   = 350 *mm
+    # b                   = 170 *mm
+    # tw                  = 10 *mm
+    # tf                  = 12 *mm
     
-    Ashear              = h*tw;                                         print(f"Av = {Ashear*1000**2:.0f} mm2")
-    I                   = 1/12 * (b*h**3 - (b-tw)*(h-2*tf)**3);         print(f"I = {I*1000**4:.0f} mm4")
-    S                   = I/(h/2);                                      print(f"S = {S*1000**3:.0f} mm3")
-    Z                   = (b*tf) * (h-tf) + (h-2*tf)*tw/2 * (h-2*tf)/2; print(f"Z = {Z*1000**3:.0f} mm3")
-    ShapeFactor         = Z/S;                                          print(f"ShapeFactor = {ShapeFactor:.3f}")
-    Mp                  = Z*Fy;                                         print(f"Mp = {Mp:.1f} kN.m")
-    k_rot               = 6*E0*I/SBL                        # 6 for both ends fixed
-    tagMatHinge         = 10                                # HingeMat Identifier
-    ops.uniaxialMaterial('Steel01', tagMatHinge, Mp, k_rot, 0.001)
+    # Ashear              = h*tw;                                         print(f"Av = {Ashear*1000**2:.0f} mm2")
+    # I                   = 1/12 * (b*h**3 - (b-tw)*(h-2*tf)**3);         print(f"I = {I*1000**4:.0f} mm4")
+    # S                   = I/(h/2);                                      print(f"S = {S*1000**3:.0f} mm3")
+    # Z                   = (b*tf) * (h-tf) + (h-2*tf)*tw/2 * (h-2*tf)/2; print(f"Z = {Z*1000**3:.0f} mm3")
+    # ShapeFactor         = Z/S;                                          print(f"ShapeFactor = {ShapeFactor:.3f}")
+    # Mp                  = Z*Fy;                                         print(f"Mp = {Mp:.1f} kN.m")
+    # k_rot               = 6*E0*I/SBL                        # 6 for both ends fixed
+    # tagMatHinge         = 10                                # HingeMat Identifier
+    # ops.uniaxialMaterial('Steel01', tagMatHinge, Mp, k_rot, 0.001)
 
-    ##      Link Spring Shear Material
-    tagMatSpring        = 20                                # SpringMat Identifier
-    Vp                  = 0.6*Fy*Ashear;                                print(f"Vp = {Vp:.1f} kN")
-    print(f"emax = {2*Mp/Vp*1000:.0f} mm")
-    # print(f"2.6Mp/L = {2.6*Mp/SBL:.1f} kN")
-    print(f"2.0Mp/L = {2.0*Mp/SBL:.1f} kN")
-    # print(f"1.6Mp/L = {1.6*Mp/SBL:.1f} kN")
-    k_trans             = 2*G*Ashear/SBL  
+    # ##      Link Spring Shear Material
+    # tagMatSpring        = 20                                # SpringMat Identifier
+    # Vp                  = 0.6*Fy*Ashear;                                print(f"Vp = {Vp:.1f} kN")
+    # print(f"emax = {2*Mp/Vp*1000:.0f} mm")
+    # # print(f"2.6Mp/L = {2.6*Mp/SBL:.1f} kN")
+    # print(f"2.0Mp/L = {2.0*Mp/SBL:.1f} kN")
+    # # print(f"1.6Mp/L = {1.6*Mp/SBL:.1f} kN")
+    # k_trans             = 2*G*Ashear/SBL  
     
-    b1              = 0.003                             # Ratio of Kyield to Kelastic
-    R0,cR1,cR2      = 18.5, 0.9, 0.1                    # cR1 specifies the radius. 10<=R0<=20
-    a1= a3          = 0.06
-    a2 = a4         = 1.0
-    ops.uniaxialMaterial('Steel02', tagMatSpring, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
+    # b1              = 0.003                             # Ratio of Kyield to Kelastic
+    # R0,cR1,cR2      = 18.5, 0.9, 0.1                    # cR1 specifies the radius. 10<=R0<=20
+    # a1= a3          = 0.06
+    # a2 = a4         = 1.0
+    # ops.uniaxialMaterial('Steel02', tagMatSpring, Vp, k_trans, b1, *[R0,cR1,cR2], *[a1, a2, a3, a4])
     
-    def FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coordsGlobal, SBL): # FBLR = Flexure Beam Length Ratio
+    # def FSF_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coordsGlobal, SBL): # FBLR = Flexure Beam Length Ratio
         
-        xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
-        xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
+    #     xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
+    #     xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
         
-        Lx = xJ - xI; Ly = yJ - yI
-        L  = (Lx**2 + Ly**2)**0.5; SBLR = SBL/L
-        FBLx = (1-SBLR)/2*Lx; FBLy = (1-SBLR)/2*Ly
+    #     Lx = xJ - xI; Ly = yJ - yI
+    #     L  = (Lx**2 + Ly**2)**0.5; SBLR = SBL/L
+    #     FBLx = (1-SBLR)/2*Lx; FBLy = (1-SBLR)/2*Ly
         
-        coordsLocal = {}
+    #     coordsLocal = {}
         
-        tagNodeFLL = tagNodeI + 1;  coordsLocal[tagNodeFLL] = [xI, yI];                 ops.node(tagNodeFLL, *coordsLocal[tagNodeFLL])
-        tagNodeFLR = tagNodeI + 2;  coordsLocal[tagNodeFLR] = [xI + FBLx, yI + FBLy];   ops.node(tagNodeFLR, *coordsLocal[tagNodeFLR])
-        tagNodeSL  = tagNodeI + 3;  coordsLocal[tagNodeSL]  = [xI + FBLx, yI + FBLy];   ops.node(tagNodeSL,  *coordsLocal[tagNodeSL])
-        tagNodeSR  = tagNodeI + 4;  coordsLocal[tagNodeSR]  = [xJ - FBLx, yJ - FBLy];   ops.node(tagNodeSR,  *coordsLocal[tagNodeSR])
-        tagNodeFRL = tagNodeI + 5;  coordsLocal[tagNodeFRL] = [xJ - FBLx, yJ - FBLy];   ops.node(tagNodeFRL, *coordsLocal[tagNodeFRL])
-        tagNodeFRR = tagNodeI + 6;  coordsLocal[tagNodeFRR] = [xJ, yJ];                 ops.node(tagNodeFRR, *coordsLocal[tagNodeFRR])
+    #     tagNodeFLL = tagNodeI + 1;  coordsLocal[tagNodeFLL] = [xI, yI];                 ops.node(tagNodeFLL, *coordsLocal[tagNodeFLL])
+    #     tagNodeFLR = tagNodeI + 2;  coordsLocal[tagNodeFLR] = [xI + FBLx, yI + FBLy];   ops.node(tagNodeFLR, *coordsLocal[tagNodeFLR])
+    #     tagNodeSL  = tagNodeI + 3;  coordsLocal[tagNodeSL]  = [xI + FBLx, yI + FBLy];   ops.node(tagNodeSL,  *coordsLocal[tagNodeSL])
+    #     tagNodeSR  = tagNodeI + 4;  coordsLocal[tagNodeSR]  = [xJ - FBLx, yJ - FBLy];   ops.node(tagNodeSR,  *coordsLocal[tagNodeSR])
+    #     tagNodeFRL = tagNodeI + 5;  coordsLocal[tagNodeFRL] = [xJ - FBLx, yJ - FBLy];   ops.node(tagNodeFRL, *coordsLocal[tagNodeFRL])
+    #     tagNodeFRR = tagNodeI + 6;  coordsLocal[tagNodeFRR] = [xJ, yJ];                 ops.node(tagNodeFRR, *coordsLocal[tagNodeFRR])
                 
         
-        # Rotational Spring between Wall and Left Flexure Beam
-        ops.equalDOF(tagNodeI, tagNodeFLL, 1, 2, *[3]) 
-        # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
-        # Flexure Beam on the Left
-        tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
-        Beams[tagElement]   = [tagNodeFLL, tagNodeFLR]
-        # Translational and Rotational Springs between Shear Link and Left  Flexure Beam
-        ops.equalDOF(tagNodeFLR, tagNodeSL, 1)
-        tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
-        ops.element('zeroLength', tagElement, *[tagNodeFLR, tagNodeSL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
-        # Shear Link
-        tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}3")
-        Beams[tagElement]   = [tagNodeSL, tagNodeSR]
-        # Translational and Rotational Springs between Shear Link and Right Flexure Beam
-        ops.equalDOF(tagNodeSR, tagNodeFRL, 1)  
-        tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
-        ops.element('zeroLength', tagElement, *[tagNodeSR, tagNodeFRL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
-        # Flexure Beam on the Right
-        tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
-        Beams[tagElement]   = [tagNodeFRL, tagNodeFRR]
-        # Rotational Spring between Wall and Right Flexure Beam
-        ops.equalDOF(tagNodeFRR, tagNodeJ, 1, 2, *[3]) 
-        # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
+    #     # Rotational Spring between Wall and Left Flexure Beam
+    #     ops.equalDOF(tagNodeI, tagNodeFLL, 1, 2, *[3]) 
+    #     # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
+    #     # Flexure Beam on the Left
+    #     tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
+    #     Beams[tagElement]   = [tagNodeFLL, tagNodeFLR]
+    #     # Translational and Rotational Springs between Shear Link and Left  Flexure Beam
+    #     ops.equalDOF(tagNodeFLR, tagNodeSL, 1)
+    #     tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
+    #     ops.element('zeroLength', tagElement, *[tagNodeFLR, tagNodeSL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
+    #     # Shear Link
+    #     tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}3")
+    #     Beams[tagElement]   = [tagNodeSL, tagNodeSR]
+    #     # Translational and Rotational Springs between Shear Link and Right Flexure Beam
+    #     ops.equalDOF(tagNodeSR, tagNodeFRL, 1)  
+    #     tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
+    #     ops.element('zeroLength', tagElement, *[tagNodeSR, tagNodeFRL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
+    #     # Flexure Beam on the Right
+    #     tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
+    #     Beams[tagElement]   = [tagNodeFRL, tagNodeFRR]
+    #     # Rotational Spring between Wall and Right Flexure Beam
+    #     ops.equalDOF(tagNodeFRR, tagNodeJ, 1, 2, *[3]) 
+    #     # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
         
-    def FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coordsGlobal, SBL): # FBLR = Flexure Beam Length Ratio
+    # def FSW_beam(tagNodeI, tagNodeJ, tagCoordYI, tagCoordXI, tagCoordXJ, tagMatSpring, tagMatHinge, Beams, coordsGlobal, SBL): # FBLR = Flexure Beam Length Ratio
         
-        xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
-        xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
+    #     xI  = coordsGlobal[tagNodeI][0];    yI  = coordsGlobal[tagNodeI][1]
+    #     xJ  = coordsGlobal[tagNodeJ][0];    yJ  = coordsGlobal[tagNodeJ][1]
         
-        Lx = xJ - xI; Ly = yJ - yI
-        L  = (Lx**2 + Ly**2)**0.5; SBLR = SBL/L
-        FBLx = (1-SBLR)*Lx; FBLy = (1-SBLR)*Ly
+    #     Lx = xJ - xI; Ly = yJ - yI
+    #     L  = (Lx**2 + Ly**2)**0.5; SBLR = SBL/L
+    #     FBLx = (1-SBLR)*Lx; FBLy = (1-SBLR)*Ly
         
-        coordsLocal = {}
+    #     coordsLocal = {}
         
-        tagNodeFL = tagNodeI + 1;  coordsLocal[tagNodeFL] = [xI, yI];                   ops.node(tagNodeFL, *coordsLocal[tagNodeFL])
-        tagNodeFR = tagNodeI + 2;  coordsLocal[tagNodeFR] = [xI + FBLx, yI + FBLy];     ops.node(tagNodeFR, *coordsLocal[tagNodeFR])
-        tagNodeSL = tagNodeI + 3;  coordsLocal[tagNodeSL] = [xI + FBLx, yI + FBLy];     ops.node(tagNodeSL, *coordsLocal[tagNodeSL])
-        tagNodeSR = tagNodeI + 4;  coordsLocal[tagNodeSR] = [xJ, yJ];                   ops.node(tagNodeSR, *coordsLocal[tagNodeSR])
+    #     tagNodeFL = tagNodeI + 1;  coordsLocal[tagNodeFL] = [xI, yI];                   ops.node(tagNodeFL, *coordsLocal[tagNodeFL])
+    #     tagNodeFR = tagNodeI + 2;  coordsLocal[tagNodeFR] = [xI + FBLx, yI + FBLy];     ops.node(tagNodeFR, *coordsLocal[tagNodeFR])
+    #     tagNodeSL = tagNodeI + 3;  coordsLocal[tagNodeSL] = [xI + FBLx, yI + FBLy];     ops.node(tagNodeSL, *coordsLocal[tagNodeSL])
+    #     tagNodeSR = tagNodeI + 4;  coordsLocal[tagNodeSR] = [xJ, yJ];                   ops.node(tagNodeSR, *coordsLocal[tagNodeSR])
 
-        # Rotational Spring between Wall and Left Flexure Beam
-        ops.equalDOF(tagNodeI, tagNodeFL, 1, 2, *[3]) 
-        # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
-        # Flexure Beam on the Left
-        tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
-        Beams[tagElement]   = [tagNodeFL, tagNodeFR]
-        # Translational and Rotational Springs between Shear Link and Left  Flexure Beam
-        ops.equalDOF(tagNodeFR, tagNodeSL, 1) 
-        tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
-        ops.element('zeroLength', tagElement, *[tagNodeFR, tagNodeSL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3]) 
-        # Shear Link
-        tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}3")
-        Beams[tagElement]   = [tagNodeSL, tagNodeSR]
-        # Translational and Rotational Springs between Shear Link and Right Flexure Beam
-        ops.equalDOF(tagNodeSR, tagNodeJ, 1)
-        tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
-        ops.element('zeroLength', tagElement, *[tagNodeSR, tagNodeJ], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
+    #     # Rotational Spring between Wall and Left Flexure Beam
+    #     ops.equalDOF(tagNodeI, tagNodeFL, 1, 2, *[3]) 
+    #     # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
+    #     # Flexure Beam on the Left
+    #     tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
+    #     Beams[tagElement]   = [tagNodeFL, tagNodeFR]
+    #     # Translational and Rotational Springs between Shear Link and Left  Flexure Beam
+    #     ops.equalDOF(tagNodeFR, tagNodeSL, 1) 
+    #     tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}1")
+    #     ops.element('zeroLength', tagElement, *[tagNodeFR, tagNodeSL], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3]) 
+    #     # Shear Link
+    #     tagElement          = int(f"4{tagCoordYI}{tagCoordXI}{tagCoordXJ}3")
+    #     Beams[tagElement]   = [tagNodeSL, tagNodeSR]
+    #     # Translational and Rotational Springs between Shear Link and Right Flexure Beam
+    #     ops.equalDOF(tagNodeSR, tagNodeJ, 1)
+    #     tagElement          = int(f"9{tagCoordYI}{tagCoordXI}{tagCoordXJ}2")
+    #     ops.element('zeroLength', tagElement, *[tagNodeSR, tagNodeJ], '-mat', *[tagMatSpring, tagMatHinge], '-dir', *[2, 3])
         # Here you can write a spring tagMat later, BUT just do not forget to omit 3 from above equalDOF command
 
     #   Beams and Trusses:

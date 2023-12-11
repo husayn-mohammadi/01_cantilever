@@ -70,6 +70,54 @@ def gravity(load, tagNodeLoad):
 
 def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg):
     
+    def curD():
+        if typeAnalysis=="NTHA":
+            return ops.getTime()
+        else:
+            return ops.nodeDisp(tagNodeControl, dofNodeControl)
+    
+    def msgCurrentState():
+        if typeAnalysis=="NTHA":
+            remD    = dispTarget - curD()
+            print(f"\n{'~'*100}")
+            print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
+            print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
+            print(f"======>>> durGM\t\t\t\t= {dispTarget}")
+            print(f"======>>> dT({iii:05}/{numFrac:05})\t= {dispTar}")
+            print(f"======>>> Current   Time\t= {curD()}")
+            print(f"======>>> Remaining Time\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"dt\t\t\t\t= {incr}")
+        else:
+            remD    = dispTarget - curD()
+            print(f"\n{'~'*100}")
+            print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
+            print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
+            print(f"======>>> disp({dispIndex+1:02}/{len(dispList):02})\t\t\t\t= {disp}")
+            print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
+            print(f"======>>> dispTar({iii:02}/{numFrac:02})\t\t\t= {dispTar}")
+            print(f"======>>> Current   Displacement\t= {curD()}")
+            print(f"======>>> Remaining Displacement\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"Incr\t\t\t= {incr}")
+    
+    def msgReducingIncrSize():
+        if typeAnalysis=="NTHA":
+            print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the dt size:\n{'#'*65}")
+            print(f"\n>>>>>>>>> tolerance\t\t\t= {tol}")
+            print(f"======>>> Current   Time\t= {curD()}")
+            print(f"======>>> Remaining Time\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"dt\t\t\t\t= {incr}")
+            
+        else:
+            print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the Incr size:\n{'#'*65}")
+            print(f"\n>>>>>>>>> tolerance\t\t\t= {tol}")
+            print(f"======>>> Current   Displacement\t= {curD()}")
+            print(f"======>>> Remaining Displacement\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"Incr\t\t\t= {incr}")
+    
     numIncr     = 5
     for iii in range(1, numFrac+1):
         dispTar = iii * incrFrac
@@ -91,19 +139,7 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
                     else:
                         ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
                         ops.analysis('Static')
-                    
-                    curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                    remD    = dispTarget - curD
-                    print(f"\n{'~'*100}")
-                    print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
-                    print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
-                    print(f"======>>> disp({dispIndex+1:02}/{len(dispList):02})\t\t\t\t= {disp}")
-                    print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
-                    print(f"======>>> dispTar({iii:02}/{numFrac:02})\t\t\t= {dispTar}")
-                    print(f"======>>> Current   Displacement\t= {curD}")
-                    print(f"======>>> Remaining Displacement\t= {remD}")
-                    print(f"numIncr\t\t\t= {numIncr}")
-                    print(f"Incr\t\t\t= {incr}")
+                    msgCurrentState()
                     
                     # Run Analysis
                     if typeAnalysis == "NTHA": 
@@ -126,18 +162,19 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
             if OK == 0:
                 break
             else:
-                tol = 1.5*tol;                                          print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the Incr size:\n{'#'*65}"); print(f"\ntolerance = {tol}");              
-                curD    = ops.nodeDisp(tagNodeControl, dofNodeControl); print(f"======>>> Current   Displacement\t= {curD}")
-                remD    = dispTar - curD;                               print(f"======>>> Remaining Displacement\t= {remD}")
-                numIncr = int(numIncr*1.01**i + 1);                     print(f"numIncr\t\t\t= {numIncr}")
-                incr    = remD/numIncr;                                 print(f"Incr\t\t\t= {incr}")
+                tol = min(1.5*tol, 1e-4)
+                remD    = dispTar - curD()
+                numIncr = int(numIncr*1.001**i + 1)
+                incr    = remD/numIncr
+                msgReducingIncrSize()
                 if numIncr >= numIncrMax:
                     print("\nIncrement size is too small!!!")
                     t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
                     print(f"\nElapsed time: {mins} min + {secs} sec")
                     winsound.Beep(440, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
+                    text = " pushover" if typeAnalysis!="NTHA" else ""
                     print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    print(f"*!*!*!*!*!* The {typeAnalysis} pushover analysis failed to converge!!! *!*!*!*!*!*")
+                    print(f"*!*!*!*!*!* The {typeAnalysis}{text} analysis failed to converge!!! *!*!*!*!*!*")
                     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     break
         if OK < 0:

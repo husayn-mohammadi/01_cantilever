@@ -25,7 +25,7 @@ Section = {
         'propWeb'   : [tw,     Hw,        200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         'propFlange': [bf,     tf,        200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         #propCore   = [tc,     fpc,       wc,      lamConf, lamUnconf]
-        'propCore'  : [tc,     44.8*MPa,  0.2*mm,  0.07,    0.2      ]
+        'propCore'  : [tc,     44.8*MPa,  0.2*mm,  0.05,     0.25    ]
     },
     'beam': { # Composite Beam Section
         #tags       = [tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf]
@@ -34,17 +34,17 @@ Section = {
         'propWeb'   : [tw,     300*mm,    200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         'propFlange': [bf,     tf,        200*GPa, 422*MPa, 473*MPa, 0.007,  0.12,    0.28, 0.65,  1.0,  1.0,   0.5, 4.3, 0.01],
         #propCore   = [tc,     fpc,       wc,      lamConf, lamUnconf]
-        'propCore'  : [tc,     44.8*MPa,  0.2*mm,  0.07,    0.2      ]
+        'propCore'  : [tc,     44.8*MPa,  0.2*mm,  0.05,     0.25     ]
     },
     }
 
 #=============================================================================
 #    Frame Data:
 #=============================================================================
-n_story         = 5
+n_story         = 3
 H_first         = 2.    *m
 H_typical       = H_first
-L_CB            = 600  *mm
+L_CB            = 900  *mm
 L_Bay           = (Hw+2*tf) + L_CB
 H_story_List    = [H_first, *((n_story-1)*[H_typical])]       # [Hstory1, *((numStories-1)*[HstoryTypical])]
 L_Bay_List      = 2*[L_Bay]#, 5.*m, 5.*m, 5.*m]        # [*LBays]
@@ -73,7 +73,7 @@ A_Tributary     = 0.5*L_Bay_y * L_Bay_x
 DL_Tributary    = A_Tributary * DL_Floor
 LL_Tributary    = A_Tributary * LL_Floor
 # load["wall"]    = 1.0*DL_Tributary + 0.25*LL_Tributary
-load["wall"]    = 0.0001 * kip
+load["wall"]    = 70 * kip
 
 ##  Loading the Leaning Columns
 n_Bay_x         = len(L_Bay_List)
@@ -83,7 +83,7 @@ L_PWall         = L_Bay_y + ((n_Bay_x+1) * L_Bay_x) - n_Bay_x*Hw
 DL_Leaning      = A_Leaning * DL_Floor + L_PWall*H_typical * DL_PWalls
 LL_Leaning      = A_Leaning * LL_Floor
 # load["leaningColumn"] = 1.0*DL_Leaning + 0.25*LL_Leaning
-load["leaningColumn"] = 0.0001 * kip
+load["leaningColumn"] = 0.1 * kip
 
 
 

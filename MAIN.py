@@ -30,7 +30,7 @@ rotSpring       = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic', "NTHA"
+typeAnalysis    = ['NTHA']             # 'monotonic', 'cyclic', "NTHA"
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
@@ -39,11 +39,11 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 3
 SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 1 *mm
-dispTarget      = 10 *cm    *n_story
+incrMono        = 2 *mm
+dispTarget      = 3 *cm    *n_story
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
-dY              = 20 *mm
+dY              = 10 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
 # dispTarList     = [ 

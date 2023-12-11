@@ -130,7 +130,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, incrMono, tagNodeControl, n_story)
+        fa.pushoverDCF(dispTarget, incrMono, tagNodeControl)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)

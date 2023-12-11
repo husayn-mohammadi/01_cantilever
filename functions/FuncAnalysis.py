@@ -176,17 +176,20 @@ def pushoverDCF(dispTarget, incrInit, tagNodeLoad):
 
 def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
     t_beg           = time.time()
-    dofNodeControl      = 1
+    dofNodeControl  = 1
+    tagTSLinear     = 1
+    ops.timeSeries('Linear',   tagTSLinear)
+    tagPatternPlain = 1
+    ops.pattern('Plain', tagPatternPlain, tagTSLinear)
+    #   load(nodeTag,     *loadValues)
     if type(tagNodeLoad) == list:
         tagNodeControl  = tagNodeLoad[-1]
-    else: 
+        n_story = len(tagNodeLoad)-1
+        for i, tagNode in enumerate(tagNodeLoad):
+            ops.load(tagNode, *[i/n_story, 0, 0])
+    else:
         tagNodeControl  = tagNodeLoad
-    
-    tagTSLinear         = 1
-    ops.timeSeries('Linear',   tagTSLinear)
-    tagPatternPlain     = 1
-    ops.pattern('Plain', tagPatternPlain, tagTSLinear)
-    ops.load(tagNodeControl, *[1, 0, 0])
+        ops.load(tagNodeControl, *[1, 0, 0])
     
     #  Define Analysis Options
     ops.wipeAnalysis()

@@ -123,10 +123,11 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
         testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr', ]#, 'RelativeNormUnbalance']
         algorithmList   = [*(1*['Newton', 'KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch 0.65', ])] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
         tol = 1e-8; numIter = 200; gamma = 0.5; beta = 0.25
-        numIncrMax      = 30000
+        numIncrMax      = 30000; incrMin = 1e-6
         
         numIncr     = numIncrInit
         incr        = incrFrac/numIncrInit
+        j = 1
         for i in range(100000000):
         
             for algorithm in algorithmList:
@@ -161,14 +162,15 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
             else:
                 tol = min(1.5*tol, 1e-4)
                 remD    = dispTar - curD()[0]
-                if remD >= 0.001
-                    numIncr = int(numIncr*1.001**i + 1)
+                if remD >= 0.001:
+                    numIncr = int(numIncr*1.001**i + j)
+                    j += 1
                     incr    = remD/numIncr
                 else:
                     numIncr = 1
                     incr    = remD/numIncr
                 msgReducingIncrSize()
-                if numIncr >= numIncrMax:
+                if numIncr >= numIncrMax or incr <= incrMin:
                     print("\nIncrement size is too small!!!")
                     t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
                     print(f"\nElapsed time: {mins} min + {secs} sec")
@@ -181,7 +183,7 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
         if OK < 0: break
     return OK
 
-def pushoverDCF(dispTarget, incrInit, tagNodeLoad): 
+def pushoverDCF(dispTarget, incrInit, numIncrInit, tagNodeLoad): 
     t_beg           = time.time()
     dofNodeControl  = 1
     tagTSLinear     = 1

@@ -39,7 +39,8 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 3
 SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 5*((H_typical*n_story)/2000)
+incrMono        = 2*((H_typical*n_story)/2000)
+numIncrInit     = 3
 drift           = 0.05
 dispTarget      = drift*(H_typical*n_story)
 # Cyclic Pushover Analysis
@@ -91,9 +92,9 @@ plot_section    = False
 if recordToLog == True:
     logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
 
+numFolder = 51
 for types in typeAnalysis:
-    
-    outputDir = f'Output/Pushover/{types}/1'; outputDirWalls = f'Output/Pushover/{types}/1/wall'; outputDirBeams = f'Output/Pushover/{types}/1/beams'
+    outputDir = f'Output/Pushover/{types}/{numFolder}'; outputDirWalls = f'Output/Pushover/{types}/{numFolder}/wall'; outputDirBeams = f'Output/Pushover/{types}/{numFolder}/beams'
     
     os.makedirs(outputDir, exist_ok=True); 
     os.makedirs(outputDirWalls, exist_ok=True); 
@@ -145,7 +146,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, incrMono, tagNodeControl)
+        fa.pushoverDCF(dispTarget, incrMono, numIncrInit, tagNodeControl)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)

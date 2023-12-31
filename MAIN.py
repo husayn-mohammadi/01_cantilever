@@ -17,7 +17,7 @@ import winsound
 #=============================================================================
 
 exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
-exec(open("Input/inputData.py").read())
+exec(open('Input/inputData1.py').read())
 # exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
 #=============================================================================
@@ -30,7 +30,7 @@ rotSpring       = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeAnalysis    = ['NTHA']             # 'monotonic', 'cyclic', "NTHA"
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic', "NTHA"
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
@@ -39,8 +39,9 @@ numSegWall      = 3                         # If numSegWall=0, the model will be
 numSegBeam      = 3
 SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 2 *mm
-dispTarget      = 3 *cm    *n_story
+incrMono        = 5*((H_typical*n_story)/2000)
+drift           = 0.05
+dispTarget      = drift*(H_typical*n_story)
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
 dY              = 10 *mm
@@ -57,8 +58,16 @@ CPD2            = 1
 #                     ]
 
 dispTarList     = [ 
-                    *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
-                    *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
+                    *(CPD1*[dY/3]), 
+                    *(CPD1*[2/3*dY]), 
+                    *(CPD1*[dY]),   
+                    *(CPD1*[1.5*dY]), 
+                    *(CPD1*[2*dY]),
+                    *(CPD1*[3*dY]), 
+                    *(CPD1*[4*dY]),   
+                    *(CPD1*[5*dY]), 
+                    *(CPD2*[6*dY]),   
+                    *(CPD2*[7*dY]),
                     *(CPD2*[8*dY]), 
                     *(CPD2*[9*dY]),   
                     *(CPD2*[10*dY])
@@ -67,7 +76,7 @@ dispTarList     = [
 # Plotting Options:
 buildingWidth =10.; buildingHeight =7.
 buildingWidth1=20.; buildingHeight1=17.
-plot_undefo     = False
+plot_undefo     = True
 plot_loaded     = True
 plot_defo       = True
 sfac            = 10
@@ -84,8 +93,14 @@ if recordToLog == True:
 
 for types in typeAnalysis:
     
-    outputDir = f"Output/Pushover/{types}"; outputDirWalls = f"Output/Pushover/{types}/wall"; outputDirBeams = f"Output/Pushover/{types}/beams" 
-    os.makedirs(outputDir, exist_ok=True);  os.makedirs(outputDirWalls, exist_ok=True);       os.makedirs(outputDirBeams, exist_ok=True)
+    outputDir = f'Output/Pushover/{types}/1'; outputDirWalls = f'Output/Pushover/{types}/1/wall'; outputDirBeams = f'Output/Pushover/{types}/1/beams'
+    
+    os.makedirs(outputDir, exist_ok=True); 
+    os.makedirs(outputDirWalls, exist_ok=True); 
+    os.makedirs(outputDirBeams, exist_ok=True);
+    
+    outputDirNTHA = "Output/NTHA"
+    os.makedirs(outputDirNTHA, exist_ok=True)
     
     # Build Model
     ops.wipe()
@@ -167,7 +182,9 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"NTHA Initiated at {(time.time() - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.NTHA(tagNodeControl)
+        # fr.recordDataNTHA(tagNodeBase, tagNodeControl, outputDirNTHA)
+        fa.NTHA(tagNodeControl, tagNodeBase, tagNodeControl, L, outputDirNTHA)
+        # fp.plotNTHA(L, outputDirNTHA)
         finish_time_NTHA = time.time()
         mins = int((finish_time_NTHA - start_time_NTHA)/60)
         secs = int((finish_time_NTHA - start_time_NTHA)%60)
@@ -182,8 +199,6 @@ for types in typeAnalysis:
                                  )
     else:
         print("UNKNOWN Pushover Analysis type!!!");sys.exit()
-    
-
     ops.wipe()
 #=============================================================================
 #    Plot

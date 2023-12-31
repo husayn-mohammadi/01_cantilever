@@ -160,9 +160,13 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
             if OK == 0: break
             else:
                 tol = min(1.5*tol, 1e-4)
-                remD    = dispTar - curD()
-                numIncr = int(numIncr*1.001**i + 1)
-                incr    = remD/numIncr
+                remD    = dispTar - curD()[0]
+                if remD >= 0.001
+                    numIncr = int(numIncr*1.001**i + 1)
+                    incr    = remD/numIncr
+                else:
+                    numIncr = 1
+                    incr    = remD/numIncr
                 msgReducingIncrSize()
                 if numIncr >= numIncrMax:
                     print("\nIncrement size is too small!!!")

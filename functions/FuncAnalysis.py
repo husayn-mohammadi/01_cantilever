@@ -5,7 +5,7 @@ import time
 import sys
 import functions.FuncRecorders as fr
 import functions.FuncPlot      as fp
-# import winsound
+## import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 def analyzeEigen(nEigen, printIt):

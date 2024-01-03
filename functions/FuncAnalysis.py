@@ -5,7 +5,7 @@ import time
 import sys
 import functions.FuncRecorders as fr
 import functions.FuncPlot      as fp
-import winsound
+## import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
 def analyzeEigen(nEigen, printIt):
@@ -200,7 +200,7 @@ def convergeIt(typeAnalysis, tagNodeLoad, tagNodeBase, dofNodeControl, incrFrac,
                     print("\nIncrement size is too small!!!")
                     t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
                     print(f"\nElapsed time: {mins} min + {secs} sec")
-                    winsound.Beep(440, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
+                    # winsound.Beep(440, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
                     text = " pushover" if typeAnalysis!="NTHA" else ""
                     print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     print(f"*!*!*!*!*!* The {typeAnalysis}{text} analysis failed to converge!!! *!*!*!*!*!*")

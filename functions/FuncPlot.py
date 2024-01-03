@@ -94,53 +94,31 @@ def plotStressStrain(outputDir,tagEleList):
     plt.tight_layout()
     plt.show()
     
-    # return Strain, Stress
-
-# def plot_fiber_section(fib_sec):
+def plotNTHA(H, outputDir, tag):
+    disp    = np.loadtxt(f"{outputDir}/disp{tag}.txt", delimiter= ' ')
+    velo    = np.loadtxt(f"{outputDir}/velo{tag}.txt", delimiter= ' ')
+    acce    = np.loadtxt(f"{outputDir}/acce{tag}.txt", delimiter= ' ')
+    reac    = np.loadtxt(f"{outputDir}/R{tag}.txt", delimiter= ' ')
     
-#     matcolor = ['y', 'b', 'r', 'g', 'm', 'k']
-#     # matcolor = ['r', 'lightgrey', 'pink', 'gold', 'purple', 'orange', 'w']
-#     opv.plot_fiber_section(fib_sec, matcolor=matcolor)
-#     plt.axis('equal')
-#     # plt.savefig('fibsec_rc.png')
+    t       = disp[:, 0]
+    d       = disp[:, 1]/H
+    v       = velo[:, 1]
+    a       = acce[:, 1]
+    Vx      = reac[:, 1]; Vy = reac[:, 2]; Mz = reac[:, 3]
     
-#     plt.show()
+    fig, ax = plt.subplots(4, 1, figsize=(10, 10), dpi=200)
+    # fig.suptitle("Dynamic Analysis Curves", fontsize=16)
+    ax[3].set_xlabel('time (s)')
+    ax[0].set_ylabel('drift');                  ax[0].plot(t, d, linewidth=0.8)
+    ax[1].set_ylabel('velocity     (m/s)');     ax[1].plot(t, v, linewidth=0.8)
+    ax[2].set_ylabel('acceleration (m/s^2)');   ax[2].plot(t, a, linewidth=0.8)
+    ax[3].set_ylabel('reaction     (N)');       ax[3].plot(t, Vx, color='blue', label='Vx', linewidth=0.8); ax[3].plot(t, Vy, color='black', label='Vy', linewidth=0.8); ax[3].plot(t, Mz, color='red', label='Mz', linewidth=0.8); ax[3].legend()
+    plt.tight_layout()
+    fig.suptitle("Dynamic Analysis Curves", fontsize=16)
+    plt.show()
 
-
-
-
-
-
-# def plotPushoverX(outputDir):
-#     x0 = np.array([0.])
-#     Vx0 = np.array([0.])
     
-#     fig, ax = plt.subplots()
-#     fig.suptitle(f"Pushover Curve: {outputDir[16:]}")
-#     ax.set_xlabel(f'Displacement ({unitLength})')
     
-#     if unitForce == "kN":
-#         ax.set_ylabel('Shear (kN)')
-#     elif unitForce == "N":
-#         ax.set_ylabel('Shear (kN)')
-#     elif unitForce == "kip":
-#         ax.set_ylabel('Shear (kip)')
-#     elif unitForce == "lb":
-#         ax.set_ylabel('Shear (kip)')
     
-#     line, = ax.plot(x0, Vx0, linewidth=0.8)  # Initialize an empty plot
     
-#     def update(frame):
-#         try:
-#             data = np.loadtxt(f"{outputDir}/Pushover.txt")
-#             x = data[:, 0]
-#             Vx = data[:, 1]
-#             line.set_data(x, Vx)  # Update the plot with new data
-#         except FileNotFoundError:
-#             pass  # Handle the case where the file doesn't exist
-        
-#     ani = FuncAnimation(fig, update, blit=False, interval=100)  # Update the plot every 100 milliseconds
-#     plt.show()
-
-#     # Return empty arrays for x and Vx, as they are updated in real-time
-#     return np.array([]), np.array([])
+    

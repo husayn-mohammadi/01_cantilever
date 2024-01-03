@@ -67,9 +67,20 @@ def recordStressStrain(outputDir, tagEleList, section):
     return(coords)
     
 
-# def recordDataNTHA():
+def recordDataNTHA(iNode, jNode, outputDir, tag):
+    #01 Record Displacements, Velocities, and Accelerations
+    ops.recorder('Node',         '-file', f"{outputDir}/disp{tag}.txt",   '-time', '-node', jNode, '-dof', 1, 'disp')
+    ops.recorder('Node',         '-file', f"{outputDir}/velo{tag}.txt",   '-time', '-node', jNode, '-dof', 1, 'vel')
+    ops.recorder('Node',         '-file', f"{outputDir}/acce{tag}.txt",   '-time', '-node', jNode, '-dof', 1, 'accel')
+    ops.recorder('EnvelopeNode', '-file', f"{outputDir}/acceEnv{tag}.txt",'-time', '-node', jNode, '-dof', 1, 'accel')
     
-
+    #02 Record Reactions
+    ops.recorder('Node',         '-file', f"{outputDir}/R{tag}.txt",      '-time', '-node', iNode, '-dof', *[1, 2, 3], 'reaction')
+    # ops.recorder('Node',         '-file', f"{outputDir}/Vy.txt",      '-time', '-node', iNode, '-dof', 2, 'reaction')
+    # ops.recorder('Node',         '-file', f"{outputDir}/Mz.txt",      '-time', '-node', iNode, '-dof', 3, 'reaction')
+    
+    
+    
 
 
 

@@ -3,7 +3,8 @@ import openseespy.opensees     as ops
 import numpy                   as np
 import time
 import sys
-# import random                  as rn
+import functions.FuncRecorders as fr
+import functions.FuncPlot      as fp
 import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
@@ -68,35 +69,60 @@ def gravity(load, tagNodeLoad):
     # ops.analyze(1)
     ops.loadConst('-time', 0.0)
 
-def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=5):
-    
+def convergeIt(typeAnalysis, tagNodeLoad, tagNodeBase, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=5):
+    if type(tagNodeLoad) == list:
+        tagNodeControl  = tagNodeLoad[-1]
+    else:
+        tagNodeControl  = tagNodeLoad
+        
     def curD():
         if typeAnalysis=="NTHA":
-            return ops.getTime()
+            
+            t = ops.getTime()
+            
+            drift       = []
+            tagNodePrv  = tagNodeBase
+            if type(tagNodeLoad) == list:
+                for i, tagNode in enumerate(tagNodeLoad):
+                    if i >0:
+                        height  = ops.nodeCoord(tagNode)[1] - ops.nodeCoord(tagNodePrv)[1]
+                        dispTop = ops.nodeDisp(tagNode,    dofNodeControl)
+                        dispBot = ops.nodeDisp(tagNodePrv, dofNodeControl)
+                        drift[i]= abs(dispTop - dispBot)/height
+                    tagNodePrv = tagNode
+                driftMax = max(drift)
+                driftAve = sum(drift)/len(drift)
+            else:
+                height  = ops.nodeCoord(tagNodeLoad)[1] - ops.nodeCoord(tagNodeBase)[1]
+                dispTop = ops.nodeDisp(tagNodeLoad, dofNodeControl)
+                dispBot = ops.nodeDisp(tagNodeBase, dofNodeControl)
+                driftMax=driftAve= abs(dispTop - dispBot)/height
+            return t, driftAve, driftMax
         else:
-            return ops.nodeDisp(tagNodeControl, dofNodeControl)
+            d = ops.nodeDisp(tagNodeControl, dofNodeControl)
+            return d, -1
     
     def msgCurrentState():
         if typeAnalysis=="NTHA":
-            remD    = dispTarget - curD()
+            remD    = dispTarget - curD()[0]
             print(f"\n{'~'*100}")
             print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
             print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
             print(f"======>>> durGM\t\t\t\t= {dispTarget}")
             print(f"======>>> dT({iii:05}/{numFrac:05})\t= {dispTar}")
-            print(f"======>>> Current   Time\t= {curD()}")
+            print(f"======>>> Current   Time\t= {curD()[0]}")
             print(f"======>>> Remaining Time\t= {remD}")
             print(f"numIncr\t\t\t= {numIncr}")
             print(f"dt\t\t\t\t= {incr}")
         else:
-            remD    = dispTarget - curD()
+            remD    = dispTarget - curD()[0]
             print(f"\n{'~'*100}")
             print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
             print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
             print(f"======>>> disp({dispIndex+1:02}/{len(dispList):02})\t\t\t\t= {disp}")
             print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
             print(f"======>>> dispTar({iii:02}/{numFrac:02})\t\t\t= {dispTar}")
-            print(f"======>>> Current   Displacement\t= {curD()}")
+            print(f"======>>> Current   Displacement\t= {curD()[0]}")
             print(f"======>>> Remaining Displacement\t= {remD}")
             print(f"numIncr\t\t\t= {numIncr}")
             print(f"Incr\t\t\t= {incr}")
@@ -105,7 +131,7 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
         if typeAnalysis=="NTHA":
             print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the dt size:\n{'#'*65}")
             print(f"\n>>>>>>>>> tolerance\t\t\t= {tol}")
-            print(f"======>>> Current   Time\t= {curD()}")
+            print(f"======>>> Current   Time\t= {curD()[0]}")
             print(f"======>>> Remaining Time\t= {remD}")
             print(f"numIncr\t\t\t= {numIncr}")
             print(f"dt\t\t\t\t= {incr}")
@@ -113,7 +139,7 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
         else:
             print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the Incr size:\n{'#'*65}")
             print(f"\n>>>>>>>>> tolerance\t\t\t= {tol}")
-            print(f"======>>> Current   Displacement\t= {curD()}")
+            print(f"======>>> Current   Displacement\t= {curD()[0]}")
             print(f"======>>> Remaining Displacement\t= {remD}")
             print(f"numIncr\t\t\t= {numIncr}")
             print(f"Incr\t\t\t= {incr}")
@@ -181,6 +207,11 @@ def convergeIt(typeAnalysis, tagNodeControl, dofNodeControl, incrFrac, numFrac, 
                     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     break
         if OK < 0: break
+        if typeAnalysis == "NTHA":
+            driftMaxAllowed = 1e-3
+            if curD()[2] >= driftMaxAllowed: 
+                print(f"driftMax = {curD()[2]} >= {driftMaxAllowed} ==> the next scaleFactor will be applied now!")
+                break
     return OK
 
 def pushoverDCF(dispTarget, incrInit, numIncrInit, tagNodeLoad): 
@@ -209,18 +240,19 @@ def pushoverDCF(dispTarget, incrInit, numIncrInit, tagNodeLoad):
     delta       = dispTarget
     numFrac     = int(delta/incrInit)
     incrFrac    = delta/numFrac
-    OK          = convergeIt("Monotonic", tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, ['This is a list'], dispTarget, t_beg)
+    asTagNodeBase = 1 #it is not going to be used at all in this analysis. it is just to fill a positional argument
+    OK          = convergeIt("Monotonic", tagNodeLoad, asTagNodeBase, dofNodeControl, incrFrac, numFrac, disp, dispIndex, ['This is a list'], dispTarget, t_beg, numIncrInit)
     return OK
 
 
 def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
+    asTagNodeBase   = 1 #it is not going to be used at all in this analysis. it is just to fill a positional argument
     t_beg           = time.time()
     dofNodeControl  = 1
     tagTSLinear     = 1
     ops.timeSeries('Linear',   tagTSLinear)
     tagPatternPlain = 1
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
-    #   load(nodeTag,     *loadValues)
     if type(tagNodeLoad) == list:
         tagNodeControl  = tagNodeLoad[-1]
         n_story = len(tagNodeLoad)-1
@@ -246,29 +278,20 @@ def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
             numFrac     = int(abs(delta)/incrInit)
             if numFrac == 0: numFrac=1
             incrFrac    = delta/numFrac
-            OK          = convergeIt('Cyclic', tagNodeControl, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=2)
+            OK          = convergeIt('Cyclic', tagNodeLoad, asTagNodeBase, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=2)
             if OK < 0: break
         if OK < 0: break
     return OK
 
-    
 
-def NTHA(tagNodeLoad):
+
+def NTHA1(tagNodeLoad, tagNodeBase, filePath, SaGM, scaleFactor, dtGM, NPTS, Tmax, tag):
+    # ops.wipeAnalysis()
     t_beg           = time.time()
     dofNodeControl  = 1
-    if type(tagNodeLoad) == list:
-        tagNodeControl  = tagNodeLoad[-1]
-    else:
-        tagNodeControl  = tagNodeLoad
-    filePath        = "Input/GM/0.0200_RSN825_CAPEMEND_CPM000.txt"
-    SaTarget        = 1.5 * 0.63 /1                                   # MCE = 1.5*DBE
-    SaGM            = 0.04973/0.1
-    scaleFactor     = SaTarget/SaGM*g
-    dtGM            = 0.02
-    NPTS            = 1500
     tagTSPath       = 1
     ops.timeSeries('Path', tagTSPath, '-dt', dtGM, '-filePath', filePath, '-factor', scaleFactor)
-    tagPatternNTHA  = 1
+    tagPatternNTHA  = tag
     direction       = 1
     ops.pattern('UniformExcitation', tagPatternNTHA, direction,'-accel', tagTSPath)
     
@@ -279,66 +302,56 @@ def NTHA(tagNodeLoad):
     ops.system('FullGeneral')
     
     # Run Analysis
-    Tmax        = NPTS * dtGM
-    OK          = convergeIt('NTHA', tagNodeControl, dofNodeControl, dtGM, NPTS, Tmax, 0, ["No list required!"], Tmax, t_beg, numIncrInit=2)
+    OK          = convergeIt('NTHA', tagNodeLoad, tagNodeBase, dofNodeControl, dtGM, NPTS, Tmax, 0, ["No list required!"], Tmax, t_beg, numIncrInit=2)
+    ops.wipeAnalysis()
     return OK
-    
-    recList     = [1]
-    NPTSList    = [4000] # you can add more values to this list programmatically, instead of typing them manually
-    dtGMList    = [0.01] # you can add more values to this list programmatically, instead of typing them manually
 
-    print("SaGM corresponding to the Tn should be inserted into SaGMList manually for each record!!!")
+def NTHA(tagNodeLoad, tagNodeBase, tagNodeControl, L, outputDirNTHA):
+    recList     = ["0.0200_01500_RSN825_CAPEMEND_CPM000.txt", 
+                   ]
+    NPTSList    = [50]     # you can add more values to this list programmatically, instead of typing them manually
+    dtGMList    = [0.02]    # you can add more values to this list programmatically, instead of typing them manually
     SaGMList    = [0.04973] # you can add more values to this list programmatically, instead of typing them manually
-    SaTarget    = 1.5 * 0.63 /10# MCE = 1.5*DBE
+    SaTarget    = 1.5 * 0.63/10# MCE = 1.5*DBE
     extraTime   = 0
-
-    timeSeriesTag       = 100
-    
+    # rayleighDamping(2, 0.05)
+    numRecords  = len(recList)
     for i_rec, rec in enumerate(recList):
-        print(f"\n\n{'#'*65}\nRunning record: {rec} for Sa = {SaTarget} g\n{'#'*65}")
-        # outputDir = f"outputs/NTHA/{rec}/{SaTarget}"
-        # analyzeEigen(2, True)
-        rayleighDamping(2, 0.05)
+        print(f"\n{'#'*65}\nRunning record {i_rec+1:02}/{numRecords:02}: {rec} for Sa = {SaTarget}*g\n{'#'*65}")
+        SaGM        = SaGMList[i_rec]
+        dtGM        = dtGMList[i_rec]
+        NPTS        = NPTSList[i_rec]
         
-        # 01) Extract Parameters from Lists:
-        SaGM = SaGMList[i_rec]
-        dtGM = dtGMList[i_rec]
-        NPTS = NPTSList[i_rec]
-        
-        # 02) Lateral Load Pattern:
-        filePath = f"Input/GM/2_txt/{rec}.txt" # Is there a way to read the name of all files in a folder and save them in an array? Yes: open readfilesinfolder.py
-        dtAnalysis = dtGM/200 # it can't be greater than dt
-        recDur = NPTS*dtGM + extraTime
-        numIncr = int(recDur/dtAnalysis)
+        filePath    = f"Input/GM/{rec}" 
+        Tmax        = NPTS*dtGM + extraTime
+        # dtAnalysis  = dtGM/200 # it can't be greater than dt
+        # numIncr     = int(Tmax/dtAnalysis)
         scaleFactor = SaTarget/SaGM*g
+        scaleFactorList = [ 
+                            # 0.1*scaleFactor, 
+                            # 0.1*scaleFactor, 
+                            # 0.1*scaleFactor, 
+                            # 0.1*scaleFactor, 
+                            0.1*scaleFactor, 
+                            0.1*scaleFactor, 
+                            # 0.2*scaleFactor,
+                            # 0.5*scaleFactor,
+                            # 1.0*scaleFactor,
+                            # 1.5*scaleFactor,
+                            # 2.0*scaleFactor,
+                            # 3.0*scaleFactor,
+                            # 4.0*scaleFactor,
+                            # 5.0*scaleFactor,
+                            # 10.*scaleFactor,
+                           ]
+        for tag, scaleFactor in enumerate(scaleFactorList):
+            fr.recordDataNTHA(tagNodeBase, tagNodeControl, outputDirNTHA, tag+1)
+            OK = NTHA1(tagNodeLoad, tagNodeBase, filePath, SaGM, scaleFactor, dtGM, NPTS, Tmax, tag+1)
+            fp.plotNTHA(L, outputDirNTHA, tag+1)
+            ops.remove('timeSeries', 1)
+            ops.remove('loadPattern', 1)
         
-        #   timeSeries('Path', tag,           '-dt', dt=0.0, '-values', *values, '-time', *time, '-filePath', filePath='', '-fileTime', fileTime='', '-factor', factor=1.0, '-startTime', startTime=0.0, '-useLast', '-prependZero')
-        ops.timeSeries('Path', timeSeriesTag, '-dt', dtGM,                                       '-filePath', filePath,                              '-factor', scaleFactor)
-        
-        nthaLoadPatternTag  = 4
-        direction           = 1
-        #   pattern('UniformExcitation', patternTag,         dir,       '-disp', dispSeriesTag, '-vel', velSeriesTag, '-accel', accelSeriesTag, '-vel0', vel0, '-fact', fact)
-        ops.pattern('UniformExcitation', nthaLoadPatternTag, direction,                                               '-accel', timeSeriesTag)
-        
-        # 03) Nonlinear Time-History Analysis:
-        gamma = 0.5
-        beta = 0.25
-        
-        tol = 1.0e-6
-        iteration = 2000
-        
-        ops.wipeAnalysis()
-        ops.constraints('Transformation')
-        ops.numberer('RCM')
-        ops.system('BandGeneral')
-        ops.test('NormDispIncr', tol, iteration)
-        ops.algorithm('Newton')
-        ops.integrator('Newmark', gamma, beta)
-        ops.analysis('Transient')
-        ops.analyze(numIncr, dtAnalysis)
-
-
-
+        return OK
 
 
 

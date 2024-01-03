@@ -17,7 +17,7 @@ import winsound
 #=============================================================================
 
 exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
-exec(open('Input/inputData1.py').read())
+exec(open('Input/inputData51.py').read())
 # exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
 #=============================================================================
@@ -77,13 +77,13 @@ dispTarList     = [
 # Plotting Options:
 buildingWidth =10.; buildingHeight =7.
 buildingWidth1=20.; buildingHeight1=17.
-plot_undefo     = True
-plot_loaded     = True
-plot_defo       = True
+plot_undefo     = False
+plot_loaded     = False
+plot_defo       = False
 sfac            = 10
     
 plot_Analysis   = True
-plot_StressStrain=True
+plot_StressStrain=False
 plot_section    = False
 #=============================================================================
 #    MAIN

@@ -1,22 +1,31 @@
+exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("Input/units    .py").read())
 import openseespy.opensees     as ops
+import numpy                   as np
 import time
 import sys
-# import random                  as rn
+import functions.FuncRecorders as fr
+import functions.FuncPlot      as fp
 import winsound
 # from colorama import Fore, Style # print(f"{Fore.YELLOW} your text {Style.RESET_ALL}")
 
-waitTime        = 0.0
-waitTime2       = 0.0
-testerList      = ['EnergyIncr', 'NormUnbalance', 'NormDispIncr', ]#, 'RelativeNormUnbalance']
-algorithmList   = [*(1*['KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch']), 'KrylovNewton'] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
+def analyzeEigen(nEigen, printIt):
+    omega2List  = ops.eigen(nEigen)
+    if printIt == True:
+        for index, omega2 in enumerate(omega2List):
+            period  = 2 * np.pi/omega2**0.5
+            print(f"Period{index:02} = {period}")
 
-# def create_list(n):
-#     myList = list(range(n, 0, -1)) + list(range(2, n + 1))
-#     return myList
-
-def create_list(n1, n2):
-    myList = list(range(n1, n2 - 1, -1)) + list(range(n2, n1 + 1))
-    return myList
+def rayleighDamping(nEigen, zeta):
+    eigenList = ops.eigen(nEigen)
+    # print(eigenList)
+    omegaI2 = eigenList[0]
+    omegaJ2 = eigenList[1]
+    omegaI = omegaI2**0.5
+    omegaJ = omegaJ2**0.5
+    alphaM = 2.0*zeta*(omegaI*omegaJ)/(omegaI+omegaJ)
+    betaKinit = 2.0*zeta/(omegaI+omegaJ)
+    # rayleigh(alphaM, betaK, betaKinit, betaKcomm)
+    ops.rayleigh(alphaM, 0.0, betaKinit, 0.0)
 
 def gravity(load, tagNodeLoad):
     
@@ -60,22 +69,157 @@ def gravity(load, tagNodeLoad):
     # ops.analyze(1)
     ops.loadConst('-time', 0.0)
 
+def convergeIt(typeAnalysis, tagNodeLoad, tagNodeBase, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=5):
+    if type(tagNodeLoad) == list:
+        tagNodeControl  = tagNodeLoad[-1]
+    else:
+        tagNodeControl  = tagNodeLoad
+        
+    def curD():
+        if typeAnalysis=="NTHA":
+            
+            t = ops.getTime()
+            
+            drift       = []
+            tagNodePrv  = tagNodeBase
+            if type(tagNodeLoad) == list:
+                for i, tagNode in enumerate(tagNodeLoad):
+                    if i >0:
+                        height  = ops.nodeCoord(tagNode)[1] - ops.nodeCoord(tagNodePrv)[1]
+                        dispTop = ops.nodeDisp(tagNode,    dofNodeControl)
+                        dispBot = ops.nodeDisp(tagNodePrv, dofNodeControl)
+                        drift[i]= abs(dispTop - dispBot)/height
+                    tagNodePrv = tagNode
+                driftMax = max(drift)
+                driftAve = sum(drift)/len(drift)
+            else:
+                height  = ops.nodeCoord(tagNodeLoad)[1] - ops.nodeCoord(tagNodeBase)[1]
+                dispTop = ops.nodeDisp(tagNodeLoad, dofNodeControl)
+                dispBot = ops.nodeDisp(tagNodeBase, dofNodeControl)
+                driftMax=driftAve= abs(dispTop - dispBot)/height
+            return t, driftAve, driftMax
+        else:
+            d = ops.nodeDisp(tagNodeControl, dofNodeControl)
+            return d, -1
+    
+    def msgCurrentState():
+        if typeAnalysis=="NTHA":
+            remD    = dispTarget - curD()[0]
+            print(f"\n{'~'*100}")
+            print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
+            print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
+            print(f"======>>> durGM\t\t\t\t= {dispTarget}")
+            print(f"======>>> dT({iii:05}/{numFrac:05})\t= {dispTar}")
+            print(f"======>>> Current   Time\t= {curD()[0]}")
+            print(f"======>>> Remaining Time\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"dt\t\t\t\t= {incr}")
+        else:
+            remD    = dispTarget - curD()[0]
+            print(f"\n{'~'*100}")
+            print(f"{'-'*60}\nAlgorithm:\t{algorithm}")
+            print(f"{'-'*60}\ntester:\t\t{tester}\n{'-'*60}")
+            print(f"======>>> disp({dispIndex+1:02}/{len(dispList):02})\t\t\t\t= {disp}")
+            print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
+            print(f"======>>> dispTar({iii:02}/{numFrac:02})\t\t\t= {dispTar}")
+            print(f"======>>> Current   Displacement\t= {curD()[0]}")
+            print(f"======>>> Remaining Displacement\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"Incr\t\t\t= {incr}")
+    
+    def msgReducingIncrSize():
+        if typeAnalysis=="NTHA":
+            print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the dt size:\n{'#'*65}")
+            print(f"\n>>>>>>>>> tolerance\t\t\t= {tol}")
+            print(f"======>>> Current   Time\t= {curD()[0]}")
+            print(f"======>>> Remaining Time\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"dt\t\t\t\t= {incr}")
+            
+        else:
+            print(f"\n{'#'*65}\nAnalysis Failed!!\nReducing the Incr size:\n{'#'*65}")
+            print(f"\n>>>>>>>>> tolerance\t\t\t= {tol}")
+            print(f"======>>> Current   Displacement\t= {curD()[0]}")
+            print(f"======>>> Remaining Displacement\t= {remD}")
+            print(f"numIncr\t\t\t= {numIncr}")
+            print(f"Incr\t\t\t= {incr}")
+    
+    for iii in range(1, numFrac+1):
+        dispTar = iii * incrFrac
+        testerList      = ['NormDispIncr', 'NormUnbalance', 'EnergyIncr', ]#, 'RelativeNormUnbalance']
+        algorithmList   = [*(1*['Newton', 'KrylovNewton', 'RaphsonNewton', 'NewtonLineSearch 0.65', ])] #, 'Linear', 'Newton', 'NewtonLineSearch', 'ModifiedNewton', 'KrylovNewton', 'SecantNewton', 'RaphsonNewton', 'PeriodicNewton', 'BFGS', 'Broyden'
+        tol = 1e-8; numIter = 200; gamma = 0.5; beta = 0.25
+        numIncrMax      = 30000; incrMin = 1e-6
+        
+        numIncr     = numIncrInit
+        incr        = incrFrac/numIncrInit
+        j = 1
+        for i in range(100000000):
+        
+            for algorithm in algorithmList:
+                for tester in testerList:
+                    ops.test(tester, tol, numIter)
+                    ops.algorithm(algorithm)  
+                    if typeAnalysis == "NTHA":
+                        ops.integrator('Newmark', gamma, beta)
+                        ops.analysis('Transient')
+                    else:
+                        ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
+                        ops.analysis('Static')
+                    msgCurrentState()
+                    
+                    # Run Analysis
+                    if typeAnalysis == "NTHA": 
+                        OK = ops.analyze(numIncr, incr)
+                    else:
+                        OK = ops.analyze(numIncr)
+                    print(f"AnalyzeOutput\t= {OK}")
+                    t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
+                    print(f"\nElapsed time: {mins} min + {secs} sec")
+                    if OK == 0: break
+                    elif OK != 0:
+                        t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
+                        print(f"\nElapsed time: {mins} min + {secs} sec")
+                        print(f"\n=============== The tester {tester} failed to converge!!! ===============")
+                if OK == 0: break
+                elif OK != 0:
+                    print(f"\n=============== THE ALGORITHM {algorithm} FAILED TO CONVERGE!!! ===============")
+            if OK == 0: break
+            else:
+                tol = min(1.5*tol, 1e-4)
+                remD    = dispTar - curD()[0]
+                if remD >= 0.001:
+                    numIncr = int(numIncr*1.001**i + j)
+                    j += 1
+                    incr    = remD/numIncr
+                else:
+                    numIncr = 1
+                    incr    = remD/numIncr
+                msgReducingIncrSize()
+                if numIncr >= numIncrMax or incr <= incrMin:
+                    print("\nIncrement size is too small!!!")
+                    t_now=time.time(); elapsed_time=t_now-t_beg; mins=int(elapsed_time/60); secs=int(elapsed_time%60)
+                    print(f"\nElapsed time: {mins} min + {secs} sec")
+                    winsound.Beep(440, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
+                    text = " pushover" if typeAnalysis!="NTHA" else ""
+                    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    print(f"*!*!*!*!*!* The {typeAnalysis}{text} analysis failed to converge!!! *!*!*!*!*!*")
+                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    break
+        if OK < 0: break
+        if typeAnalysis == "NTHA":
+            driftMaxAllowed = 1e-3
+            if curD()[2] >= driftMaxAllowed: 
+                print(f"driftMax = {curD()[2]} >= {driftMaxAllowed} ==> the next scaleFactor will be applied now!")
+                break
+    return OK
 
-def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story): 
+def pushoverDCF(dispTarget, incrInit, numIncrInit, tagNodeLoad): 
     t_beg           = time.time()
     dofNodeControl  = 1
-    # incr        = dispTarget/numIncr
-    tol         = 1e-8
-    numIter     = 50
-    
-    #  Define Time Series: Constant/Linear/Trigonometric/Triangular/Rectangular/Pulse/Path TimeSeries
     tagTSLinear     = 1
-    #   timeSeries('Linear',   tag, '-factor', factor=1.0, '-tStart', tStart=0.0)
     ops.timeSeries('Linear',   tagTSLinear)
-    
-    #  Define Loads: Plain/UniformExcitation/Multi-Support Excitation Pattern
     tagPatternPlain = 1
-    #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
     ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     #   load(nodeTag,     *loadValues)
     if type(tagNodeLoad) == list:
@@ -88,266 +232,126 @@ def pushoverDCF(dispTarget, incrMono, tagNodeLoad, n_story):
         ops.load(tagNodeControl, *[1, 0, 0])
     
     #  Define Analysis Options
-    
     ops.wipeAnalysis()
     ops.constraints('Transformation')
     ops.numberer('RCM')
-    ops.system('BandGen')
-    
-    # numIncrList = [*(1*[20]), *(10*[15]), *(1*[20])]
-    numIncrList = [dispTarget/incrMono] # if the length unit is m: dispTarget/0.001 makes each incr equal to 1 mm 
-    # dispFactor  = int(30*dispTarget)
-    # n1          = 4*dispFactor
-    # n2          = 3*dispFactor
-    # numIncrList = create_list(n1, n2)
-    numFrac     = len(numIncrList)
-    dispFrac    = dispTarget/numFrac
-    curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
-    for iii in range(0, numFrac):
-        numIncr = numIncrList[iii]
-        print(f"\nnumIncr\t\t\t= {numIncr}")
-        incr            = dispFrac/numIncr
-        dispTar         = curD + dispFrac
-        for algorithm in algorithmList:
-            ops.algorithm(algorithm)  
-            
-            for tester in testerList:
-                ops.test(tester, tol, numIter)
-                
-                curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                # print(f"curD = {curD}")
-                remD    = dispTar - curD
-                # print(f"remD = {remD}")
-                numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
-                incr    = remD/numIncr
-                
-                while True:
-                    #   integrator('DisplacementControl', nodeTag,     dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
-                    ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
-                    ops.analysis('Static')
-                    
-                    print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                    print(f"--------------------------------------\nAlgorithm:\t{algorithm}")
-                    print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------")
-                    print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
-                    print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
-                    print(f"======>>> Current   Displacement\t= {curD}")
-                    print(f"======>>> Remaining Displacement\t= {remD}")
-                    print(f"numIncr\t\t\t= {numIncr}")
-                    print(f"Incr\t\t\t= {incr}")
-                    
-                    # Run Analysis
-                    #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
-                    OK      = ops.analyze(numIncr)
-                    print(f"AnalyzeOutput\t= {OK}"); time.sleep(waitTime2)
-                    curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                    print(f"======>>> Current   Displacement\t= {curD}")
-                    if OK == 0:
-                        break
-                    else:
-                        print("==========\nAnalysis Failed!!\nReducing Incr:\n==========")
-                        # print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
-                        curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                        print(f"======>>> Current   Displacement\t= {curD}")
-                        remD    = dispTar - curD
-                        print(f"======>>> Remaining Displacement\t= {remD}")
-                        numIncr = int(numIncr*1.01**i + 1)
-                        print(f"numIncr\t\t\t= {numIncr}")
-                        incr    = remD/numIncr
-                        print(f"Incr\t\t\t= {incr}")
-                        time.sleep(waitTime)
-                        if numIncr >= 300000:
-                            print("\nIncrement size is too small!!!")
-                            time.sleep(waitTime)
-                            break
-                
-                if OK == 0:
-                    break
-                elif OK != 0:
-                    print(f"\n=============== The tester {tester} failed to converge!!! ===============")
-                    time.sleep(waitTime)
-                
-            if OK == 0:
-                break
-            elif OK != 0:
-                print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
-                time.sleep(waitTime)
-                if tester == testerList[-1] and algorithm == algorithmList[-1]:
-                    t_end           = time.time()
-                    elapsed_time    = t_end - t_beg
-                    mins            = int(elapsed_time/60)
-                    secs            = int(elapsed_time%60)
-                    print(f"\nElapsed time: {mins} min + {secs} sec")
-                    winsound.Beep(1000, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
-                    # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    print("*!*!*!*!*!* The monotonic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    # print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
-                    return OK
-    # opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=False, fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
-
+    ops.system('FullGeneral')   # 'FullGeneral', 'UmfPack', 'SparseSYM', 
+    disp        = dispTarget; dispIndex   = 0
+    delta       = dispTarget
+    numFrac     = int(delta/incrInit)
+    incrFrac    = delta/numFrac
+    asTagNodeBase = 1 #it is not going to be used at all in this analysis. it is just to fill a positional argument
+    OK          = convergeIt("Monotonic", tagNodeLoad, asTagNodeBase, dofNodeControl, incrFrac, numFrac, disp, dispIndex, ['This is a list'], dispTarget, t_beg, numIncrInit)
     return OK
 
 
-def cyclicAnalysis(dispList, incrCycl, tagNodeLoad):
+def cyclicAnalysis(dispList, incrInit, tagNodeLoad):
+    asTagNodeBase   = 1 #it is not going to be used at all in this analysis. it is just to fill a positional argument
     t_beg           = time.time()
-    
     dofNodeControl  = 1
+    tagTSLinear     = 1
+    ops.timeSeries('Linear',   tagTSLinear)
+    tagPatternPlain = 1
+    ops.pattern('Plain', tagPatternPlain, tagTSLinear)
     if type(tagNodeLoad) == list:
         tagNodeControl  = tagNodeLoad[-1]
-    else: 
+        n_story = len(tagNodeLoad)-1
+        for i, tagNode in enumerate(tagNodeLoad):
+            ops.load(tagNode, *[i/n_story, 0, 0])
+    else:
         tagNodeControl  = tagNodeLoad
-    tol         = 1e-8
-    numIter     = 100
-    
-    #  Define Time Series: Constant/Linear/Trigonometric/Triangular/Rectangular/Pulse/Path TimeSeries
-    tagTSLinear     = 1
-    #   timeSeries('Linear',   tag, '-factor', factor=1.0, '-tStart', tStart=0.0)
-    ops.timeSeries('Linear',   tagTSLinear)
-    
-    #  Define Loads: Plain/UniformExcitation/Multi-Support Excitation Pattern
-    tagPatternPlain = 1
-    #   pattern('Plain', patternTag,      tsTag, '-fact', fact)
-    ops.pattern('Plain', tagPatternPlain, tagTSLinear)
-    #   load(nodeTag,     *loadValues)
-    ops.load(tagNodeControl, *[1, 0, 0])
-    
+        ops.load(tagNodeControl, *[1, 0, 0])
     
     #  Define Analysis Options
-    
     ops.wipeAnalysis()
     ops.constraints('Transformation')
     ops.numberer('RCM') # Plain, RCM, AMD, ParallelPlain, ParallelRCM
-    ops.system('UmfPack') # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
+    ops.system('FullGeneral') # BandGen, BandSPD, ProfileSPD, SuperLU, UmfPack, FullGeneral, SparseSYM, ('Mumps', '-ICNTL14', icntl14=20.0, '-ICNTL7', icntl7=7)
     
     # Run Analysis
     for dispIndex, disp in enumerate(dispList):
-        print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}"); time.sleep(waitTime)
-        dispTargetList = [disp, 0, -disp, 0]
+        print(f"\n\ndisp({dispIndex+1}/{len(dispList)})\t= {disp}")
+        dispTargetList  = [disp, 0, -disp, 0]
         for index, dispTarget in enumerate(dispTargetList):
             curD        = ops.nodeDisp(tagNodeControl, dofNodeControl)
             delta       = dispTarget - curD
-            # print (f"delta = {delta}")
-            # numIncrList = [*(10*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            # numIncrList = [*(int(10 * (disp/dispList[-1]) + 4)*[2])] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            # numIncrList = [int(1 *13*disp/dispList[-1]) + 4] #[*(1*[4]), *(5*[3]), *(15*[2]), *(20*[1]), *(15*[2]), *(5*[3]), *(1*[4])] # 
-            # n1          = int(10 * (disp/dispList[-1]) + 4)
-            # n2          = int(5  * (disp/dispList[-1]) + 1)
-            # print(f"n1 = {n1} and n2 = {n2}")
-            # numIncrList = create_list(n1, n2)
-            numIncrList = [disp/incrCycl] # if the length unit is m: dispTarget/0.001 makes each incr equal to 1 mm 
-            numFrac     = len(numIncrList)
-            dispFrac    = delta/numFrac
-            # print(f"dispFrac = {dispFrac}")
-            for  iii in range(0, numFrac):
-                numIncr = numIncrList[iii]
-                # print(f"\nnumIncr\t\t\t= {numIncr}")
-                incr            = dispFrac/numIncr
-                # print(f"curD = {curD}")
-                dispTar         = curD + dispFrac
-                # print(f"dispTar = {dispTar}")
-                for indexAlgorithm, algorithm in enumerate(algorithmList):
-                    ops.algorithm(algorithm) 
-                    
-                    for tester in testerList:
-                        ops.test(tester, tol, numIter)
-                        
-                        curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                        # print(f"curD = {curD}")
-                        remD    = dispTar - curD
-                        # print(f"remD = {remD}")
-                        numIncr = max(int(remD/dispFrac *numIncrList[iii]), 1)
-                        incr    = remD/numIncr
-                        
-                        ran = 10000 if (algorithm==algorithmList[-1] and indexAlgorithm!=0) else 50 if (tester=='NormDispIncr' or tester=='EnergyIncr') else 10 
-                        for i in range(ran):
-                            print(f"Iteration {i}")
-                            #   integrator('DisplacementControl', nodeTag,        dof,            incr, numIter=1, dUmin=incr, dUmax=incr)
-                            ops.integrator('DisplacementControl', tagNodeControl, dofNodeControl, incr)
-                            ops.analysis('Static') 
-                            
-                            print("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-                            print(f"disp({dispIndex+1}/{len(dispList)})\t= {disp}")
-                            print(f"--------------------------------------\nAlgorithm:\t{algorithm}")
-                            print(f"--------------------------------------\ntester:\t\t{tester}\n--------------------------------------")
-                            print(f"======>>> dispTarget\t\t\t\t= {dispTarget}")
-                            print(f"======>>> dispTar({iii+1}/{numFrac})\t\t\t\t= {dispTar}")
-                            print(f"======>>> Current   Displacement\t= {curD}")
-                            print(f"======>>> Remaining Displacement\t= {remD}")
-                            print(f"numIncr\t\t\t= {numIncr}")
-                            print(f"Incr\t\t\t= {incr}")
-                            
-                            
-                            
-                            # Run Analysis
-                            #        analyze(numIncr=1, dt=0.0, dtMin=0.0, dtMax=0.0, Jd=0)
-                            OK      = ops.analyze(numIncr)
-                            print(f"AnalyzeOutput\t= {OK}"); time.sleep(waitTime2)
-                            curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                            print(f"======>>> Current   Displacement\t= {curD}")
-                            if OK == 0:
-                                break
-                            else:
-                                # print(f"{Fore.YELLOW}==========\nAnalysis Failed!!\nReducing Incr:\n=========={Style.RESET_ALL}")
-                                print("==========\nAnalysis Failed!!\nReducing Incr:\n==========")
-                                curD    = ops.nodeDisp(tagNodeControl, dofNodeControl)
-                                print(f"======>>> Current   Displacement\t= {curD}")
-                                remD    = dispTar - curD
-                                print(f"======>>> Remaining Displacement\t= {remD}")
-                                # numIncr = int(numIncr*3)
-                                if numIncr <= 300000:
-                                    numIncr = int(numIncr*1.01**i + 1)
-                                else:
-                                    break
-                                #     numIncr = rn.randint(10, 400000)
-                                print(f"numIncr\t\t\t= {numIncr}")
-                                incr    = remD/numIncr
-                                print(f"Incr\t\t\t= {incr}")
-                                time.sleep(waitTime)
-                                # if numIncr >= 10000:
-                                #     print("\nIncrement size is too small!!!")
-                                #     time.sleep(waitTime)
-                                #     break
-                        
-                        if OK == 0:
-                            break
-                        elif OK != 0:
-                            print(f"\n=============== The tester {tester} failed to converge!!! ===============")
-                            time.sleep(waitTime)
-                            
-                    if OK == 0:
-                        break
-                    elif OK != 0:
-                        print(f"\n=============== The algorithm {algorithm} failed to converge!!! ===============")
-                        time.sleep(waitTime)
-                        if tester == testerList[-1] and indexAlgorithm == len(algorithmList)-1:
-                            t_end           = time.time()
-                            elapsed_time    = t_end - t_beg
-                            mins            = int(elapsed_time/60)
-                            secs            = int(elapsed_time%60)
-                            print(f"\nElapsed time: {mins} min + {secs} sec")
-                            winsound.Beep(1000, 1000)  # generate a 440Hz sound that lasts 500 milliseconds
-                            # print(f"{Fore.YELLOW}\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                            print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                            print("*!*!*!*!*!* The cyclic pushover analysis failed to converge!!! *!*!*!*!*!*")
-                            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                            # print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{Style.RESET_ALL}"); sys.exit()
-                            return OK
-                    
-            
+            numFrac     = int(abs(delta)/incrInit)
+            if numFrac == 0: numFrac=1
+            incrFrac    = delta/numFrac
+            OK          = convergeIt('Cyclic', tagNodeLoad, asTagNodeBase, dofNodeControl, incrFrac, numFrac, disp, dispIndex, dispList, dispTarget, t_beg, numIncrInit=2)
+            if OK < 0: break
+        if OK < 0: break
     return OK
 
-                
 
 
+def NTHA1(tagNodeLoad, tagNodeBase, filePath, SaGM, scaleFactor, dtGM, NPTS, Tmax, tag):
+    # ops.wipeAnalysis()
+    t_beg           = time.time()
+    dofNodeControl  = 1
+    tagTSPath       = 1
+    ops.timeSeries('Path', tagTSPath, '-dt', dtGM, '-filePath', filePath, '-factor', scaleFactor)
+    tagPatternNTHA  = tag
+    direction       = 1
+    ops.pattern('UniformExcitation', tagPatternNTHA, direction,'-accel', tagTSPath)
+    
+    #  Define Analysis Options
+    ops.wipeAnalysis()
+    ops.constraints('Transformation')
+    ops.numberer('RCM')
+    ops.system('FullGeneral')
+    
+    # Run Analysis
+    OK          = convergeIt('NTHA', tagNodeLoad, tagNodeBase, dofNodeControl, dtGM, NPTS, Tmax, 0, ["No list required!"], Tmax, t_beg, numIncrInit=2)
+    ops.wipeAnalysis()
+    return OK
 
-
-
-
-
-
-
+def NTHA(tagNodeLoad, tagNodeBase, tagNodeControl, L, outputDirNTHA):
+    recList     = ["0.0200_01500_RSN825_CAPEMEND_CPM000.txt", 
+                   ]
+    NPTSList    = [50]     # you can add more values to this list programmatically, instead of typing them manually
+    dtGMList    = [0.02]    # you can add more values to this list programmatically, instead of typing them manually
+    SaGMList    = [0.04973] # you can add more values to this list programmatically, instead of typing them manually
+    SaTarget    = 1.5 * 0.63/10# MCE = 1.5*DBE
+    extraTime   = 0
+    # rayleighDamping(2, 0.05)
+    numRecords  = len(recList)
+    for i_rec, rec in enumerate(recList):
+        print(f"\n{'#'*65}\nRunning record {i_rec+1:02}/{numRecords:02}: {rec} for Sa = {SaTarget}*g\n{'#'*65}")
+        SaGM        = SaGMList[i_rec]
+        dtGM        = dtGMList[i_rec]
+        NPTS        = NPTSList[i_rec]
+        
+        filePath    = f"Input/GM/{rec}" 
+        Tmax        = NPTS*dtGM + extraTime
+        # dtAnalysis  = dtGM/200 # it can't be greater than dt
+        # numIncr     = int(Tmax/dtAnalysis)
+        scaleFactor = SaTarget/SaGM*g
+        scaleFactorList = [ 
+                            # 0.1*scaleFactor, 
+                            # 0.1*scaleFactor, 
+                            # 0.1*scaleFactor, 
+                            # 0.1*scaleFactor, 
+                            0.1*scaleFactor, 
+                            0.1*scaleFactor, 
+                            # 0.2*scaleFactor,
+                            # 0.5*scaleFactor,
+                            # 1.0*scaleFactor,
+                            # 1.5*scaleFactor,
+                            # 2.0*scaleFactor,
+                            # 3.0*scaleFactor,
+                            # 4.0*scaleFactor,
+                            # 5.0*scaleFactor,
+                            # 10.*scaleFactor,
+                           ]
+        for tag, scaleFactor in enumerate(scaleFactorList):
+            fr.recordDataNTHA(tagNodeBase, tagNodeControl, outputDirNTHA, tag+1)
+            OK = NTHA1(tagNodeLoad, tagNodeBase, filePath, SaGM, scaleFactor, dtGM, NPTS, Tmax, tag+1)
+            fp.plotNTHA(L, outputDirNTHA, tag+1)
+            ops.remove('timeSeries', 1)
+            ops.remove('loadPattern', 1)
+        
+        return OK
 
 
 

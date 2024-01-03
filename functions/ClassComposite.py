@@ -41,7 +41,7 @@ class concrete:
         
 NfibeZ = 1
 class compo:
-    def __init__(self, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
+    def __init__(self, typeEle, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
                  tw, Hw, Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw, 
                  Bf, tf, Esf, Fyf, Fuf, eps_shf, eps_ultf, nuf, alphaf, betaf, gammaf, Cff, a1f, limitf,
                  tc, fpc, wc, lamConf, lamUnconf
@@ -111,8 +111,15 @@ class compo:
         self.Cd             = Cd      = 16 * (Fy/Fu)**0.78 * eps_ult * ((fpcu/MPa)**0.5/(fpc/MPa))**0.58 * r**0.37 # Masoumeh Asgarpoor 
         
         
+        # Section Strength
+        self.yp= yp = (2*Fy*tw*(Hw+2*tf) + 0.85*fpc*tc*tf)/(4*Fy*tw + 0.85*fpc*tc)
+        C_1=T_1 = Fy*Bf*tf; C_2 = 2*Fy*tw*(yp-tf); C_3 = 0.85*fpc*tc*(yp-tf)
+        T_2 = 2*Fy*tw*(Hw+tf-yp)
+        self.Mp = Mp = C_1*(yp-tf/2) + (C_2+C_3)*(yp-tf)/2 + T_1*(Hw+3/2*tf - yp) + T_2*(Hw+tf-yp)/2
+        self.Vp = Vp = 0.6*Fy*(2*tw*(Hw+2*tf))
+        self.eMax = 2.6*Mp/Vp; self.eMin = 1.6*Mp/Vp; self.eAve = 2.0*Mp/Vp
         
-        
+        # Effective Stiffnesses
 
         self.EIeff_webs     = self.St_web.Es    * (1/12 * (2*tw) * Hw**3)
         self.EIeff_flanges  = self.St_flange.Es * (1/12 * Bf * (self.d**3 - Hw**3))
@@ -123,7 +130,11 @@ class compo:
         self.EIeff_Ct       = self.EIeff_unconf + self.EIeff_conf
         
         self.C3             = min(0.45+3*(self.St_A/self.Ag), 0.9)
-        self.EIeff          = 0.64*(self.EIeff_St + self.C3*self.EIeff_Ct)
+        if typeEle == "wall":
+            self.EIeff      = self.EIeff_St + 0.35*self.EIeff_Ct
+        else:
+            self.EIeff      = 0.64*(self.EIeff_St + self.C3*self.EIeff_Ct)
+            
         
         self.EAeff_webs     = self.St_web.Es    * self.St_web.A
         self.EAeff_flanges  = self.St_flange.Es * self.St_flange.A
@@ -133,7 +144,7 @@ class compo:
         self.EAeff_conf     = self.Ct_conf.Ec   * self.Ct_conf.A
         self.EAeff_Ct       = self.EAeff_unconf + self.EAeff_conf
         
-        self.EAeff          = self.EAeff_St + self.EAeff_Ct
+        self.EAeff          = self.EAeff_St + 0.45*self.EAeff_Ct
         
         # Define Materials
         self.tagMatStFlange = tagMatStFlange
@@ -150,6 +161,8 @@ class compo:
                              )
         ops.uniaxialMaterial('Concrete02', tagMatCtUnconf, fpc,  epsc0,  fpcu,  self.Ct_unconf.epscU, lamUnconf, self.Ct_unconf.fts, self.Ct_unconf.Ets)
         ops.uniaxialMaterial('Concrete02', tagMatCtConf,   fpcc, epscc0, fpccu, self.Ct_conf.epscU,   lamConf,   self.Ct_conf.fts,   self.Ct_conf.Ets)
+        # ops.uniaxialMaterial('Concrete01', tagMatCtUnconf, fpc,  epsc0,  fpcu,  self.Ct_unconf.epscU)
+        # ops.uniaxialMaterial('Concrete01', tagMatCtConf,   fpcc, epscc0, fpccu, self.Ct_conf.epscU)
         
         
                     

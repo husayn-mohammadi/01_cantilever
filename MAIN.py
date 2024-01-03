@@ -17,7 +17,7 @@ import winsound
 #=============================================================================
 
 exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
-exec(open("Input/inputData.py").read())
+exec(open('Input/inputData51.py').read())
 # exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
 #=============================================================================
@@ -25,55 +25,65 @@ ops.logFile("logFile.txt")
 #=============================================================================
 # Modeling Options
 recordToLog     = True                      # True, False
-modelFoundation = False
-rotSpring       = False
+modelFoundation = True
+rotSpring       = True
 exertGravityLoad= True
 typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
-typeAnalysis    = ['cyclic']             # 'monotonic', 'cyclic'
+typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic', "NTHA"
 
 Lw              = Section['wall']['propWeb'][1] + 2*Section['wall']['propFlange'][1]
 PHL_wall        = 2/3 * Section['wall']['propWeb'][1]
-PHL_beam        = 0.49* Section['beam']['propWeb'][1]
+PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
-numSegBeam      = 4
-SBL             = 0.52 *m                   # Length of Shear Link (Shear Beam)
+numSegBeam      = 3
+SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
 # Monotonic Pushover Analysis
-incrMono        = 0.5 *mm
-dispTarget      = 0.3 *cm
+incrMono        = 2*((H_typical*n_story)/2000)
+numIncrInit     = 3
+drift           = 0.05
+dispTarget      = drift*(H_typical*n_story)
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
-dY              = 38    *mm
-CPD1            = 2                         # CPD = cyclesPerDisp; which should be an integer
-CPD2            = 2
-dispTarList     = [ 
-                    *(CPD1*[0.5 *dY]),
-                    *(CPD1*[1.0 *dY]),
-                    *(CPD1*[1.5 *dY]),
-                    *(CPD1*[2.0 *dY]),
-                    *(CPD1*[2.5 *dY]),
-                    *(CPD1*[3.0 *dY]),
-                    *(CPD1*[3.5 *dY]),
-                    ]
-
+dY              = 10 *mm
+CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
+CPD2            = 1
 # dispTarList     = [ 
-#                     *(CPD1*[dY/3]), *(CPD1*[2/3*dY]), *(CPD1*[dY]),   *(CPD1*[1.5*dY]), *(CPD1*[2*dY]),
-#                     *(CPD1*[3*dY]), *(CPD1*[4*dY]),   *(CPD1*[5*dY]), *(CPD2*[6*dY]),   *(CPD2*[7*dY]),
-#                     *(CPD2*[8*dY]), 
-#                     *(CPD2*[9*dY]),   
-#                     *(CPD2*[10*dY])
+#                     *(CPD1*[0.5 *dY]),
+#                     *(CPD1*[1.0 *dY]),
+#                     *(CPD1*[1.5 *dY]),
+#                     *(CPD1*[2.0 *dY]),
+#                     # *(CPD1*[2.5 *dY]),
+#                     # *(CPD1*[3.0 *dY]),
+#                     # *(CPD1*[3.5 *dY]),
 #                     ]
+
+dispTarList     = [ 
+                    *(CPD1*[dY/3]), 
+                    *(CPD1*[2/3*dY]), 
+                    *(CPD1*[dY]),   
+                    *(CPD1*[1.5*dY]), 
+                    *(CPD1*[2*dY]),
+                    *(CPD1*[3*dY]), 
+                    *(CPD1*[4*dY]),   
+                    *(CPD1*[5*dY]), 
+                    *(CPD2*[6*dY]),   
+                    *(CPD2*[7*dY]),
+                    *(CPD2*[8*dY]), 
+                    *(CPD2*[9*dY]),   
+                    *(CPD2*[10*dY])
+                    ]
 
 # Plotting Options:
 buildingWidth =10.; buildingHeight =7.
 buildingWidth1=20.; buildingHeight1=17.
 plot_undefo     = False
 plot_loaded     = False
-plot_defo       = True
+plot_defo       = False
 sfac            = 10
     
 plot_Analysis   = True
-plot_StressStrain=True
+plot_StressStrain=False
 plot_section    = False
 #=============================================================================
 #    MAIN
@@ -82,23 +92,31 @@ plot_section    = False
 if recordToLog == True:
     logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
 
+numFolder = 51
 for types in typeAnalysis:
+    outputDir = f'Output/Pushover/{types}/{numFolder}'; outputDirWalls = f'Output/Pushover/{types}/{numFolder}/wall'; outputDirBeams = f'Output/Pushover/{types}/{numFolder}/beams'
     
-    outputDir = f"Output/Pushover/{types}"; outputDirWalls = f"Output/Pushover/{types}/wall"; outputDirBeams = f"Output/Pushover/{types}/beams" 
-    os.makedirs(outputDir, exist_ok=True);  os.makedirs(outputDirWalls, exist_ok=True);       os.makedirs(outputDirBeams, exist_ok=True)
+    os.makedirs(outputDir, exist_ok=True); 
+    os.makedirs(outputDirWalls, exist_ok=True); 
+    os.makedirs(outputDirBeams, exist_ok=True);
+    
+    outputDirNTHA = "Output/NTHA"
+    os.makedirs(outputDirNTHA, exist_ok=True)
     
     # Build Model
     ops.wipe()
     ops.model('basic', '-ndm', 2, '-ndf', 3)
             
     if typeBuild == "CantileverColumn":
-        P = 0 * kN
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, P, PHL_wall, numSegWall, modelFoundation)
+        # Py = 1 * kN
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, Py, PHL_wall, numSegWall, modelFoundation)
+        fa.analyzeEigen(1, True)
     elif typeBuild == 'buildBeam':
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam, rotSpring)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
-        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
+        # fa.analyzeEigen(n_story, True)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
@@ -128,7 +146,7 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, incrMono, tagNodeControl, n_story)
+        fa.pushoverDCF(dispTarget, incrMono, numIncrInit, tagNodeControl)
         finish_time_monotonic = time.time()
         mins = int((finish_time_monotonic - start_time_monotonic)/60)
         secs = int((finish_time_monotonic - start_time_monotonic)%60)
@@ -160,10 +178,28 @@ for types in typeAnalysis:
             sfac = opv.plot_defo(fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                                  #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
                                  )
+    elif types == 'NTHA':
+        start_time_NTHA = time.time()
+        print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"NTHA Initiated at {(time.time() - start_time):.0f}sec.")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+        # fr.recordDataNTHA(tagNodeBase, tagNodeControl, outputDirNTHA)
+        fa.NTHA(tagNodeControl, tagNodeBase, tagNodeControl, L, outputDirNTHA)
+        # fp.plotNTHA(L, outputDirNTHA)
+        finish_time_NTHA = time.time()
+        mins = int((finish_time_NTHA - start_time_NTHA)/60)
+        secs = int((finish_time_NTHA - start_time_NTHA)%60)
+        print("\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"NTHA Finished in {mins}min+{secs}sec.")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+        if plot_loaded == True:
+            opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
+        if plot_defo == True:
+            sfac = opv.plot_defo(fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
+                                 #fmt_defo={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3}
+                                 )
     else:
         print("UNKNOWN Pushover Analysis type!!!");sys.exit()
-    
-
     ops.wipe()
 #=============================================================================
 #    Plot
@@ -191,8 +227,8 @@ if recordToLog == True:
     sys.stdout.close()
     sys.stdout = sys.__stdout__
 
-winsound.Beep(1000, 300)  # generate a 440Hz sound that lasts 500 milliseconds
-winsound.Beep(1000, 300)
+winsound.Beep(440, 300)  # generate a 440Hz sound that lasts 300 milliseconds
+winsound.Beep(440, 300)
 
 
 

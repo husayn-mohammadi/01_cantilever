@@ -6,8 +6,8 @@ def replace_line(file_name, line_num, text):
     out.close()
 
 
-first = 32
-last  = 144
+first = 51
+last  = 96
 for inputNumber in range(first,last+1):
     replace_line('Main.py', 20, f"exec(open('Input/inputData{inputNumber}.py').read())")
     replace_line('Main.py', 95, f"numFolder = {inputNumber}")

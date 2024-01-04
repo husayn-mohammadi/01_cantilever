@@ -17,14 +17,14 @@ import functions.FuncPlot      as fp
 #=============================================================================
 
 exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
-exec(open('Input/inputData51.py').read())
+exec(open('Input/inputData63.py').read())
 # exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
 #=============================================================================
 #    Define Variables
 #=============================================================================
 # Modeling Options
-recordToLog     = True                      # True, False
+recordToLog     = False                      # True, False
 modelFoundation = True
 rotSpring       = True
 exertGravityLoad= True
@@ -92,7 +92,7 @@ plot_section    = False
 if recordToLog == True:
     logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
 
-numFolder = 51
+numFolder = 63
 for types in typeAnalysis:
     outputDir = f'Output/Pushover/{types}/{numFolder}'; outputDirWalls = f'Output/Pushover/{types}/{numFolder}/wall'; outputDirBeams = f'Output/Pushover/{types}/{numFolder}/beams'
     

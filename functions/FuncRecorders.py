@@ -79,18 +79,26 @@ def recordDataNTHA(iNode, jNode, outputDir, tag):
     # ops.recorder('Node',         '-file', f"{outputDir}/Vy.txt",      '-time', '-node', iNode, '-dof', 2, 'reaction')
     # ops.recorder('Node',         '-file', f"{outputDir}/Mz.txt",      '-time', '-node', iNode, '-dof', 3, 'reaction')
     
+
+def recordMomCurv(tagNode, tagEle, section, outputDir):
     
+    # Record at each step: the moment of the element at a section at the given node
+    ops.recorder('Node', '-file', f"{outputDir}/moment{tagEle}.txt", '-time', '-node',  tagNode, '-dof', 3, 'reaction')
     
-
-
-
-
-
-
-
-
-
-
+    # Record at each step: the strains in the fibers farthest from the neutral axis of the section; one at top and another at bottom
+    Hw = section.Hw
+    tp = section.tw
+    H  = Hw +2 *tp
+    
+    coordTop = [ H /2, 0]
+    coordBot = [-H /2, 0]
+    
+    ##  Top Flange
+    ops.recorder('Element', '-file', f"{outputDir}/SS_top{tagEle}.txt", '-ele', tagEle,           
+                 'section', section.tagSec,    'fiber', *coordTop, section.tagMatStFlange, 'stressStrain')
+    ##  Bottom Flange
+    ops.recorder('Element', '-file', f"{outputDir}/SS_bot{tagEle}.txt", '-ele', tagEle,           
+                 'section', section.tagSec,    'fiber', *coordBot, section.tagMatStFlange, 'stressStrain')
 
 
 

@@ -44,7 +44,7 @@ class compo:
     def __init__(self, typeEle, tagSec, tagMatStFlange, tagMatStWeb, tagMatCtUnconf, tagMatCtConf, P, lsr, b, NfibeY,
                  tw, Hw, Esw, Fyw, Fuw, eps_shw, eps_ultw, nuw, alphaw, betaw, gammaw, Cfw, a1w, limitw, 
                  Bf, tf, Esf, Fyf, Fuf, eps_shf, eps_ultf, nuf, alphaf, betaf, gammaf, Cff, a1f, limitf,
-                 tc, fpc, wc, lamConf, lamUnconf
+                 tc, fpc, wc, lamConf, lamUnconf, linearity
                  ):
         
         self.tagSec             = tagSec
@@ -144,25 +144,36 @@ class compo:
         self.EAeff_conf     = self.Ct_conf.Ec   * self.Ct_conf.A
         self.EAeff_Ct       = self.EAeff_unconf + self.EAeff_conf
         
-        self.EAeff          = self.EAeff_St + 0.45*self.EAeff_Ct
+        if typeEle == "wall":
+            self.EAeff      = self.EAeff_St + 0.45*self.EAeff_Ct
+        else:
+            self.EAeff      = 0.8*(self.EAeff_St + self.EAeff_Ct)
         
         # Define Materials
-        self.tagMatStFlange = tagMatStFlange
-        ops.uniaxialMaterial('ReinforcingSteel', tagMatStFlange, Fyf, Fuf, Esf, Esh, eps_shf, eps_ultf, 
-                             '-GABuck', lsr, beta, r, gamma, 
-                             '-CMFatigue', Cf, alpha, Cd, 
-                             '-IsoHard', a1, limit
-                             )
-        self.tagMatStWeb    = tagMatStWeb
-        ops.uniaxialMaterial('ReinforcingSteel', tagMatStWeb, Fyw, Fuw, Esw, Esh, eps_shw, eps_ultw, 
-                             '-GABuck', lsr, beta, r, gamma, 
-                             '-CMFatigue', Cf, alpha, Cd, 
-                             '-IsoHard', a1, limit
-                             )
-        ops.uniaxialMaterial('Concrete02', tagMatCtUnconf, fpc,  epsc0,  fpcu,  self.Ct_unconf.epscU, lamUnconf, self.Ct_unconf.fts, self.Ct_unconf.Ets)
-        ops.uniaxialMaterial('Concrete02', tagMatCtConf,   fpcc, epscc0, fpccu, self.Ct_conf.epscU,   lamConf,   self.Ct_conf.fts,   self.Ct_conf.Ets)
-        # ops.uniaxialMaterial('Concrete01', tagMatCtUnconf, fpc,  epsc0,  fpcu,  self.Ct_unconf.epscU)
-        # ops.uniaxialMaterial('Concrete01', tagMatCtConf,   fpcc, epscc0, fpccu, self.Ct_conf.epscU)
+        if linearity == False:
+            self.tagMatStFlange = tagMatStFlange
+            ops.uniaxialMaterial('ReinforcingSteel', tagMatStFlange, Fyf, Fuf, Esf, Esh, eps_shf, eps_ultf, 
+                                 '-GABuck', lsr, beta, r, gamma, 
+                                 '-CMFatigue', Cf, alpha, Cd, 
+                                 '-IsoHard', a1, limit
+                                 )
+            self.tagMatStWeb    = tagMatStWeb
+            ops.uniaxialMaterial('ReinforcingSteel', tagMatStWeb,    Fyw, Fuw, Esw, Esh, eps_shw, eps_ultw, 
+                                 '-GABuck', lsr, beta, r, gamma, 
+                                 '-CMFatigue', Cf, alpha, Cd, 
+                                 '-IsoHard', a1, limit
+                                 )
+            ops.uniaxialMaterial('Concrete02', tagMatCtUnconf, fpc,  epsc0,  fpcu,  
+                                 self.Ct_unconf.epscU, lamUnconf, self.Ct_unconf.fts, self.Ct_unconf.Ets)
+            ops.uniaxialMaterial('Concrete02', tagMatCtConf,   fpcc, epscc0, fpccu, 
+                                 self.Ct_conf.epscU,   lamConf,   self.Ct_conf.fts,   self.Ct_conf.Ets)
+        else: 
+            self.tagMatStFlange = tagMatStFlange
+            ops.uniaxialMaterial('Elastic', tagMatStFlange, Esf)
+            self.tagMatStWeb    = tagMatStWeb
+            ops.uniaxialMaterial('Elastic', tagMatStWeb,    Esw)
+            ops.uniaxialMaterial('Elastic', tagMatCtUnconf, self.Ct_unconf.Ec)
+            ops.uniaxialMaterial('Elastic', tagMatCtConf,   self.Ct_conf.Ec)
         
         
                     

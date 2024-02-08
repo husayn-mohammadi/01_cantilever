@@ -2,33 +2,34 @@ import time
 start_time = time.time()
 import os
 import sys
+import numpy                   as np
 import openseespy.opensees     as ops
 import opsvis                  as opv
 import functions.FuncModel     as fm
 import functions.FuncAnalysis  as fa
 import functions.FuncRecorders as fr
 import functions.FuncPlot      as fp
-# import winsound
-
-
+import winsound
+# if reset == True: ops.reset()
 
 #=============================================================================
 #    Input File
 #=============================================================================
 
 exec(open("Input/unitsSI.py").read())       # This determines the OUTPUT units: unitsUS.py/unitsSI.py
-exec(open('Input/inputData63.py').read())
+exec(open('Input/inputData.py').read())
 # exec(open("Input/materialParameters.py").read())
 ops.logFile("logFile.txt")
 #=============================================================================
 #    Define Variables
 #=============================================================================
 # Modeling Options
-recordToLog     = False                      # True, False
+recordToLog     = True                      # True, False
 modelFoundation = True
 rotSpring       = True
 exertGravityLoad= True
-typeBuild       = 'coupledWalls'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
+linearity       = True
+typeBuild       = 'CantileverColumn'            # 'CantileverColumn', 'coupledWalls', 'buildBeam', 'ShearCritBeam'
 typeCB          = 'discritizedBothEnds'     # 'discretizedAllFiber', 'FSF', 'FSW', discritizedBothEnds (FSF = FlexureShearFlexure, FSW = FlexureShearWall)
 typeAnalysis    = ['monotonic']             # 'monotonic', 'cyclic', "NTHA"
 
@@ -38,25 +39,18 @@ PHL_beam        = 2/3 * Section['beam']['propWeb'][1]
 numSegWall      = 3                         # If numSegWall=0, the model will be built only with one linear elastic element connecting the base node to top node
 numSegBeam      = 3
 SBL             = 0.3 *m                   # Length of Shear Link (Shear Beam)
+
+# force           = 1e3 *kN
 # Monotonic Pushover Analysis
 incrMono        = 2*((H_typical*n_story)/2000)
 numIncrInit     = 3
-drift           = 0.05
+drift           = 0.02
 dispTarget      = drift*(H_typical*n_story)
 # Cyclic Pushover Analysis
 incrCycl        = incrMono
 dY              = 10 *mm
 CPD1            = 1                         # CPD = cyclesPerDisp; which should be an integer
 CPD2            = 1
-# dispTarList     = [ 
-#                     *(CPD1*[0.5 *dY]),
-#                     *(CPD1*[1.0 *dY]),
-#                     *(CPD1*[1.5 *dY]),
-#                     *(CPD1*[2.0 *dY]),
-#                     # *(CPD1*[2.5 *dY]),
-#                     # *(CPD1*[3.0 *dY]),
-#                     # *(CPD1*[3.5 *dY]),
-#                     ]
 
 dispTarList     = [ 
                     *(CPD1*[dY/3]), 
@@ -79,9 +73,9 @@ buildingWidth =10.; buildingHeight =7.
 buildingWidth1=20.; buildingHeight1=17.
 plot_undefo     = False
 plot_loaded     = False
-plot_defo       = False
+plot_defo       = True
 sfac            = 10
-    
+plot_MomCurv    = False
 plot_Analysis   = True
 plot_StressStrain=False
 plot_section    = False
@@ -92,7 +86,7 @@ plot_section    = False
 if recordToLog == True:
     logFile = 'log.txt'; sys.stdout = open(logFile, 'w')    
 
-numFolder = 63
+numFolder = 1
 for types in typeAnalysis:
     outputDir = f'Output/Pushover/{types}/{numFolder}'; outputDirWalls = f'Output/Pushover/{types}/{numFolder}/wall'; outputDirBeams = f'Output/Pushover/{types}/{numFolder}/beams'
     
@@ -109,20 +103,20 @@ for types in typeAnalysis:
             
     if typeBuild == "CantileverColumn":
         # Py = 1 * kN
-        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, Py, PHL_wall, numSegWall, modelFoundation)
+        tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildCantileverN(L, Py, PHL_wall, numSegWall, modelFoundation, linearity)
         fa.analyzeEigen(1, True)
     elif typeBuild == 'buildBeam':
         tagNodeControl, tagNodeBase, tagEleListToRecord_wall, wall = fm.buildBeam(L, PHL_beam, numSegBeam, rotSpring)
     elif typeBuild == 'coupledWalls':
         P = n_story * load['wall']
-        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring)
+        tagNodeControl, tagNodeBase, buildingWidth, buildingHeight, coords, wall, tagEleListToRecord_wall, beam, tagEleListToRecord_beam, tagNodeLoad = fm.coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB, plot_section, modelFoundation, rotSpring, linearity)
         # fa.analyzeEigen(n_story, True)
     else:
         tagNodeControl, tagNodeBase  = fm.buildShearCritBeam(L)
         
     # Plot Model
     if plot_undefo == True:
-        opv.plot_model(node_labels=0, element_labels=1, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
+        opv.plot_model(node_labels=1, element_labels=1, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1),
                        fmt_model={'color': 'blue', 'linestyle': 'solid', 'linewidth': 0.6, 'marker': '.', 'markersize': 3})
     
     # Run Analysis
@@ -141,18 +135,41 @@ for types in typeAnalysis:
     elif typeBuild == "coupledWalls":
         fr.recordStressStrain(outputDirWalls, tagEleListToRecord_wall,  wall)
         fr.recordStressStrain(outputDirBeams, tagEleListToRecord_beam,  beam)
+    for tagEle in tagEleListToRecord_wall:
+        tagNode = ops.eleNodes(tagEle)
+        print(f"tagEleListToRecord_wall = {tagEleListToRecord_wall}")
+        print(f"tagEle = {tagEle}")
+        print(f"tagNode = {tagNode}")
+        fr.recordMomCurv(tagNode, tagEle, wall, outputDirWalls)
     if types == 'monotonic':
-        start_time_monotonic = time.time()
-        print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        fa.pushoverDCF(dispTarget, incrMono, numIncrInit, tagNodeControl)
-        finish_time_monotonic = time.time()
-        mins = int((finish_time_monotonic - start_time_monotonic)/60)
-        secs = int((finish_time_monotonic - start_time_monotonic)%60)
-        print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(f"Monotonic Pushover Analysis Finished in {mins}min+{secs}sec.")
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+        if True:
+        # if False:
+        # if linearity == False:
+            start_time_monotonic = time.time()
+            print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            print(f"Monotonic Pushover Analysis Initiated at {(start_time_monotonic - start_time):.0f}sec.")
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+            fa.pushoverDCF(dispTarget, incrMono, numIncrInit, tagNodeControl)
+            finish_time_monotonic = time.time()
+            mins = int((finish_time_monotonic - start_time_monotonic)/60)
+            secs = int((finish_time_monotonic - start_time_monotonic)%60)
+            print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            print(f"Monotonic Pushover Analysis Finished in {mins}min+{secs}sec.")
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
+        # else:
+        # if linearity == True:
+        if False:
+            # tagNodeLoadH = []
+            # if type(tagNodeLoad) == dict:
+            #     for tagNode in tagNodeLoad['wall']:
+            #         tagCoordX = f"{tagNode}"[-3:-1]
+            #         if tagCoordX == '00':
+            #             tagNodeLoadH.append(tagNode)
+            # elif type(tagNodeLoad) == int:
+            #     tagNodeLoadH = tagNodeLoad
+            plot_Analysis = False
+            T1, driftMaximum, V_base, Vr_CB = fa.pushoverLCF(tagNodeControl, tagNodeBase, tagEleListToRecord_beam)
+            print(f"driftMax = {driftMaximum*100:.5f}%")
         if plot_loaded == True:
             opv.plot_loads_2d(nep=17, sfac=False, fig_wi_he=(buildingWidth+buildingWidth1, buildingHeight+buildingHeight1), fig_lbrt=False, fmt_model_loads={'color': 'black', 'linestyle': 'solid', 'linewidth': 1.2, 'marker': '', 'markersize': 1}, node_supports=True, truss_node_offset=0, ax=False)
         if plot_defo == True:
@@ -183,9 +200,9 @@ for types in typeAnalysis:
         print("\n\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         print(f"NTHA Initiated at {(time.time() - start_time):.0f}sec.")
         print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\n\n")
-        # fr.recordDataNTHA(tagNodeBase, tagNodeControl, outputDirNTHA)
-        fa.NTHA(tagNodeControl, tagNodeBase, tagNodeControl, L, outputDirNTHA)
-        # fp.plotNTHA(L, outputDirNTHA)
+        fr.recordDataNTHA(tagNodeBase, tagNodeControl, outputDirNTHA, tag+1)
+        OK = fa.NTHA1(tagNodeControl, tagNodeBase, filePath, SaGM, scaleFactor, dtGM, NPTS, Tmax, tag+1)
+        fp.plotNTHA(L, outputDirNTHA, tag+1)
         finish_time_NTHA = time.time()
         mins = int((finish_time_NTHA - start_time_NTHA)/60)
         secs = int((finish_time_NTHA - start_time_NTHA)%60)
@@ -212,7 +229,10 @@ for types in typeAnalysis:
         elif typeBuild == 'coupledWalls':
             fp.plotStressStrain(outputDirWalls,tagEleListToRecord_wall)
             fp.plotStressStrain(outputDirBeams,tagEleListToRecord_beam)
-
+    if plot_MomCurv == True:
+        EIeff_walls = []
+        for tagEle in tagEleListToRecord_wall:
+            EIeff_walls.append(fp.plotMomCurv(outputDirWalls, tagEle, wall, typeBuild))
 end_time        = time.time()
 elapsed_time    = end_time - start_time
 mins            = int(elapsed_time/60)
@@ -227,8 +247,8 @@ if recordToLog == True:
     sys.stdout.close()
     sys.stdout = sys.__stdout__
 
-# winsound.Beep(440, 300)  # generate a 440Hz sound that lasts 300 milliseconds
-# winsound.Beep(440, 300)
+winsound.Beep(440, 300)  # generate a 440Hz sound that lasts 300 milliseconds
+winsound.Beep(440, 300)
 
 
 

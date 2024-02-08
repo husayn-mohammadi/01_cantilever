@@ -25,7 +25,7 @@ def plotPushoverX(outputDir):
     np.savetxt(f"{outputDir}/Pushover.txt", x_Vx)
     
     fig, ax = plt.subplots()
-    fig.suptitle(f"Pushover Curve: {outputDir[16:]}")
+    fig.suptitle(f"Pushover Curve: {outputDir[16:-2]}")
     ax.set_xlabel(f'Displacement ({unitLength})')
     if unitForce=="kN":
         ax.set_ylabel('Shear (kN)')
@@ -38,7 +38,7 @@ def plotPushoverX(outputDir):
         plt.plot(x, Vx, linewidth=0.8)
     elif unitForce=="lb":
         ax.set_ylabel('Shear (kip)')
-        plt.plot(x, Vx/1e3, linewidth=0.8)
+        plt.plot(x, Vx/1e3, linewidth=0.8, dpi=150)
     
     return x, Vx
 
@@ -107,18 +107,65 @@ def plotNTHA(H, outputDir, tag):
     Vx      = reac[:, 1]; Vy = reac[:, 2]; Mz = reac[:, 3]
     
     fig, ax = plt.subplots(4, 1, figsize=(10, 10), dpi=200)
-    # fig.suptitle("Dynamic Analysis Curves", fontsize=16)
+    fig.suptitle("Dynamic Analysis Curves", fontsize=16)
     ax[3].set_xlabel('time (s)')
     ax[0].set_ylabel('drift');                  ax[0].plot(t, d, linewidth=0.8)
     ax[1].set_ylabel('velocity     (m/s)');     ax[1].plot(t, v, linewidth=0.8)
     ax[2].set_ylabel('acceleration (m/s^2)');   ax[2].plot(t, a, linewidth=0.8)
     ax[3].set_ylabel('reaction     (N)');       ax[3].plot(t, Vx, color='blue', label='Vx', linewidth=0.8); ax[3].plot(t, Vy, color='black', label='Vy', linewidth=0.8); ax[3].plot(t, Mz, color='red', label='Mz', linewidth=0.8); ax[3].legend()
     plt.tight_layout()
-    fig.suptitle("Dynamic Analysis Curves", fontsize=16)
     plt.show()
 
+
+def plotMomCurv(outputDir, tagEle, section, typeBuild):
+    if typeBuild == "CantileverColumn":
+        momenIndex = 1
+    else:
+        momenIndex = 2
+    zero        = np.array([0.])
+    # Store the section's Moment in an array
+    momentTXT   = np.loadtxt(f"{outputDir}/moment{tagEle}.txt", delimiter= ' ')
+    moment      = np.append(zero, momentTXT[:, momenIndex])
+    Mpeak       = max(moment)
+    Mpeak60perc = 0.6*Mpeak
+    # Store the section's top and bottom strains in an array
+    SSListTop   = np.loadtxt(f"{outputDir}/SS_top{tagEle}.txt", delimiter= ' ')
+    SSListBot   = np.loadtxt(f"{outputDir}/SS_bot{tagEle}.txt", delimiter= ' ')
+    # Calculate the curvature 
+    StrainTop   = np.append(zero, SSListTop[:,1])
+    StrainBot   = np.append(zero, SSListBot[:,1])
+    h           = section.Hw + section.tw
+    curvature   = ((StrainTop -StrainBot)
+                   /h)
+    curAtM60per = np.interp(Mpeak60perc, moment, curvature)
+    EI          = Mpeak60perc /curAtM60per
+    curAtMpeakE = 1/EI *Mpeak
+    MomCurv     = np.column_stack((curvature, moment))
+    np.savetxt(f"{outputDir}/MomentCurvature_{tagEle}.txt", MomCurv)
     
+    fig, ax = plt.subplots()
+    fig.suptitle(f"Momemnt-Curvature: {tagEle}")
+    ax.set_xlabel(f'curvature (m^-1)')
+    ax.set_ylabel('Moment (kN.m)')
+    plt.plot(curvature, moment*N/kN, linewidth=0.8, label=f"M-c: Mpeak={Mpeak*N/kN:.1f} kN.m")
+    plt.plot([curAtM60per, curAtM60per], [0, Mpeak60perc*N/kN], 'r--')        # Vertical Line
+    plt.plot([0, curAtM60per], [Mpeak60perc*N/kN, Mpeak60perc*N/kN], 'r--')   # Horizontal Line
+    plt.plot([0, curAtMpeakE], [0, Mpeak*N/kN], 'g--', label = f" EI = {EI/(kN*m**2):.1f} kN.m^2")                        # Horizontal Line
+    plt.legend()
+    plt.show()
     
+    return(EI)
     
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+

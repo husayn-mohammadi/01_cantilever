@@ -2,11 +2,11 @@ exec(open("MAIN.py").readlines()[18]) # It SHOULD read and execute exec(open("In
 exec(open("MAIN.py").readlines()[19]) # It SHOULD read and execute exec(open("Input/inputData.py").read())
 import sys
 import openseespy.opensees     as ops
-import functions.FuncSection   as fs
+# import functions.FuncSection   as fs
 # import functions.FuncPlot      as fp
 from functions.ClassComposite import compo
 
-def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True, typeEle='dispBeamColumn'):#
+def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True, linearity=False, typeEle='dispBeamColumn'):#
     
     #       Define Geometric Transformation
     tagGTLinear = 1
@@ -22,7 +22,7 @@ def buildCantileverN(L, P, PlasticHingeLength=1, numSeg=3, modelFoundation=True,
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
     #wall       = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
-    composite   = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore)
+    composite   = compo("wall", *tags, P, lsr, b, NfibeY, *propWeb, *propFlange, *propCore, linearity)
     compo.printVar(composite)
     EIeff       = composite.EIeff
     EAeff       = composite.EAeff
@@ -298,7 +298,7 @@ def buildShearCritBeam(L, numSeg=3, typeEle='dispBeamColumn'):
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 #$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%$%
 
-def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False):
+def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, PHL_wall, PHL_beam, SBL, typeCB="discretizedAllFiber", plot_section=True, modelFoundation=False, rotSpring=False, linearity=False):
     
     # k_rot       = 0.4*8400000 *kip*inch # Foundations Rotational Spring
     # ops.uniaxialMaterial('Elastic',   100000, k_rot)
@@ -438,7 +438,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
     #wall       = compo("wall", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
-    wall        = compo("wall", *tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    wall        = compo("wall", *tags, P, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore, linearity)
     compo.printVar(wall)
     EIeff       = wall.EIeff; k_rot = 20*EIeff/y; print(f"k_rot1 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100000, k_rot) # 4* is to consider 12EI/L instead of 3EI/L
     EAeff       = wall.EAeff; k_elo = 20*EAeff/y; print(f"k_elo = {k_elo}"); ops.uniaxialMaterial('Elastic',   100003, k_elo) # 4* is to consider 12EI/L instead of 3EI/L
@@ -454,7 +454,7 @@ def coupledWalls(H_story_List, L_Bay_List, Lw, P, load, numSegBeam, numSegWall, 
     propFlange  = Section[nameSect]['propFlange']
     propCore    = Section[nameSect]['propCore']
     #beam       = compo("beam", *tags, P, lsr, b,     NfibeY, *propWeb, *propFlange, *propCore)
-    beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore)
+    beam        = compo("beam", *tags, 0, lsr, 0.114, NfibeY, *propWeb, *propFlange, *propCore, linearity)
     compo.printVar(beam)
     EIeff       = wall.EIeff; k_rot = 4*20*EIeff/L_CB; print(f"k_rot2 = {k_rot}"); ops.uniaxialMaterial('Elastic',   100001, k_rot)
     Av          = beam.St_web.A; G=beam.St_web.Es/(2*(1+0.3)); k_trans=20*2*G*Av/SBL/10; b1=0.003; R0,cR1,cR2= 18.5, 0.9, 0.1; a1=a3= 0.06; a2=a4= 1.0; Vp=0.6*beam.St_web.Fy*Av; 
